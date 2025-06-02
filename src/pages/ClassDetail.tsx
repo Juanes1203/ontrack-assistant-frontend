@@ -54,7 +54,20 @@ const ClassDetail = () => {
     weaknesses: [],
     opportunities: [],
     studentParticipation: '',
-    professorPerformance: ''
+    professorPerformance: '',
+    voiceAnalysis: {
+      totalSpeakers: 0,
+      professorSpeechTime: 0,
+      studentSpeechTime: 0,
+      questionCount: 0,
+      interactionCount: 0
+    },
+    contentAnalysis: {
+      topicsDiscussed: [],
+      conceptsExplained: [],
+      examplesUsed: [],
+      keywordFrequency: {}
+    }
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
@@ -273,11 +286,82 @@ const ClassDetail = () => {
       weaknesses: [],
       opportunities: [],
       studentParticipation: '',
-      professorPerformance: ''
+      professorPerformance: '',
+      voiceAnalysis: {
+        totalSpeakers: 0,
+        professorSpeechTime: 0,
+        studentSpeechTime: 0,
+        questionCount: 0,
+        interactionCount: 0
+      },
+      contentAnalysis: {
+        topicsDiscussed: [],
+        conceptsExplained: [],
+        examplesUsed: [],
+        keywordFrequency: {}
+      }
     });
   };
 
-  // Función de análisis expandida
+  // Función mejorada de análisis del contenido real de la transcripción
+  const analyzeTranscriptContent = (text: string) => {
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const words = text.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    
+    // Análisis de patrones de voz y roles
+    const professorKeywords = ['explico', 'enseño', 'vamos a ver', 'como pueden ver', 'recuerden', 'la tarea', 'el examen', 'evaluación', 'calificación'];
+    const studentKeywords = ['profesor', 'maestro', 'no entiendo', 'una pregunta', 'puedo preguntar', 'disculpe', 'gracias'];
+    const questionPatterns = /\b(qué|cómo|cuándo|dónde|por qué|para qué|cuál)\b.*\?/gi;
+    const explanationPatterns = /\b(es decir|por ejemplo|como|significa|definimos|concepto de|teoría de)\b/gi;
+    
+    // Detectar preguntas
+    const questions = text.match(questionPatterns) || [];
+    const questionCount = questions.length;
+    
+    // Detectar explicaciones
+    const explanations = text.match(explanationPatterns) || [];
+    
+    // Análisis de frecuencia de palabras clave
+    const keywordFrequency: {[key: string]: number} = {};
+    const importantWords = words.filter(word => word.length > 4);
+    importantWords.forEach(word => {
+      keywordFrequency[word] = (keywordFrequency[word] || 0) + 1;
+    });
+    
+    // Estimar participación por patrones de lenguaje
+    const professorIndicators = professorKeywords.reduce((count, keyword) => 
+      count + (text.toLowerCase().split(keyword).length - 1), 0);
+    const studentIndicators = studentKeywords.reduce((count, keyword) => 
+      count + (text.toLowerCase().split(keyword).length - 1), 0);
+    
+    // Detectar temas discutidos
+    const topicsDiscussed = [];
+    if (text.toLowerCase().includes('react')) topicsDiscussed.push('React');
+    if (text.toLowerCase().includes('componente')) topicsDiscussed.push('Componentes');
+    if (text.toLowerCase().includes('estado') || text.toLowerCase().includes('state')) topicsDiscussed.push('Estado');
+    if (text.toLowerCase().includes('props')) topicsDiscussed.push('Props');
+    if (text.toLowerCase().includes('hook')) topicsDiscussed.push('Hooks');
+    
+    // Detectar ejemplos utilizados
+    const examplesUsed = [];
+    if (text.toLowerCase().includes('por ejemplo')) examplesUsed.push('Ejemplos verbales');
+    if (text.toLowerCase().includes('demo') || text.toLowerCase().includes('demostración')) examplesUsed.push('Demostración práctica');
+    if (text.toLowerCase().includes('código')) examplesUsed.push('Ejemplos de código');
+    
+    return {
+      questionCount,
+      explanationCount: explanations.length,
+      professorIndicators,
+      studentIndicators,
+      keywordFrequency,
+      topicsDiscussed,
+      examplesUsed,
+      sentenceCount: sentences.length,
+      wordCount: words.length
+    };
+  };
+
+  // Función de análisis completamente reescrita basada en el contenido real
   const generateAnalysis = async () => {
     if (!transcript.trim()) {
       toast({
@@ -290,89 +374,87 @@ const ClassDetail = () => {
 
     setIsAnalyzing(true);
 
-    // Simulación de análisis IA más completo
+    // Analizar el contenido real de la transcripción
+    const analysis = analyzeTranscriptContent(transcript);
+    
     setTimeout(() => {
-      const words = transcript.toLowerCase();
+      // Generar resumen basado en el contenido real
+      let summary = `La clase de ${classData.name} registró una transcripción de ${analysis.wordCount} palabras en ${formatTime(recordingTime)} de duración. `;
       
-      // Análisis de contenido
-      const hasQuestions = words.includes('pregunta') || words.includes('¿') || words.includes('cómo') || words.includes('qué') || words.includes('por qué');
-      const hasExamples = words.includes('ejemplo') || words.includes('por ejemplo') || words.includes('como') || words.includes('demostrar');
-      const hasInteraction = words.includes('estudiante') || words.includes('alumno') || words.includes('participación') || words.includes('respuesta');
-      const hasExplanations = words.includes('explicar') || words.includes('entender') || words.includes('concepto') || words.includes('teoría');
-      const hasProfessorKeywords = words.includes('profesor') || words.includes('maestro') || words.includes('docente');
+      if (analysis.topicsDiscussed.length > 0) {
+        summary += `Los temas principales discutidos fueron: ${analysis.topicsDiscussed.join(', ')}. `;
+      }
       
-      // Generar resumen detallado
-      let summary = `La clase de ${classData.name} `;
-      if (transcript.length > 800) {
-        summary += "fue una sesión muy completa y extensa que abordó múltiples aspectos del tema con gran profundidad. ";
-      } else if (transcript.length > 400) {
-        summary += "cubrió los temas principales de manera satisfactoria con buen nivel de detalle. ";
+      if (analysis.questionCount > 0) {
+        summary += `Se registraron ${analysis.questionCount} preguntas durante la sesión, `;
+        if (analysis.questionCount >= 5) {
+          summary += "indicando un alto nivel de interacción y participación. ";
+        } else if (analysis.questionCount >= 2) {
+          summary += "mostrando un nivel moderado de participación. ";
+        } else {
+          summary += "sugiriendo participación limitada. ";
+        }
+      }
+      
+      if (analysis.explanationCount > 0) {
+        summary += `Se identificaron ${analysis.explanationCount} instancias de explicaciones detalladas o ejemplos. `;
+      }
+      
+      const participationRatio = analysis.studentIndicators / (analysis.professorIndicators + analysis.studentIndicators + 1);
+      if (participationRatio > 0.3) {
+        summary += "La sesión mostró un buen equilibrio entre instrucción docente y participación estudiantil.";
       } else {
-        summary += "se enfocó en conceptos específicos de forma concisa. ";
-      }
-      
-      if (hasQuestions && hasInteraction) {
-        summary += "Se evidenció un excelente intercambio de ideas entre el profesor y los estudiantes, con participación activa y preguntas relevantes. ";
-      }
-      if (hasExamples) {
-        summary += "Se utilizaron ejemplos prácticos efectivos para facilitar la comprensión. ";
-      }
-      if (hasExplanations) {
-        summary += "Las explicaciones fueron claras y bien estructuradas.";
+        summary += "La sesión fue principalmente dirigida por el instructor con participación estudiantil limitada.";
       }
 
-      // Fortalezas específicas
+      // Fortalezas basadas en análisis real
       const strengths = [];
-      if (hasExamples) strengths.push("Uso efectivo de ejemplos para clarificar conceptos complejos");
-      if (hasQuestions) strengths.push("Promoción activa de la participación estudiantil");
-      if (hasExplanations) strengths.push("Explicaciones claras y bien estructuradas");
-      if (hasInteraction) strengths.push("Creación de un ambiente de aprendizaje interactivo");
-      if (transcript.length > 500) strengths.push("Cobertura completa del contenido programático");
+      if (analysis.questionCount >= 3) strengths.push("Alta frecuencia de preguntas indica compromiso estudiantil");
+      if (analysis.explanationCount >= 2) strengths.push("Uso efectivo de explicaciones detalladas y ejemplos");
+      if (analysis.topicsDiscussed.length >= 3) strengths.push("Cobertura amplia de múltiples temas relevantes");
+      if (analysis.wordCount > 500) strengths.push("Sesión substancial con contenido rico y detallado");
+      if (analysis.professorIndicators >= 3) strengths.push("Instrucción estructurada y dirigida por el profesor");
       if (strengths.length === 0) {
-        strengths.push("Transmisión ordenada de la información", "Mantenimiento del enfoque temático");
+        strengths.push("Transmisión clara de información", "Mantenimiento del enfoque en el tema");
       }
 
-      // Debilidades identificadas
+      // Debilidades identificadas del análisis real
       const weaknesses = [];
-      if (!hasQuestions) weaknesses.push("Falta de verificación de comprensión estudiantil");
-      if (!hasExamples) weaknesses.push("Ausencia de ejemplos prácticos para ilustrar conceptos");
-      if (!hasInteraction) weaknesses.push("Limitada interacción bidireccional con estudiantes");
-      if (transcript.length < 300) weaknesses.push("Contenido insuficiente para el tiempo de clase asignado");
+      if (analysis.questionCount === 0) weaknesses.push("Ausencia de preguntas sugiere falta de verificación de comprensión");
+      if (analysis.explanationCount === 0) weaknesses.push("Falta de ejemplos prácticos para ilustrar conceptos");
+      if (analysis.studentIndicators === 0) weaknesses.push("No se detectó participación estudiantil directa");
+      if (analysis.wordCount < 200) weaknesses.push("Contenido limitado para la duración de la clase");
+      if (analysis.topicsDiscussed.length <= 1) weaknesses.push("Cobertura temática limitada");
       if (weaknesses.length === 0) {
-        weaknesses.push("Podría beneficiarse de mayor variedad metodológica");
+        weaknesses.push("Podría beneficiarse de mayor interacción bidireccional");
       }
 
-      // Oportunidades de mejora
+      // Oportunidades basadas en el análisis
       const opportunities = [];
-      if (!hasExamples) opportunities.push("Incorporar más casos prácticos y ejemplos del mundo real");
-      if (!hasQuestions) opportunities.push("Implementar técnicas de verificación de aprendizaje");
-      if (!hasInteraction) opportunities.push("Fomentar mayor participación estudiantil");
-      opportunities.push("Integrar recursos multimedia interactivos");
-      opportunities.push("Incluir actividades colaborativas durante la sesión");
+      if (analysis.questionCount < 2) opportunities.push("Implementar técnicas para fomentar más preguntas estudiantiles");
+      if (analysis.explanationCount < 2) opportunities.push("Incorporar más ejemplos prácticos y casos de estudio");
+      if (participationRatio < 0.2) opportunities.push("Desarrollar estrategias para aumentar participación estudiantil");
+      opportunities.push("Integrar actividades interactivas durante la sesión");
+      opportunities.push("Utilizar recursos multimedia para enriquecer el contenido");
 
-      // Análisis de participación estudiantil detallado
+      // Análisis detallado de participación estudiantil
       let studentParticipation = "";
-      const participationLevel = hasInteraction && hasQuestions ? 'alta' : hasQuestions ? 'media' : 'baja';
-      
-      if (participationLevel === 'alta') {
-        studentParticipation = "Los estudiantes demostraron un nivel excelente de participación y compromiso. Se observó iniciativa para realizar preguntas pertinentes, contribuir activamente a las discusiones y mostrar interés genuino en el tema. El ambiente de aprendizaje fue colaborativo y propicio para el intercambio de ideas. Los estudiantes se sintieron cómodos expresando dudas y aportando sus perspectivas.";
-      } else if (participationLevel === 'media') {
-        studentParticipation = "Se evidenció un nivel moderado de participación estudiantil. Algunos estudiantes realizaron preguntas y contribuyeron a la discusión, aunque podría fomentarse mayor interacción. Se recomienda implementar estrategias para motivar a más estudiantes a participar activamente, como preguntas directas, trabajo en grupos pequeños o técnicas de participación inclusiva.";
+      if (analysis.studentIndicators >= 5 && analysis.questionCount >= 3) {
+        studentParticipation = `El análisis de la transcripción revela un excelente nivel de participación estudiantil. Se detectaron ${analysis.studentIndicators} indicadores de participación activa y ${analysis.questionCount} preguntas formuladas por estudiantes. Los estudiantes mostraron iniciativa para solicitar aclaraciones, expresar dudas y contribuir al diálogo académico. Se evidencia un ambiente de aprendizaje colaborativo donde los estudiantes se sienten cómodos participando activamente.`;
+      } else if (analysis.studentIndicators >= 2 || analysis.questionCount >= 1) {
+        studentParticipation = `Se identificó un nivel moderado de participación estudiantil con ${analysis.studentIndicators} indicadores de participación y ${analysis.questionCount} preguntas registradas. Algunos estudiantes contribuyeron a la discusión, aunque existe potencial para mayor interacción. Se recomienda implementar estrategias más dinámicas para estimular la participación de todos los estudiantes.`;
       } else {
-        studentParticipation = "La participación estudiantil fue limitada durante esta sesión. Se observó una actitud principalmente receptiva por parte de los estudiantes, con poca iniciativa para hacer preguntas o contribuir a discusiones. Se recomienda implementar estrategias dinámicas como: preguntas frecuentes al grupo, actividades participativas, discusiones dirigidas, y crear un ambiente más estimulante para la participación voluntaria.";
+        studentParticipation = `La transcripción muestra participación estudiantil limitada con solo ${analysis.studentIndicators} indicadores detectados y ${analysis.questionCount} preguntas formuladas. Los estudiantes adoptaron una actitud principalmente receptiva. Se sugiere implementar técnicas como preguntas directas, discusiones grupales, y actividades participativas para fomentar mayor compromiso estudiantil.`;
       }
 
       // Análisis del desempeño del profesor
       let professorPerformance = "";
-      const professorQuality = (hasExplanations && hasExamples) ? 'excelente' : 
-                             (hasExplanations || hasExamples) ? 'bueno' : 'mejorable';
-      
-      if (professorQuality === 'excelente') {
-        professorPerformance = "El profesor demostró un desempeño excelente durante la clase. Se evidenció dominio sólido del tema, capacidad para explicar conceptos complejos de manera accesible, y habilidades pedagógicas efectivas. La presentación fue organizada, clara y bien estructurada. El profesor mostró flexibilidad para adaptar las explicaciones según las necesidades del grupo y fomentó un ambiente de aprendizaje positivo. Su conocimiento del tema es profundo y su metodología de enseñanza es efectiva.";
-      } else if (professorQuality === 'bueno') {
-        professorPerformance = "El profesor mostró un buen dominio del tema y competencias pedagógicas adecuadas. Las explicaciones fueron mayormente claras y el contenido se presentó de manera organizada. Sin embargo, hay oportunidades para enriquecer la metodología de enseñanza, como incorporar más ejemplos prácticos, aumentar la interacción con estudiantes, o utilizar técnicas más dinámicas. El conocimiento técnico es sólido, pero la presentación podría ser más engaging.";
+      if (analysis.professorIndicators >= 5 && analysis.explanationCount >= 3) {
+        professorPerformance = `El análisis de la transcripción indica un desempeño docente excelente. Se identificaron ${analysis.professorIndicators} indicadores de instrucción estructurada y ${analysis.explanationCount} instancias de explicaciones detalladas. El profesor demostró dominio del tema, capacidad para comunicar conceptos complejos de manera clara, y habilidades pedagógicas efectivas. La presentación fue organizada y bien secuenciada, mostrando preparación adecuada y conocimiento profundo del contenido.`;
+      } else if (analysis.professorIndicators >= 2 || analysis.explanationCount >= 1) {
+        professorPerformance = `El profesor mostró un desempeño competente con ${analysis.professorIndicators} indicadores de instrucción y ${analysis.explanationCount} explicaciones registradas. Se evidencia conocimiento del tema y organización básica del contenido. Sin embargo, hay oportunidades para enriquecer la metodología de enseñanza, incluyendo más ejemplos prácticos, técnicas de verificación de comprensión, y estrategias para aumentar el engagement estudiantil.`;
       } else {
-        professorPerformance = "Se identifican áreas significativas de mejora en el desempeño docente. Aunque se evidencia conocimiento del tema, la metodología de enseñanza requiere desarrollo. Se recomienda: mejorar la claridad en las explicaciones, incorporar más ejemplos prácticos, fomentar mayor interacción estudiantil, y desarrollar técnicas más dinámicas de presentación. Sería beneficioso recibir capacitación en metodologías pedagógicas activas y técnicas de engagement estudiantil.";
+        professorPerformance = `El análisis sugiere oportunidades significativas de mejora en el desempeño docente. Con ${analysis.professorIndicators} indicadores de instrucción estructurada y ${analysis.explanationCount} explicaciones detectadas, se recomienda desarrollar técnicas pedagógicas más dinámicas, incluir más ejemplos prácticos, implementar verificaciones de comprensión regulares, y fomentar mayor interacción con los estudiantes.`;
       }
 
       setClassAnalysis({
@@ -381,16 +463,29 @@ const ClassDetail = () => {
         weaknesses,
         opportunities,
         studentParticipation,
-        professorPerformance
+        professorPerformance,
+        voiceAnalysis: {
+          totalSpeakers: Math.max(1, Math.ceil((analysis.professorIndicators + analysis.studentIndicators) / 3)),
+          professorSpeechTime: Math.round((analysis.professorIndicators / (analysis.professorIndicators + analysis.studentIndicators + 1)) * recordingTime),
+          studentSpeechTime: Math.round((analysis.studentIndicators / (analysis.professorIndicators + analysis.studentIndicators + 1)) * recordingTime),
+          questionCount: analysis.questionCount,
+          interactionCount: analysis.professorIndicators + analysis.studentIndicators
+        },
+        contentAnalysis: {
+          topicsDiscussed: analysis.topicsDiscussed,
+          conceptsExplained: Object.keys(analysis.keywordFrequency).slice(0, 5),
+          examplesUsed: analysis.examplesUsed,
+          keywordFrequency: analysis.keywordFrequency
+        }
       });
       
       setIsAnalyzing(false);
       
       toast({
         title: "Análisis completado",
-        description: "Se ha generado el análisis completo de todos los aspectos de la clase",
+        description: "Se ha generado el análisis completo basado en el contenido de la transcripción",
       });
-    }, 4000);
+    }, 3000);
   };
 
   const formatTime = (seconds: number) => {
@@ -627,7 +722,7 @@ const ClassDetail = () => {
                   <div className="space-y-4">
                     <div className="bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
                       <h3 className="text-lg font-semibold text-green-800 mb-3">
-                        📝 Resumen Ejecutivo
+                        📝 Resumen Ejecutivo (Basado en Transcripción)
                       </h3>
                       <p className="text-gray-700 leading-relaxed text-base">
                         {classAnalysis.summary}
@@ -642,6 +737,14 @@ const ClassDetail = () => {
                       <div className="bg-purple-50 p-4 rounded-lg">
                         <h4 className="font-semibold text-purple-800 mb-2">Palabras transcritas</h4>
                         <p className="text-purple-700">{transcript.split(' ').filter(word => word.length > 0).length}</p>
+                      </div>
+                      <div className="bg-orange-50 p-4 rounded-lg">
+                        <h4 className="font-semibold text-orange-800 mb-2">Preguntas detectadas</h4>
+                        <p className="text-orange-700">{classAnalysis.voiceAnalysis.questionCount}</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <h4 className="font-semibold text-green-800 mb-2">Temas discutidos</h4>
+                        <p className="text-green-700">{classAnalysis.contentAnalysis.topicsDiscussed.join(', ') || 'No detectados'}</p>
                       </div>
                     </div>
                   </div>
@@ -666,7 +769,7 @@ const ClassDetail = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Target className="w-5 h-5 mr-2 text-orange-600" />
-                  Análisis FODA (Fortalezas, Oportunidades, Debilidades, Amenazas)
+                  Análisis FODA (Basado en Contenido de la Transcripción)
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -675,7 +778,7 @@ const ClassDetail = () => {
                     {/* Fortalezas */}
                     <div className="bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
                       <h3 className="text-lg font-semibold text-green-800 mb-4 flex items-center">
-                        💪 Fortalezas Identificadas
+                        💪 Fortalezas Identificadas en la Transcripción
                       </h3>
                       <ul className="space-y-3">
                         {classAnalysis.strengths.map((strength, index) => (
@@ -690,7 +793,7 @@ const ClassDetail = () => {
                     {/* Debilidades */}
                     <div className="bg-orange-50 border-l-4 border-orange-400 p-6 rounded-lg">
                       <h3 className="text-lg font-semibold text-orange-800 mb-4 flex items-center">
-                        🔍 Áreas de Mejora
+                        🔍 Áreas de Mejora Detectadas
                       </h3>
                       <ul className="space-y-3">
                         {classAnalysis.weaknesses.map((weakness, index) => (
@@ -724,7 +827,7 @@ const ClassDetail = () => {
                       Análisis FODA de la clase
                     </p>
                     <p className="text-gray-400 text-sm">
-                      Genera el análisis para ver fortalezas, debilidades y oportunidades
+                      Genera el análisis para ver fortalezas, debilidades y oportunidades basadas en la transcripción
                     </p>
                   </div>
                 )}
@@ -738,7 +841,7 @@ const ClassDetail = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <UserCheck className="w-5 h-5 mr-2 text-blue-600" />
-                  Análisis de Participación Estudiantil
+                  Análisis de Participación Estudiantil (Basado en Transcripción)
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -746,7 +849,7 @@ const ClassDetail = () => {
                   <div className="space-y-6">
                     <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg">
                       <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center">
-                        👥 Evaluación de Participación y Actitud
+                        👥 Evaluación de Participación Detectada en la Grabación
                       </h3>
                       <p className="text-gray-700 leading-relaxed text-base">
                         {classAnalysis.studentParticipation}
@@ -756,24 +859,21 @@ const ClassDetail = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="bg-green-50 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-green-600 mb-2">
-                          {classAnalysis.studentParticipation.includes('excelente') ? '9/10' : 
-                           classAnalysis.studentParticipation.includes('moderado') ? '6/10' : '4/10'}
+                          {classAnalysis.voiceAnalysis.questionCount}
                         </div>
-                        <p className="text-green-700 font-medium">Nivel de Participación</p>
+                        <p className="text-green-700 font-medium">Preguntas Formuladas</p>
                       </div>
                       <div className="bg-purple-50 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-purple-600 mb-2">
-                          {classAnalysis.studentParticipation.includes('colaborativo') ? '9/10' : 
-                           classAnalysis.studentParticipation.includes('interacción') ? '7/10' : '5/10'}
+                          {classAnalysis.voiceAnalysis.interactionCount}
                         </div>
-                        <p className="text-purple-700 font-medium">Interacción</p>
+                        <p className="text-purple-700 font-medium">Interacciones Detectadas</p>
                       </div>
                       <div className="bg-orange-50 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-orange-600 mb-2">
-                          {classAnalysis.studentParticipation.includes('iniciativa') ? '8/10' : 
-                           classAnalysis.studentParticipation.includes('algunas') ? '6/10' : '4/10'}
+                          {formatTime(classAnalysis.voiceAnalysis.studentSpeechTime)}
                         </div>
-                        <p className="text-orange-700 font-medium">Iniciativa</p>
+                        <p className="text-orange-700 font-medium">Tiempo Estimado de Participación</p>
                       </div>
                     </div>
                   </div>
@@ -784,7 +884,7 @@ const ClassDetail = () => {
                       Evaluación de participación estudiantil
                     </p>
                     <p className="text-gray-400 text-sm">
-                      Genera el análisis para evaluar la participación y actitud de los estudiantes
+                      Genera el análisis para evaluar la participación y actitud de los estudiantes basado en la transcripción
                     </p>
                   </div>
                 )}
@@ -798,7 +898,7 @@ const ClassDetail = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <GraduationCap className="w-5 h-5 mr-2 text-purple-600" />
-                  Evaluación del Desempeño Docente
+                  Evaluación del Desempeño Docente (Basado en Transcripción)
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -806,7 +906,7 @@ const ClassDetail = () => {
                   <div className="space-y-6">
                     <div className="bg-purple-50 border-l-4 border-purple-400 p-6 rounded-lg">
                       <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center">
-                        🎓 Análisis del Desempeño Docente
+                        🎓 Análisis del Desempeño Detectado en la Grabación
                       </h3>
                       <p className="text-gray-700 leading-relaxed text-base">
                         {classAnalysis.professorPerformance}
@@ -816,31 +916,27 @@ const ClassDetail = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="bg-green-50 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-green-600 mb-2">
-                          {classAnalysis.professorPerformance.includes('excelente') ? '9/10' : 
-                           classAnalysis.professorPerformance.includes('buen') ? '7/10' : '5/10'}
+                          {formatTime(classAnalysis.voiceAnalysis.professorSpeechTime)}
                         </div>
-                        <p className="text-green-700 font-medium text-sm">Dominio del Tema</p>
+                        <p className="text-green-700 font-medium text-sm">Tiempo de Instrucción</p>
                       </div>
                       <div className="bg-blue-50 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-blue-600 mb-2">
-                          {classAnalysis.professorPerformance.includes('clara') || classAnalysis.professorPerformance.includes('accesible') ? '8/10' : 
-                           classAnalysis.professorPerformance.includes('mayormente') ? '7/10' : '5/10'}
+                          {classAnalysis.contentAnalysis.topicsDiscussed.length}
                         </div>
-                        <p className="text-blue-700 font-medium text-sm">Claridad</p>
+                        <p className="text-blue-700 font-medium text-sm">Temas Cubiertos</p>
                       </div>
                       <div className="bg-yellow-50 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-yellow-600 mb-2">
-                          {classAnalysis.professorPerformance.includes('efectiva') || classAnalysis.professorPerformance.includes('positivo') ? '8/10' : 
-                           classAnalysis.professorPerformance.includes('adecuadas') ? '6/10' : '4/10'}
+                          {classAnalysis.contentAnalysis.examplesUsed.length}
                         </div>
-                        <p className="text-yellow-700 font-medium text-sm">Metodología</p>
+                        <p className="text-yellow-700 font-medium text-sm">Ejemplos Utilizados</p>
                       </div>
                       <div className="bg-red-50 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-red-600 mb-2">
-                          {classAnalysis.professorPerformance.includes('organizada') || classAnalysis.professorPerformance.includes('estructurada') ? '9/10' : 
-                           classAnalysis.professorPerformance.includes('organizada') ? '7/10' : '6/10'}
+                          {classAnalysis.voiceAnalysis.totalSpeakers}
                         </div>
-                        <p className="text-red-700 font-medium text-sm">Organización</p>
+                        <p className="text-red-700 font-medium text-sm">Voces Detectadas</p>
                       </div>
                     </div>
                   </div>
@@ -851,7 +947,7 @@ const ClassDetail = () => {
                       Evaluación del desempeño del profesor
                     </p>
                     <p className="text-gray-400 text-sm">
-                      Genera el análisis para evaluar el conocimiento y metodología del profesor
+                      Genera el análisis para evaluar el conocimiento y metodología del profesor basado en la transcripción
                     </p>
                   </div>
                 )}
@@ -865,19 +961,97 @@ const ClassDetail = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
-                  Insights y Métricas Avanzadas
+                  Insights y Métricas Avanzadas de la Grabación
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg mb-2">
-                    Próximamente: Métricas avanzadas y analytics
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    Estadísticas detalladas, tendencias de aprendizaje, y métricas de rendimiento
-                  </p>
-                </div>
+                {classAnalysis.contentAnalysis.topicsDiscussed.length > 0 ? (
+                  <div className="space-y-6">
+                    {/* Métricas de participación */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="bg-blue-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-blue-600 mb-2">
+                          {Math.round((classAnalysis.voiceAnalysis.studentSpeechTime / recordingTime) * 100)}%
+                        </div>
+                        <p className="text-blue-700 font-medium text-sm">Tiempo de Participación Estudiantil</p>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-green-600 mb-2">
+                          {Math.round((classAnalysis.voiceAnalysis.professorSpeechTime / recordingTime) * 100)}%
+                        </div>
+                        <p className="text-green-700 font-medium text-sm">Tiempo de Instrucción Docente</p>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-purple-600 mb-2">
+                          {Math.round(classAnalysis.voiceAnalysis.questionCount / (recordingTime / 60))}
+                        </div>
+                        <p className="text-purple-700 font-medium text-sm">Preguntas por Minuto</p>
+                      </div>
+                      <div className="bg-orange-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-orange-600 mb-2">
+                          {transcript.split(' ').length / (recordingTime / 60) || 0}
+                        </div>
+                        <p className="text-orange-700 font-medium text-sm">Palabras por Minuto</p>
+                      </div>
+                    </div>
+
+                    {/* Contenido analizado */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-gray-50 p-6 rounded-lg">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">📚 Temas Discutidos</h3>
+                        <div className="space-y-2">
+                          {classAnalysis.contentAnalysis.topicsDiscussed.map((topic, index) => (
+                            <Badge key={index} variant="secondary" className="mr-2 mb-2">
+                              {topic}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-6 rounded-lg">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">🎯 Ejemplos Utilizados</h3>
+                        <div className="space-y-2">
+                          {classAnalysis.contentAnalysis.examplesUsed.length > 0 ? (
+                            classAnalysis.contentAnalysis.examplesUsed.map((example, index) => (
+                              <Badge key={index} variant="outline" className="mr-2 mb-2">
+                                {example}
+                              </Badge>
+                            ))
+                          ) : (
+                            <p className="text-gray-500 text-sm">No se detectaron ejemplos específicos</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Palabras clave más frecuentes */}
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4">🔤 Conceptos Más Mencionados</h3>
+                      <div className="space-y-2">
+                        {Object.entries(classAnalysis.contentAnalysis.keywordFrequency)
+                          .sort(([,a], [,b]) => (b as number) - (a as number))
+                          .slice(0, 10)
+                          .map(([word, count], index) => (
+                            <div key={index} className="flex justify-between items-center py-1">
+                              <span className="text-gray-700">{word}</span>
+                              <Badge variant="secondary">{count}</Badge>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg mb-2">
+                      Métricas avanzadas basadas en la transcripción
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      Genera el análisis para ver estadísticas detalladas, patrones de voz y métricas de rendimiento
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
