@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -983,13 +984,13 @@ const ClassDetail = () => {
                       </div>
                       <div className="bg-purple-50 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-purple-600 mb-2">
-                          {Math.round(classAnalysis.voiceAnalysis.questionCount / (recordingTime / 60))}
+                          {Math.round(classAnalysis.voiceAnalysis.questionCount / (recordingTime / 60)) || 0}
                         </div>
                         <p className="text-purple-700 font-medium text-sm">Preguntas por Minuto</p>
                       </div>
                       <div className="bg-orange-50 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-orange-600 mb-2">
-                          {transcript.split(' ').length / (recordingTime / 60) || 0}
+                          {Math.round(transcript.split(' ').length / (recordingTime / 60)) || 0}
                         </div>
                         <p className="text-orange-700 font-medium text-sm">Palabras por Minuto</p>
                       </div>
@@ -1034,7 +1035,7 @@ const ClassDetail = () => {
                           .map(([word, count], index) => (
                             <div key={index} className="flex justify-between items-center py-1">
                               <span className="text-gray-700">{word}</span>
-                              <Badge variant="secondary">{count}</Badge>
+                              <Badge variant="secondary">{count as number}</Badge>
                             </div>
                           ))
                         }
