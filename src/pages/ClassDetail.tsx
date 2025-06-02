@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,11 @@ import {
   Clock,
   Download,
   Save,
-  MicOff
+  MicOff,
+  BookOpen,
+  Target,
+  UserCheck,
+  GraduationCap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -44,13 +47,14 @@ const ClassDetail = () => {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isListening, setIsListening] = useState(false);
   
-  // Estados de análisis
-  const [analysis, setAnalysis] = useState({
+  // Estados de análisis expandidos
+  const [classAnalysis, setClassAnalysis] = useState({
     summary: '',
     strengths: [],
     weaknesses: [],
     opportunities: [],
-    studentParticipation: ''
+    studentParticipation: '',
+    professorPerformance: ''
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
@@ -263,16 +267,17 @@ const ClassDetail = () => {
   const resetRecording = () => {
     setRecordingTime(0);
     setTranscript('');
-    setAnalysis({
+    setClassAnalysis({
       summary: '',
       strengths: [],
       weaknesses: [],
       opportunities: [],
-      studentParticipation: ''
+      studentParticipation: '',
+      professorPerformance: ''
     });
   };
 
-  // Función de análisis con IA mejorada
+  // Función de análisis expandida
   const generateAnalysis = async () => {
     if (!transcript.trim()) {
       toast({
@@ -285,95 +290,107 @@ const ClassDetail = () => {
 
     setIsAnalyzing(true);
 
-    // Simulación de análisis IA más realista basado en el contenido
+    // Simulación de análisis IA más completo
     setTimeout(() => {
       const words = transcript.toLowerCase();
       
-      // Análisis básico del contenido
+      // Análisis de contenido
       const hasQuestions = words.includes('pregunta') || words.includes('¿') || words.includes('cómo') || words.includes('qué') || words.includes('por qué');
       const hasExamples = words.includes('ejemplo') || words.includes('por ejemplo') || words.includes('como') || words.includes('demostrar');
       const hasInteraction = words.includes('estudiante') || words.includes('alumno') || words.includes('participación') || words.includes('respuesta');
+      const hasExplanations = words.includes('explicar') || words.includes('entender') || words.includes('concepto') || words.includes('teoría');
+      const hasProfessorKeywords = words.includes('profesor') || words.includes('maestro') || words.includes('docente');
       
-      // Generar resumen basado en contenido
-      let summary = "La clase ";
-      if (transcript.length > 500) {
-        summary += "fue extensa y cubrió múltiples temas de manera detallada. ";
-      } else if (transcript.length > 200) {
-        summary += "abordó los temas principales de forma concisa. ";
+      // Generar resumen detallado
+      let summary = `La clase de ${classData.name} `;
+      if (transcript.length > 800) {
+        summary += "fue una sesión muy completa y extensa que abordó múltiples aspectos del tema con gran profundidad. ";
+      } else if (transcript.length > 400) {
+        summary += "cubrió los temas principales de manera satisfactoria con buen nivel de detalle. ";
       } else {
-        summary += "fue breve y se enfocó en conceptos específicos. ";
+        summary += "se enfocó en conceptos específicos de forma concisa. ";
       }
       
-      if (hasQuestions) {
-        summary += "Se fomentó la participación estudiantil a través de preguntas. ";
+      if (hasQuestions && hasInteraction) {
+        summary += "Se evidenció un excelente intercambio de ideas entre el profesor y los estudiantes, con participación activa y preguntas relevantes. ";
       }
       if (hasExamples) {
-        summary += "Se utilizaron ejemplos prácticos para explicar los conceptos. ";
+        summary += "Se utilizaron ejemplos prácticos efectivos para facilitar la comprensión. ";
       }
-      if (hasInteraction) {
-        summary += "Hubo interacción activa entre profesores y estudiantes.";
+      if (hasExplanations) {
+        summary += "Las explicaciones fueron claras y bien estructuradas.";
       }
 
-      // Generar fortalezas dinámicas
+      // Fortalezas específicas
       const strengths = [];
-      if (hasExamples) strengths.push("Uso efectivo de ejemplos para clarificar conceptos");
+      if (hasExamples) strengths.push("Uso efectivo de ejemplos para clarificar conceptos complejos");
       if (hasQuestions) strengths.push("Promoción activa de la participación estudiantil");
-      if (transcript.length > 300) strengths.push("Explicaciones detalladas y bien estructuradas");
+      if (hasExplanations) strengths.push("Explicaciones claras y bien estructuradas");
       if (hasInteraction) strengths.push("Creación de un ambiente de aprendizaje interactivo");
-      
-      // Si no hay suficientes indicadores, usar fortalezas generales
+      if (transcript.length > 500) strengths.push("Cobertura completa del contenido programático");
       if (strengths.length === 0) {
-        strengths.push("Transmisión clara de información", "Mantenimiento del enfoque en el tema");
+        strengths.push("Transmisión ordenada de la información", "Mantenimiento del enfoque temático");
       }
 
-      // Generar debilidades y oportunidades
+      // Debilidades identificadas
       const weaknesses = [];
+      if (!hasQuestions) weaknesses.push("Falta de verificación de comprensión estudiantil");
+      if (!hasExamples) weaknesses.push("Ausencia de ejemplos prácticos para ilustrar conceptos");
+      if (!hasInteraction) weaknesses.push("Limitada interacción bidireccional con estudiantes");
+      if (transcript.length < 300) weaknesses.push("Contenido insuficiente para el tiempo de clase asignado");
+      if (weaknesses.length === 0) {
+        weaknesses.push("Podría beneficiarse de mayor variedad metodológica");
+      }
+
+      // Oportunidades de mejora
       const opportunities = [];
-      
-      if (!hasQuestions) {
-        weaknesses.push("Podría beneficiarse de más preguntas para verificar comprensión");
-        opportunities.push("Implementar más momentos de verificación de entendimiento");
-      }
-      if (!hasExamples) {
-        weaknesses.push("Falta de ejemplos prácticos para ilustrar conceptos");
-        opportunities.push("Incorporar más ejemplos del mundo real");
-      }
-      if (transcript.length < 200) {
-        opportunities.push("Expandir el contenido con más detalles y explicaciones");
-      }
-      
-      // Agregar algunas oportunidades generales
-      if (opportunities.length < 2) {
-        opportunities.push("Integrar más recursos multimedia", "Incluir ejercicios prácticos durante la sesión");
-      }
+      if (!hasExamples) opportunities.push("Incorporar más casos prácticos y ejemplos del mundo real");
+      if (!hasQuestions) opportunities.push("Implementar técnicas de verificación de aprendizaje");
+      if (!hasInteraction) opportunities.push("Fomentar mayor participación estudiantil");
+      opportunities.push("Integrar recursos multimedia interactivos");
+      opportunities.push("Incluir actividades colaborativas durante la sesión");
 
-      // Análisis de participación estudiantil
+      // Análisis de participación estudiantil detallado
       let studentParticipation = "";
-      if (hasInteraction && hasQuestions) {
-        studentParticipation = "Los estudiantes mostraron un excelente nivel de participación, realizando preguntas pertinentes y contribuyendo activamente a la discusión. Se evidenció un ambiente de aprendizaje colaborativo y de confianza para expresar dudas.";
-      } else if (hasQuestions) {
-        studentParticipation = "Se observó participación estudiantil a través de preguntas, lo que indica interés en el tema. Sin embargo, podría fomentarse más la interacción bidireccional.";
-      } else if (hasInteraction) {
-        studentParticipation = "Hubo cierto nivel de interacción estudiantil, aunque podría incrementarse el número de preguntas y participaciones espontáneas.";
+      const participationLevel = hasInteraction && hasQuestions ? 'alta' : hasQuestions ? 'media' : 'baja';
+      
+      if (participationLevel === 'alta') {
+        studentParticipation = "Los estudiantes demostraron un nivel excelente de participación y compromiso. Se observó iniciativa para realizar preguntas pertinentes, contribuir activamente a las discusiones y mostrar interés genuino en el tema. El ambiente de aprendizaje fue colaborativo y propicio para el intercambio de ideas. Los estudiantes se sintieron cómodos expresando dudas y aportando sus perspectivas.";
+      } else if (participationLevel === 'media') {
+        studentParticipation = "Se evidenció un nivel moderado de participación estudiantil. Algunos estudiantes realizaron preguntas y contribuyeron a la discusión, aunque podría fomentarse mayor interacción. Se recomienda implementar estrategias para motivar a más estudiantes a participar activamente, como preguntas directas, trabajo en grupos pequeños o técnicas de participación inclusiva.";
       } else {
-        studentParticipation = "La participación estudiantil fue limitada durante esta sesión. Se recomienda implementar estrategias para fomentar más interacción, como preguntas directas, discusiones grupales o actividades participativas.";
+        studentParticipation = "La participación estudiantil fue limitada durante esta sesión. Se observó una actitud principalmente receptiva por parte de los estudiantes, con poca iniciativa para hacer preguntas o contribuir a discusiones. Se recomienda implementar estrategias dinámicas como: preguntas frecuentes al grupo, actividades participativas, discusiones dirigidas, y crear un ambiente más estimulante para la participación voluntaria.";
       }
 
-      setAnalysis({
+      // Análisis del desempeño del profesor
+      let professorPerformance = "";
+      const professorQuality = (hasExplanations && hasExamples) ? 'excelente' : 
+                             (hasExplanations || hasExamples) ? 'bueno' : 'mejorable';
+      
+      if (professorQuality === 'excelente') {
+        professorPerformance = "El profesor demostró un desempeño excelente durante la clase. Se evidenció dominio sólido del tema, capacidad para explicar conceptos complejos de manera accesible, y habilidades pedagógicas efectivas. La presentación fue organizada, clara y bien estructurada. El profesor mostró flexibilidad para adaptar las explicaciones según las necesidades del grupo y fomentó un ambiente de aprendizaje positivo. Su conocimiento del tema es profundo y su metodología de enseñanza es efectiva.";
+      } else if (professorQuality === 'bueno') {
+        professorPerformance = "El profesor mostró un buen dominio del tema y competencias pedagógicas adecuadas. Las explicaciones fueron mayormente claras y el contenido se presentó de manera organizada. Sin embargo, hay oportunidades para enriquecer la metodología de enseñanza, como incorporar más ejemplos prácticos, aumentar la interacción con estudiantes, o utilizar técnicas más dinámicas. El conocimiento técnico es sólido, pero la presentación podría ser más engaging.";
+      } else {
+        professorPerformance = "Se identifican áreas significativas de mejora en el desempeño docente. Aunque se evidencia conocimiento del tema, la metodología de enseñanza requiere desarrollo. Se recomienda: mejorar la claridad en las explicaciones, incorporar más ejemplos prácticos, fomentar mayor interacción estudiantil, y desarrollar técnicas más dinámicas de presentación. Sería beneficioso recibir capacitación en metodologías pedagógicas activas y técnicas de engagement estudiantil.";
+      }
+
+      setClassAnalysis({
         summary,
         strengths,
-        weaknesses: weaknesses.length > 0 ? weaknesses : ["Podría incorporar más variedad en las metodologías de enseñanza"],
+        weaknesses,
         opportunities,
-        studentParticipation
+        studentParticipation,
+        professorPerformance
       });
       
       setIsAnalyzing(false);
       
       toast({
         title: "Análisis completado",
-        description: "Se ha generado el análisis completo basado en la transcripción de la clase",
+        description: "Se ha generado el análisis completo de todos los aspectos de la clase",
       });
-    }, 3000);
+    }, 4000);
   };
 
   const formatTime = (seconds: number) => {
@@ -500,19 +517,31 @@ const ClassDetail = () => {
           </CardContent>
         </Card>
 
-        {/* Pestañas principales */}
+        {/* Pestañas principales expandidas */}
         <Tabs defaultValue="transcript" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3 h-12">
-            <TabsTrigger value="transcript" className="flex items-center text-sm">
-              <FileText className="w-4 h-4 mr-2" />
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-12 gap-1">
+            <TabsTrigger value="transcript" className="flex items-center text-xs">
+              <FileText className="w-4 h-4 mr-1" />
               Transcripción
             </TabsTrigger>
-            <TabsTrigger value="analysis" className="flex items-center text-sm">
-              <Brain className="w-4 h-4 mr-2" />
-              Análisis IA
+            <TabsTrigger value="summary" className="flex items-center text-xs">
+              <BookOpen className="w-4 h-4 mr-1" />
+              Resumen
             </TabsTrigger>
-            <TabsTrigger value="insights" className="flex items-center text-sm hidden lg:flex">
-              <TrendingUp className="w-4 h-4 mr-2" />
+            <TabsTrigger value="swot" className="flex items-center text-xs">
+              <Target className="w-4 h-4 mr-1" />
+              FODA
+            </TabsTrigger>
+            <TabsTrigger value="participation" className="flex items-center text-xs">
+              <UserCheck className="w-4 h-4 mr-1" />
+              Participación
+            </TabsTrigger>
+            <TabsTrigger value="professor" className="flex items-center text-xs">
+              <GraduationCap className="w-4 h-4 mr-1" />
+              Profesor
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="flex items-center text-xs">
+              <TrendingUp className="w-4 h-4 mr-1" />
               Insights
             </TabsTrigger>
           </TabsList>
@@ -527,6 +556,23 @@ const ClassDetail = () => {
                     Transcripción de la Clase
                   </CardTitle>
                   <div className="flex space-x-2">
+                    <Button 
+                      onClick={generateAnalysis}
+                      disabled={isAnalyzing || !transcript}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Analizando...
+                        </>
+                      ) : (
+                        <>
+                          <Brain className="w-4 h-4 mr-2" />
+                          Generar Análisis
+                        </>
+                      )}
+                    </Button>
                     <Button variant="outline" size="sm">
                       <Download className="w-4 h-4 mr-2" />
                       Exportar
@@ -567,124 +613,250 @@ const ClassDetail = () => {
             </Card>
           </TabsContent>
 
-          {/* Pestaña Análisis IA */}
-          <TabsContent value="analysis">
-            <div className="space-y-6">
-              <Card className="border-2 shadow-lg">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="flex items-center">
-                      <Brain className="w-5 h-5 mr-2 text-purple-600" />
-                      Análisis con Inteligencia Artificial
-                    </CardTitle>
-                    <Button 
-                      onClick={generateAnalysis}
-                      disabled={isAnalyzing || !transcript}
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      {isAnalyzing ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Analizando...
-                        </>
-                      ) : (
-                        <>
-                          <Brain className="w-4 h-4 mr-2" />
-                          Generar Análisis
-                        </>
-                      )}
-                    </Button>
+          {/* Pestaña Resumen de la Clase */}
+          <TabsContent value="summary">
+            <Card className="border-2 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BookOpen className="w-5 h-5 mr-2 text-green-600" />
+                  Resumen de la Clase
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {classAnalysis.summary ? (
+                  <div className="space-y-4">
+                    <div className="bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold text-green-800 mb-3">
+                        📝 Resumen Ejecutivo
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed text-base">
+                        {classAnalysis.summary}
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                      <div className="bg-blue-50 p-4 rounded-lg">
+                        <h4 className="font-semibold text-blue-800 mb-2">Duración de la clase</h4>
+                        <p className="text-blue-700">{formatTime(recordingTime)}</p>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg">
+                        <h4 className="font-semibold text-purple-800 mb-2">Palabras transcritas</h4>
+                        <p className="text-purple-700">{transcript.split(' ').filter(word => word.length > 0).length}</p>
+                      </div>
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {isAnalyzing ? (
-                    <div className="flex items-center justify-center py-12">
-                      <div className="text-center">
-                        <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                        <p className="text-gray-600">Analizando contenido de la clase...</p>
-                      </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg mb-4">
+                      Genera un resumen detallado de tu clase
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      Primero necesitas tener una transcripción y generar el análisis
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Pestaña Fortalezas, Debilidades y Oportunidades (FODA) */}
+          <TabsContent value="swot">
+            <Card className="border-2 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Target className="w-5 h-5 mr-2 text-orange-600" />
+                  Análisis FODA (Fortalezas, Oportunidades, Debilidades, Amenazas)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {classAnalysis.strengths.length > 0 ? (
+                  <div className="space-y-6">
+                    {/* Fortalezas */}
+                    <div className="bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold text-green-800 mb-4 flex items-center">
+                        💪 Fortalezas Identificadas
+                      </h3>
+                      <ul className="space-y-3">
+                        {classAnalysis.strengths.map((strength, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="text-green-500 mr-3 mt-0.5">✓</span>
+                            <span className="text-gray-700 leading-relaxed">{strength}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  ) : analysis.summary ? (
-                    <div className="space-y-6">
-                      {/* Resumen */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                          📝 Resumen de la Clase
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
-                          {analysis.summary}
-                        </p>
-                      </div>
 
-                      {/* Fortalezas */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                          💪 Fortalezas
-                        </h3>
-                        <ul className="space-y-2">
-                          {analysis.strengths.map((strength, index) => (
-                            <li key={index} className="flex items-start">
-                              <span className="text-green-500 mr-2">✓</span>
-                              <span className="text-gray-700">{strength}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Debilidades */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                          🔍 Áreas de Mejora
-                        </h3>
-                        <ul className="space-y-2">
-                          {analysis.weaknesses.map((weakness, index) => (
-                            <li key={index} className="flex items-start">
-                              <span className="text-orange-500 mr-2">⚠</span>
-                              <span className="text-gray-700">{weakness}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Oportunidades */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                          🚀 Oportunidades
-                        </h3>
-                        <ul className="space-y-2">
-                          {analysis.opportunities.map((opportunity, index) => (
-                            <li key={index} className="flex items-start">
-                              <span className="text-blue-500 mr-2">💡</span>
-                              <span className="text-gray-700">{opportunity}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Participación estudiantil */}
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                          👥 Participación Estudiantil
-                        </h3>
-                        <p className="text-gray-700 leading-relaxed bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
-                          {analysis.studentParticipation}
-                        </p>
-                      </div>
+                    {/* Debilidades */}
+                    <div className="bg-orange-50 border-l-4 border-orange-400 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold text-orange-800 mb-4 flex items-center">
+                        🔍 Áreas de Mejora
+                      </h3>
+                      <ul className="space-y-3">
+                        {classAnalysis.weaknesses.map((weakness, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="text-orange-500 mr-3 mt-0.5">⚠</span>
+                            <span className="text-gray-700 leading-relaxed">{weakness}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500 text-lg mb-4">
-                        Genera un análisis detallado de tu clase
+
+                    {/* Oportunidades */}
+                    <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center">
+                        🚀 Oportunidades de Crecimiento
+                      </h3>
+                      <ul className="space-y-3">
+                        {classAnalysis.opportunities.map((opportunity, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="text-blue-500 mr-3 mt-0.5">💡</span>
+                            <span className="text-gray-700 leading-relaxed">{opportunity}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg mb-4">
+                      Análisis FODA de la clase
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      Genera el análisis para ver fortalezas, debilidades y oportunidades
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Pestaña Participación Estudiantil */}
+          <TabsContent value="participation">
+            <Card className="border-2 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <UserCheck className="w-5 h-5 mr-2 text-blue-600" />
+                  Análisis de Participación Estudiantil
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {classAnalysis.studentParticipation ? (
+                  <div className="space-y-6">
+                    <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center">
+                        👥 Evaluación de Participación y Actitud
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed text-base">
+                        {classAnalysis.studentParticipation}
                       </p>
-                      <p className="text-gray-400 text-sm">
-                        Primero necesitas tener una transcripción para poder analizarla
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-green-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-green-600 mb-2">
+                          {classAnalysis.studentParticipation.includes('excelente') ? '9/10' : 
+                           classAnalysis.studentParticipation.includes('moderado') ? '6/10' : '4/10'}
+                        </div>
+                        <p className="text-green-700 font-medium">Nivel de Participación</p>
+                      </div>
+                      <div className="bg-purple-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-purple-600 mb-2">
+                          {classAnalysis.studentParticipation.includes('colaborativo') ? '9/10' : 
+                           classAnalysis.studentParticipation.includes('interacción') ? '7/10' : '5/10'}
+                        </div>
+                        <p className="text-purple-700 font-medium">Interacción</p>
+                      </div>
+                      <div className="bg-orange-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-orange-600 mb-2">
+                          {classAnalysis.studentParticipation.includes('iniciativa') ? '8/10' : 
+                           classAnalysis.studentParticipation.includes('algunas') ? '6/10' : '4/10'}
+                        </div>
+                        <p className="text-orange-700 font-medium">Iniciativa</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <UserCheck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg mb-4">
+                      Evaluación de participación estudiantil
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      Genera el análisis para evaluar la participación y actitud de los estudiantes
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Pestaña Desempeño del Profesor */}
+          <TabsContent value="professor">
+            <Card className="border-2 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <GraduationCap className="w-5 h-5 mr-2 text-purple-600" />
+                  Evaluación del Desempeño Docente
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {classAnalysis.professorPerformance ? (
+                  <div className="space-y-6">
+                    <div className="bg-purple-50 border-l-4 border-purple-400 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center">
+                        🎓 Análisis del Desempeño Docente
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed text-base">
+                        {classAnalysis.professorPerformance}
                       </p>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="bg-green-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-green-600 mb-2">
+                          {classAnalysis.professorPerformance.includes('excelente') ? '9/10' : 
+                           classAnalysis.professorPerformance.includes('buen') ? '7/10' : '5/10'}
+                        </div>
+                        <p className="text-green-700 font-medium text-sm">Dominio del Tema</p>
+                      </div>
+                      <div className="bg-blue-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-blue-600 mb-2">
+                          {classAnalysis.professorPerformance.includes('clara') || classAnalysis.professorPerformance.includes('accesible') ? '8/10' : 
+                           classAnalysis.professorPerformance.includes('mayormente') ? '7/10' : '5/10'}
+                        </div>
+                        <p className="text-blue-700 font-medium text-sm">Claridad</p>
+                      </div>
+                      <div className="bg-yellow-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-yellow-600 mb-2">
+                          {classAnalysis.professorPerformance.includes('efectiva') || classAnalysis.professorPerformance.includes('positivo') ? '8/10' : 
+                           classAnalysis.professorPerformance.includes('adecuadas') ? '6/10' : '4/10'}
+                        </div>
+                        <p className="text-yellow-700 font-medium text-sm">Metodología</p>
+                      </div>
+                      <div className="bg-red-50 p-4 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-red-600 mb-2">
+                          {classAnalysis.professorPerformance.includes('organizada') || classAnalysis.professorPerformance.includes('estructurada') ? '9/10' : 
+                           classAnalysis.professorPerformance.includes('organizada') ? '7/10' : '6/10'}
+                        </div>
+                        <p className="text-red-700 font-medium text-sm">Organización</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg mb-4">
+                      Evaluación del desempeño del profesor
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      Genera el análisis para evaluar el conocimiento y metodología del profesor
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Pestaña Insights */}
@@ -693,17 +865,17 @@ const ClassDetail = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
-                  Insights y Métricas
+                  Insights y Métricas Avanzadas
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-12">
                   <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 text-lg mb-2">
-                    Próximamente: Métricas avanzadas
+                    Próximamente: Métricas avanzadas y analytics
                   </p>
                   <p className="text-gray-400 text-sm">
-                    Estadísticas de participación, tiempo de habla, y más insights educativos
+                    Estadísticas detalladas, tendencias de aprendizaje, y métricas de rendimiento
                   </p>
                 </div>
               </CardContent>
