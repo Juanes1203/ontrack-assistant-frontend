@@ -19,9 +19,17 @@ import {
   Users, 
   Clock,
   Download,
-  Save
+  Save,
+  MicOff
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
 
 const ClassDetail = () => {
   const { classId } = useParams();
@@ -34,6 +42,7 @@ const ClassDetail = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const [transcript, setTranscript] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   
   // Estados de análisis
   const [analysis, setAnalysis] = useState({
@@ -47,8 +56,9 @@ const ClassDetail = () => {
   
   // Referencias
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Datos de ejemplo de la clase
   const classData = {
@@ -63,38 +73,110 @@ const ClassDetail = () => {
   };
 
   useEffect(() => {
+    // Verificar si el navegador soporta reconocimiento de voz
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'es-ES'; // Español de España, cambia según necesites
+      
+      recognition.onstart = () => {
+        console.log('Reconocimiento de voz iniciado');
+        setIsListening(true);
+      };
+      
+      recognition.onresult = (event: any) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcriptPart = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcriptPart + ' ';
+          } else {
+            interimTranscript += transcriptPart;
+          }
+        }
+        
+        if (finalTranscript) {
+          setTranscript(prev => prev + finalTranscript);
+        }
+      };
+      
+      recognition.onerror = (event: any) => {
+        console.error('Error en reconocimiento de voz:', event.error);
+        if (event.error === 'no-speech') {
+          // Reiniciar automáticamente si no detecta habla
+          if (isRecording && !isPaused) {
+            setTimeout(() => {
+              try {
+                recognition.start();
+              } catch (e) {
+                console.log('Ya está corriendo el reconocimiento');
+              }
+            }, 1000);
+          }
+        }
+      };
+      
+      recognition.onend = () => {
+        console.log('Reconocimiento de voz terminado');
+        setIsListening(false);
+        // Reiniciar automáticamente si estamos grabando
+        if (isRecording && !isPaused) {
+          setTimeout(() => {
+            try {
+              recognition.start();
+            } catch (e) {
+              console.log('Ya está corriendo el reconocimiento');
+            }
+          }, 500);
+        }
+      };
+      
+      recognitionRef.current = recognition;
+    } else {
+      toast({
+        title: "Navegador no compatible",
+        description: "Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge para mejor compatibilidad.",
+        variant: "destructive"
+      });
+    }
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
     };
   }, []);
 
-  // Funciones de grabación
   const startRecording = async () => {
     try {
+      // Solicitar permisos de micrófono
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      
+      // Iniciar grabación de audio
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/wav' });
-        await transcribeAudio(audioBlob);
-        
-        // Detener todas las pistas de audio
-        stream.getTracks().forEach(track => track.stop());
-      };
-
       mediaRecorder.start();
+      
+      // Iniciar reconocimiento de voz
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
+      }
+
       setIsRecording(true);
       setIsPaused(false);
+      setTranscript(''); // Limpiar transcripción anterior
       
       // Iniciar cronómetro
       intervalRef.current = setInterval(() => {
@@ -103,13 +185,13 @@ const ClassDetail = () => {
 
       toast({
         title: "Grabación iniciada",
-        description: "La clase se está grabando correctamente",
+        description: "Escuchando y transcribiendo en tiempo real...",
       });
     } catch (error) {
       console.error('Error al iniciar grabación:', error);
       toast({
         title: "Error",
-        description: "No se pudo acceder al micrófono",
+        description: "No se pudo acceder al micrófono. Verifica los permisos.",
         variant: "destructive"
       });
     }
@@ -126,22 +208,49 @@ const ClassDetail = () => {
         intervalRef.current = null;
       }
 
+      // Detener reconocimiento de voz
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+
+      // Detener stream de audio
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+
       toast({
         title: "Grabación finalizada",
-        description: "Procesando transcripción...",
+        description: "Transcripción completada. Puedes editarla y generar el análisis.",
       });
     }
   };
 
   const pauseRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (isRecording) {
       if (isPaused) {
-        mediaRecorderRef.current.resume();
+        // Reanudar
+        if (mediaRecorderRef.current) {
+          mediaRecorderRef.current.resume();
+        }
+        if (recognitionRef.current) {
+          try {
+            recognitionRef.current.start();
+          } catch (e) {
+            console.log('Reconocimiento ya está corriendo');
+          }
+        }
         intervalRef.current = setInterval(() => {
           setRecordingTime(prev => prev + 1);
         }, 1000);
       } else {
-        mediaRecorderRef.current.pause();
+        // Pausar
+        if (mediaRecorderRef.current) {
+          mediaRecorderRef.current.pause();
+        }
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+        }
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
@@ -163,39 +272,7 @@ const ClassDetail = () => {
     });
   };
 
-  // Función de transcripción simulada
-  const transcribeAudio = async (audioBlob: Blob) => {
-    setIsTranscribing(true);
-    
-    // Simulación de transcripción - en producción aquí iría la integración con un servicio real
-    setTimeout(() => {
-      const simulatedTranscript = `
-Profesora: Buenos días estudiantes, hoy vamos a hablar sobre los conceptos básicos de React. React es una biblioteca de JavaScript para construir interfaces de usuario.
-
-Estudiante 1: Profesora, ¿cuál es la diferencia entre React y JavaScript vanilla?
-
-Profesora: Excelente pregunta. React nos permite crear componentes reutilizables y manejar el estado de manera más eficiente. Mientras que en JavaScript vanilla tendríamos que manipular el DOM manualmente, React lo hace por nosotros.
-
-Estudiante 2: ¿Podría dar un ejemplo de un componente?
-
-Profesora: Por supuesto. Un componente es como una función que retorna JSX. Por ejemplo, podríamos tener un componente Button que recibe props y renderiza un botón con estilos específicos.
-
-Estudiante 1: ¿Qué son las props?
-
-Profesora: Las props son como parámetros que pasamos a nuestros componentes. Son la forma en que los componentes padre comunican datos a los componentes hijo.
-      `.trim();
-      
-      setTranscript(simulatedTranscript);
-      setIsTranscribing(false);
-      
-      toast({
-        title: "Transcripción completada",
-        description: "Puedes editar el texto y generar el análisis",
-      });
-    }, 3000);
-  };
-
-  // Función de análisis con IA simulada
+  // Función de análisis con IA mejorada
   const generateAnalysis = async () => {
     if (!transcript.trim()) {
       toast({
@@ -208,35 +285,95 @@ Profesora: Las props son como parámetros que pasamos a nuestros componentes. So
 
     setIsAnalyzing(true);
 
-    // Simulación de análisis IA - en producción iría integración con OpenAI/Claude
+    // Simulación de análisis IA más realista basado en el contenido
     setTimeout(() => {
+      const words = transcript.toLowerCase();
+      
+      // Análisis básico del contenido
+      const hasQuestions = words.includes('pregunta') || words.includes('¿') || words.includes('cómo') || words.includes('qué') || words.includes('por qué');
+      const hasExamples = words.includes('ejemplo') || words.includes('por ejemplo') || words.includes('como') || words.includes('demostrar');
+      const hasInteraction = words.includes('estudiante') || words.includes('alumno') || words.includes('participación') || words.includes('respuesta');
+      
+      // Generar resumen basado en contenido
+      let summary = "La clase ";
+      if (transcript.length > 500) {
+        summary += "fue extensa y cubrió múltiples temas de manera detallada. ";
+      } else if (transcript.length > 200) {
+        summary += "abordó los temas principales de forma concisa. ";
+      } else {
+        summary += "fue breve y se enfocó en conceptos específicos. ";
+      }
+      
+      if (hasQuestions) {
+        summary += "Se fomentó la participación estudiantil a través de preguntas. ";
+      }
+      if (hasExamples) {
+        summary += "Se utilizaron ejemplos prácticos para explicar los conceptos. ";
+      }
+      if (hasInteraction) {
+        summary += "Hubo interacción activa entre profesores y estudiantes.";
+      }
+
+      // Generar fortalezas dinámicas
+      const strengths = [];
+      if (hasExamples) strengths.push("Uso efectivo de ejemplos para clarificar conceptos");
+      if (hasQuestions) strengths.push("Promoción activa de la participación estudiantil");
+      if (transcript.length > 300) strengths.push("Explicaciones detalladas y bien estructuradas");
+      if (hasInteraction) strengths.push("Creación de un ambiente de aprendizaje interactivo");
+      
+      // Si no hay suficientes indicadores, usar fortalezas generales
+      if (strengths.length === 0) {
+        strengths.push("Transmisión clara de información", "Mantenimiento del enfoque en el tema");
+      }
+
+      // Generar debilidades y oportunidades
+      const weaknesses = [];
+      const opportunities = [];
+      
+      if (!hasQuestions) {
+        weaknesses.push("Podría beneficiarse de más preguntas para verificar comprensión");
+        opportunities.push("Implementar más momentos de verificación de entendimiento");
+      }
+      if (!hasExamples) {
+        weaknesses.push("Falta de ejemplos prácticos para ilustrar conceptos");
+        opportunities.push("Incorporar más ejemplos del mundo real");
+      }
+      if (transcript.length < 200) {
+        opportunities.push("Expandir el contenido con más detalles y explicaciones");
+      }
+      
+      // Agregar algunas oportunidades generales
+      if (opportunities.length < 2) {
+        opportunities.push("Integrar más recursos multimedia", "Incluir ejercicios prácticos durante la sesión");
+      }
+
+      // Análisis de participación estudiantil
+      let studentParticipation = "";
+      if (hasInteraction && hasQuestions) {
+        studentParticipation = "Los estudiantes mostraron un excelente nivel de participación, realizando preguntas pertinentes y contribuyendo activamente a la discusión. Se evidenció un ambiente de aprendizaje colaborativo y de confianza para expresar dudas.";
+      } else if (hasQuestions) {
+        studentParticipation = "Se observó participación estudiantil a través de preguntas, lo que indica interés en el tema. Sin embargo, podría fomentarse más la interacción bidireccional.";
+      } else if (hasInteraction) {
+        studentParticipation = "Hubo cierto nivel de interacción estudiantil, aunque podría incrementarse el número de preguntas y participaciones espontáneas.";
+      } else {
+        studentParticipation = "La participación estudiantil fue limitada durante esta sesión. Se recomienda implementar estrategias para fomentar más interacción, como preguntas directas, discusiones grupales o actividades participativas.";
+      }
+
       setAnalysis({
-        summary: "La clase cubrió exitosamente los conceptos fundamentales de React, incluyendo componentes, props y la diferencia con JavaScript vanilla. La profesora utilizó ejemplos prácticos y respondió efectivamente las preguntas de los estudiantes, creando un ambiente de aprendizaje interactivo.",
-        strengths: [
-          "Explicaciones claras y estructuradas",
-          "Uso de ejemplos prácticos",
-          "Fomento de la participación estudiantil",
-          "Respuestas directas a las preguntas"
-        ],
-        weaknesses: [
-          "Podría beneficiarse de más ejemplos de código en vivo",
-          "Falta de ejercicios prácticos durante la clase"
-        ],
-        opportunities: [
-          "Implementar una sesión de coding en vivo",
-          "Agregar más interactividad con herramientas digitales",
-          "Incluir recursos adicionales para estudio independiente"
-        ],
-        studentParticipation: "Los estudiantes mostraron un buen nivel de participación con preguntas relevantes y oportunas. Se evidenció interés genuino en el tema, especialmente en entender las diferencias conceptuales entre React y JavaScript vanilla."
+        summary,
+        strengths,
+        weaknesses: weaknesses.length > 0 ? weaknesses : ["Podría incorporar más variedad en las metodologías de enseñanza"],
+        opportunities,
+        studentParticipation
       });
       
       setIsAnalyzing(false);
       
       toast({
         title: "Análisis completado",
-        description: "Se ha generado el análisis completo de la clase",
+        description: "Se ha generado el análisis completo basado en la transcripción de la clase",
       });
-    }, 4000);
+    }, 3000);
   };
 
   const formatTime = (seconds: number) => {
@@ -285,7 +422,7 @@ Profesora: Las props son como parámetros que pasamos a nuestros componentes. So
           <CardHeader>
             <CardTitle className="flex items-center text-xl">
               <Mic className="w-6 h-6 mr-2 text-red-500" />
-              Control de Grabación
+              Control de Grabación y Transcripción
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -336,12 +473,26 @@ Profesora: Las props son como parámetros que pasamos a nuestros componentes. So
                     {formatTime(recordingTime)}
                   </span>
                 </div>
+                
                 {isRecording && (
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-red-500 rounded-full mr-2 pulse-slow"></div>
-                    <span className="text-red-600 font-medium">
-                      {isPaused ? 'Pausado' : 'Grabando'}
-                    </span>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-red-500 rounded-full mr-2 pulse-slow"></div>
+                      <span className="text-red-600 font-medium">
+                        {isPaused ? 'Pausado' : 'Grabando'}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      {isListening ? (
+                        <Mic className="w-4 h-4 text-green-500 mr-1" />
+                      ) : (
+                        <MicOff className="w-4 h-4 text-gray-400 mr-1" />
+                      )}
+                      <span className={`text-sm ${isListening ? 'text-green-600' : 'text-gray-500'}`}>
+                        {isListening ? 'Escuchando' : 'Sin audio'}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -388,21 +539,30 @@ Profesora: Las props son como parámetros que pasamos a nuestros componentes. So
                 </div>
               </CardHeader>
               <CardContent>
-                {isTranscribing ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                      <p className="text-gray-600">Transcribiendo audio...</p>
+                <div className="space-y-4">
+                  {isRecording && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-blue-700 text-sm flex items-center">
+                        <Mic className="w-4 h-4 mr-2" />
+                        Transcripción en tiempo real activa. El texto aparecerá automáticamente mientras hablas.
+                      </p>
                     </div>
-                  </div>
-                ) : (
+                  )}
+                  
                   <Textarea
                     value={transcript}
                     onChange={(e) => setTranscript(e.target.value)}
-                    placeholder="La transcripción aparecerá aquí una vez que finalices la grabación. Puedes editarla manualmente si es necesario."
+                    placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. Habla claramente para mejores resultados. Puedes editarla manualmente después de la grabación."
                     className="min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed"
                   />
-                )}
+                  
+                  {transcript && (
+                    <div className="text-sm text-gray-600">
+                      Palabras: {transcript.split(' ').filter(word => word.length > 0).length} | 
+                      Caracteres: {transcript.length}
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
