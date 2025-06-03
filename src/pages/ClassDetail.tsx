@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -335,19 +334,39 @@ const ClassDetail = () => {
     const studentIndicators = studentKeywords.reduce((count, keyword) => 
       count + (text.toLowerCase().split(keyword).length - 1), 0);
     
-    // Detectar temas discutidos
+    // Detectar temas discutidos basándose en el contenido real
     const topicsDiscussed = [];
-    if (text.toLowerCase().includes('react')) topicsDiscussed.push('React');
-    if (text.toLowerCase().includes('componente')) topicsDiscussed.push('Componentes');
-    if (text.toLowerCase().includes('estado') || text.toLowerCase().includes('state')) topicsDiscussed.push('Estado');
-    if (text.toLowerCase().includes('props')) topicsDiscussed.push('Props');
-    if (text.toLowerCase().includes('hook')) topicsDiscussed.push('Hooks');
+    
+    // Análisis más profundo del contenido
+    const lowerText = text.toLowerCase();
+    
+    // Detectar temas tecnológicos
+    if (lowerText.includes('react') || lowerText.includes('componente')) topicsDiscussed.push('React y Componentes');
+    if (lowerText.includes('javascript') || lowerText.includes('js')) topicsDiscussed.push('JavaScript');
+    if (lowerText.includes('html') || lowerText.includes('css')) topicsDiscussed.push('HTML/CSS');
+    if (lowerText.includes('estado') || lowerText.includes('state')) topicsDiscussed.push('Gestión de Estado');
+    if (lowerText.includes('props') || lowerText.includes('propiedades')) topicsDiscussed.push('Props y Propiedades');
+    if (lowerText.includes('hook') || lowerText.includes('usestate') || lowerText.includes('useeffect')) topicsDiscussed.push('React Hooks');
+    if (lowerText.includes('función') || lowerText.includes('método')) topicsDiscussed.push('Funciones y Métodos');
+    if (lowerText.includes('variable') || lowerText.includes('constante')) topicsDiscussed.push('Variables y Constantes');
+    if (lowerText.includes('clase') || lowerText.includes('programación')) topicsDiscussed.push('Programación');
+    if (lowerText.includes('algoritmo') || lowerText.includes('lógica')) topicsDiscussed.push('Algoritmos y Lógica');
+    
+    // Si no se detectan temas específicos, analizar palabras más frecuentes para inferir temas
+    if (topicsDiscussed.length === 0) {
+      const wordFreq = Object.entries(keywordFrequency).sort(([,a], [,b]) => (b as number) - (a as number));
+      const mainWords = wordFreq.slice(0, 3).map(([word]) => word);
+      if (mainWords.length > 0) {
+        topicsDiscussed.push(`Conceptos: ${mainWords.join(', ')}`);
+      }
+    }
     
     // Detectar ejemplos utilizados
     const examplesUsed = [];
-    if (text.toLowerCase().includes('por ejemplo')) examplesUsed.push('Ejemplos verbales');
-    if (text.toLowerCase().includes('demo') || text.toLowerCase().includes('demostración')) examplesUsed.push('Demostración práctica');
-    if (text.toLowerCase().includes('código')) examplesUsed.push('Ejemplos de código');
+    if (lowerText.includes('por ejemplo') || lowerText.includes('ejemplo')) examplesUsed.push('Ejemplos verbales');
+    if (lowerText.includes('demo') || lowerText.includes('demostración')) examplesUsed.push('Demostración práctica');
+    if (lowerText.includes('código') || lowerText.includes('program')) examplesUsed.push('Ejemplos de código');
+    if (lowerText.includes('práctica') || lowerText.includes('ejercicio')) examplesUsed.push('Ejercicios prácticos');
     
     return {
       questionCount,
@@ -358,11 +377,13 @@ const ClassDetail = () => {
       topicsDiscussed,
       examplesUsed,
       sentenceCount: sentences.length,
-      wordCount: words.length
+      wordCount: words.length,
+      actualQuestions: questions,
+      mainWords: Object.entries(keywordFrequency).sort(([,a], [,b]) => (b as number) - (a as number)).slice(0, 5)
     };
   };
 
-  // Función de análisis completamente reescrita basada en el contenido real
+  // Función de análisis completamente reescrita para generar resúmenes reales
   const generateAnalysis = async () => {
     if (!transcript.trim()) {
       toast({
@@ -379,83 +400,139 @@ const ClassDetail = () => {
     const analysis = analyzeTranscriptContent(transcript);
     
     setTimeout(() => {
-      // Generar resumen basado en el contenido real
-      let summary = `La clase de ${classData.name} registró una transcripción de ${analysis.wordCount} palabras en ${formatTime(recordingTime)} de duración. `;
+      // Generar resumen REAL basado en el contenido específico de la transcripción
+      let summary = '';
       
+      // Introducción con datos reales
+      summary += `Durante la sesión de ${formatTime(recordingTime)}, se registraron ${analysis.wordCount} palabras y ${analysis.sentenceCount} oraciones. `;
+      
+      // Análisis del contenido principal
       if (analysis.topicsDiscussed.length > 0) {
-        summary += `Los temas principales discutidos fueron: ${analysis.topicsDiscussed.join(', ')}. `;
+        summary += `Los principales temas abordados fueron: ${analysis.topicsDiscussed.join(', ')}. `;
+      } else if (analysis.mainWords.length > 0) {
+        const mainConcepts = analysis.mainWords.map(([word]) => word).join(', ');
+        summary += `Los conceptos más mencionados durante la clase fueron: ${mainConcepts}. `;
       }
       
+      // Análisis de interacción basado en contenido real
       if (analysis.questionCount > 0) {
-        summary += `Se registraron ${analysis.questionCount} preguntas durante la sesión, `;
-        if (analysis.questionCount >= 5) {
-          summary += "indicando un alto nivel de interacción y participación. ";
-        } else if (analysis.questionCount >= 2) {
-          summary += "mostrando un nivel moderado de participación. ";
-        } else {
-          summary += "sugiriendo participación limitada. ";
+        summary += `Se identificaron ${analysis.questionCount} preguntas o cuestionamientos durante la sesión`;
+        if (analysis.actualQuestions.length > 0) {
+          summary += `, incluyendo: "${analysis.actualQuestions[0].substring(0, 50)}..."`;
         }
-      }
-      
-      if (analysis.explanationCount > 0) {
-        summary += `Se identificaron ${analysis.explanationCount} instancias de explicaciones detalladas o ejemplos. `;
-      }
-      
-      const participationRatio = analysis.studentIndicators / (analysis.professorIndicators + analysis.studentIndicators + 1);
-      if (participationRatio > 0.3) {
-        summary += "La sesión mostró un buen equilibrio entre instrucción docente y participación estudiantil.";
+        summary += '. ';
+        
+        if (analysis.questionCount >= 5) {
+          summary += "Esto indica un alto nivel de interacción y engagement por parte de los participantes. ";
+        } else if (analysis.questionCount >= 2) {
+          summary += "Esto muestra un nivel moderado de participación activa. ";
+        } else {
+          summary += "Esto sugiere una participación inicial que podría incrementarse. ";
+        }
       } else {
-        summary += "La sesión fue principalmente dirigida por el instructor con participación estudiantil limitada.";
+        summary += "No se detectaron preguntas directas en la transcripción, sugiriendo un formato más expositivo. ";
+      }
+      
+      // Análisis de explicaciones y metodología
+      if (analysis.explanationCount > 0) {
+        summary += `Se registraron ${analysis.explanationCount} instancias de explicaciones detalladas o ejemplificaciones, `;
+        summary += "mostrando un enfoque pedagógico estructurado. ";
+      }
+      
+      // Análisis de dinámicas de participación
+      const totalIndicators = analysis.professorIndicators + analysis.studentIndicators;
+      if (totalIndicators > 0) {
+        const professorPercentage = Math.round((analysis.professorIndicators / totalIndicators) * 100);
+        const studentPercentage = Math.round((analysis.studentIndicators / totalIndicators) * 100);
+        
+        if (studentPercentage >= 40) {
+          summary += `La sesión mostró un equilibrio saludable con ${professorPercentage}% de instrucción docente y ${studentPercentage}% de participación estudiantil.`;
+        } else if (studentPercentage >= 20) {
+          summary += `La clase fue mayormente dirigida por el instructor (${professorPercentage}%) con participación estudiantil moderada (${studentPercentage}%).`;
+        } else {
+          summary += `La sesión fue predominantemente expositiva con ${professorPercentage}% de instrucción docente y participación estudiantil limitada.`;
+        }
+      } else {
+        summary += "La transcripción refleja principalmente contenido académico sin indicadores claros de roles específicos.";
       }
 
       // Fortalezas basadas en análisis real
       const strengths = [];
-      if (analysis.questionCount >= 3) strengths.push("Alta frecuencia de preguntas indica compromiso estudiantil");
-      if (analysis.explanationCount >= 2) strengths.push("Uso efectivo de explicaciones detalladas y ejemplos");
-      if (analysis.topicsDiscussed.length >= 3) strengths.push("Cobertura amplia de múltiples temas relevantes");
-      if (analysis.wordCount > 500) strengths.push("Sesión substancial con contenido rico y detallado");
-      if (analysis.professorIndicators >= 3) strengths.push("Instrucción estructurada y dirigida por el profesor");
+      if (analysis.questionCount >= 3) strengths.push(`Excelente interacción: ${analysis.questionCount} preguntas registradas demuestran engagement activo`);
+      if (analysis.explanationCount >= 2) strengths.push(`Metodología efectiva: ${analysis.explanationCount} explicaciones detalladas registradas`);
+      if (analysis.topicsDiscussed.length >= 3) strengths.push(`Cobertura amplia: ${analysis.topicsDiscussed.length} temas diferentes abordados`);
+      if (analysis.wordCount > 200) strengths.push(`Contenido sustancial: ${analysis.wordCount} palabras registradas indican profundidad temática`);
+      if (analysis.sentenceCount > 10) strengths.push(`Comunicación estructurada: ${analysis.sentenceCount} oraciones bien formadas`);
+      
       if (strengths.length === 0) {
-        strengths.push("Transmisión clara de información", "Mantenimiento del enfoque en el tema");
+        if (analysis.wordCount > 50) {
+          strengths.push("Transmisión clara de información académica");
+        } else {
+          strengths.push("Sesión registrada con contenido básico");
+        }
       }
 
       // Debilidades identificadas del análisis real
       const weaknesses = [];
-      if (analysis.questionCount === 0) weaknesses.push("Ausencia de preguntas sugiere falta de verificación de comprensión");
-      if (analysis.explanationCount === 0) weaknesses.push("Falta de ejemplos prácticos para ilustrar conceptos");
-      if (analysis.studentIndicators === 0) weaknesses.push("No se detectó participación estudiantil directa");
-      if (analysis.wordCount < 200) weaknesses.push("Contenido limitado para la duración de la clase");
-      if (analysis.topicsDiscussed.length <= 1) weaknesses.push("Cobertura temática limitada");
+      if (analysis.questionCount === 0) weaknesses.push("Ausencia total de preguntas: no se detectó verificación de comprensión");
+      if (analysis.explanationCount === 0) weaknesses.push("Falta de ejemplificación: no se registraron explicaciones detalladas");
+      if (analysis.studentIndicators === 0) weaknesses.push("Sin participación estudiantil detectada en la transcripción");
+      if (analysis.wordCount < 100) weaknesses.push(`Contenido limitado: solo ${analysis.wordCount} palabras para ${formatTime(recordingTime)} de duración`);
+      if (analysis.topicsDiscussed.length <= 1) weaknesses.push("Cobertura temática restringida detectada en el contenido");
+      
       if (weaknesses.length === 0) {
-        weaknesses.push("Podría beneficiarse de mayor interacción bidireccional");
+        weaknesses.push("Oportunidad de incrementar la interacción bidireccional registrada");
       }
 
-      // Oportunidades basadas en el análisis
+      // Oportunidades basadas en el análisis real
       const opportunities = [];
-      if (analysis.questionCount < 2) opportunities.push("Implementar técnicas para fomentar más preguntas estudiantiles");
-      if (analysis.explanationCount < 2) opportunities.push("Incorporar más ejemplos prácticos y casos de estudio");
-      if (participationRatio < 0.2) opportunities.push("Desarrollar estrategias para aumentar participación estudiantil");
-      opportunities.push("Integrar actividades interactivas durante la sesión");
-      opportunities.push("Utilizar recursos multimedia para enriquecer el contenido");
+      if (analysis.questionCount < 2) opportunities.push("Implementar técnicas para generar más preguntas y verificación de comprensión");
+      if (analysis.explanationCount < 2) opportunities.push("Incorporar más ejemplos prácticos y casos de estudio detallados");
+      if (analysis.studentIndicators < analysis.professorIndicators * 0.3) opportunities.push("Desarrollar estrategias para aumentar la participación estudiantil registrable");
+      opportunities.push("Enriquecer el contenido con actividades que generen más interacción verbal");
+      if (analysis.examplesUsed.length === 0) opportunities.push("Integrar ejemplos prácticos y demostraciones más evidentes");
 
       // Análisis detallado de participación estudiantil
-      let studentParticipation = "";
-      if (analysis.studentIndicators >= 5 && analysis.questionCount >= 3) {
-        studentParticipation = `El análisis de la transcripción revela un excelente nivel de participación estudiantil. Se detectaron ${analysis.studentIndicators} indicadores de participación activa y ${analysis.questionCount} preguntas formuladas por estudiantes. Los estudiantes mostraron iniciativa para solicitar aclaraciones, expresar dudas y contribuir al diálogo académico. Se evidencia un ambiente de aprendizaje colaborativo donde los estudiantes se sienten cómodos participando activamente.`;
-      } else if (analysis.studentIndicators >= 2 || analysis.questionCount >= 1) {
-        studentParticipation = `Se identificó un nivel moderado de participación estudiantil con ${analysis.studentIndicators} indicadores de participación y ${analysis.questionCount} preguntas registradas. Algunos estudiantes contribuyeron a la discusión, aunque existe potencial para mayor interacción. Se recomienda implementar estrategias más dinámicas para estimular la participación de todos los estudiantes.`;
+      let studentParticipation = '';
+      if (analysis.studentIndicators > 0) {
+        studentParticipation = `Se detectaron ${analysis.studentIndicators} indicadores de participación estudiantil en la transcripción. `;
       } else {
-        studentParticipation = `La transcripción muestra participación estudiantil limitada con solo ${analysis.studentIndicators} indicadores detectados y ${analysis.questionCount} preguntas formuladas. Los estudiantes adoptaron una actitud principalmente receptiva. Se sugiere implementar técnicas como preguntas directas, discusiones grupales, y actividades participativas para fomentar mayor compromiso estudiantil.`;
+        studentParticipation = 'La transcripción no muestra indicadores claros de participación estudiantil directa. ';
+      }
+      if (analysis.questionCount > 0) {
+        studentParticipation += `Los estudiantes formularon ${analysis.questionCount} preguntas durante la sesión, `;
+      } else {
+        studentParticipation += 'No se registraron preguntas por parte de los estudiantes, ';
+      }
+      if (analysis.studentIndicators >= 3) {
+        studentParticipation += 'demostrando un ambiente de aprendizaje interactivo donde los estudiantes se sienten cómodos participando.';
+      } else if (analysis.studentIndicators >= 1) {
+        studentParticipation += 'sugiriendo oportunidades para fomentar mayor participación activa.';
+      } else {
+        studentParticipation += 'indicando la necesidad de implementar estrategias más dinámicas para estimular el engagement estudiantil.';
       }
 
       // Análisis del desempeño del profesor
-      let professorPerformance = "";
-      if (analysis.professorIndicators >= 5 && analysis.explanationCount >= 3) {
-        professorPerformance = `El análisis de la transcripción indica un desempeño docente excelente. Se identificaron ${analysis.professorIndicators} indicadores de instrucción estructurada y ${analysis.explanationCount} instancias de explicaciones detalladas. El profesor demostró dominio del tema, capacidad para comunicar conceptos complejos de manera clara, y habilidades pedagógicas efectivas. La presentación fue organizada y bien secuenciada, mostrando preparación adecuada y conocimiento profundo del contenido.`;
-      } else if (analysis.professorIndicators >= 2 || analysis.explanationCount >= 1) {
-        professorPerformance = `El profesor mostró un desempeño competente con ${analysis.professorIndicators} indicadores de instrucción y ${analysis.explanationCount} explicaciones registradas. Se evidencia conocimiento del tema y organización básica del contenido. Sin embargo, hay oportunidades para enriquecer la metodología de enseñanza, incluyendo más ejemplos prácticos, técnicas de verificación de comprensión, y estrategias para aumentar el engagement estudiantil.`;
+      let professorPerformance = '';
+      if (analysis.professorIndicators > 0) {
+        professorPerformance = `Se identificaron ${analysis.professorIndicators} indicadores de instrucción estructurada en la transcripción. `;
       } else {
-        professorPerformance = `El análisis sugiere oportunidades significativas de mejora en el desempeño docente. Con ${analysis.professorIndicators} indicadores de instrucción estructurada y ${analysis.explanationCount} explicaciones detectadas, se recomienda desarrollar técnicas pedagógicas más dinámicas, incluir más ejemplos prácticos, implementar verificaciones de comprensión regulares, y fomentar mayor interacción con los estudiantes.`;
+        professorPerformance = 'El análisis no detectó indicadores claros de metodología docente estructurada. ';
+      }
+      if (analysis.explanationCount > 0) {
+        professorPerformance += `El profesor proporcionó ${analysis.explanationCount} explicaciones detalladas, `;
+      } else {
+        professorPerformance += 'No se registraron explicaciones detalladas en la transcripción, ';
+      }
+      if (analysis.topicsDiscussed.length > 0) {
+        professorPerformance += `cubriendo ${analysis.topicsDiscussed.length} temas principales: ${analysis.topicsDiscussed.join(', ')}. `;
+      } else {
+        professorPerformance += 'con cobertura temática limitada detectada. ';
+      }
+      if (analysis.professorIndicators >= 3 && analysis.explanationCount >= 2) {
+        professorPerformance += 'Esto indica un desempeño docente sólido con metodología clara y contenido bien estructurado.';
+      } else {
+        professorPerformance += 'Hay oportunidades para enriquecer la metodología de enseñanza y aumentar la claridad en las explicaciones.';
       }
 
       setClassAnalysis({
@@ -466,7 +543,7 @@ const ClassDetail = () => {
         studentParticipation,
         professorPerformance,
         voiceAnalysis: {
-          totalSpeakers: Math.max(1, Math.ceil((analysis.professorIndicators + analysis.studentIndicators) / 3)),
+          totalSpeakers: Math.max(1, Math.ceil((analysis.professorIndicators + analysis.studentIndicators) / 2)),
           professorSpeechTime: Math.round((analysis.professorIndicators / (analysis.professorIndicators + analysis.studentIndicators + 1)) * recordingTime),
           studentSpeechTime: Math.round((analysis.studentIndicators / (analysis.professorIndicators + analysis.studentIndicators + 1)) * recordingTime),
           questionCount: analysis.questionCount,
@@ -474,7 +551,7 @@ const ClassDetail = () => {
         },
         contentAnalysis: {
           topicsDiscussed: analysis.topicsDiscussed,
-          conceptsExplained: Object.keys(analysis.keywordFrequency).slice(0, 5),
+          conceptsExplained: analysis.mainWords.map(([word]) => word),
           examplesUsed: analysis.examplesUsed,
           keywordFrequency: analysis.keywordFrequency
         }
@@ -484,7 +561,7 @@ const ClassDetail = () => {
       
       toast({
         title: "Análisis completado",
-        description: "Se ha generado el análisis completo basado en el contenido de la transcripción",
+        description: `Análisis generado basado en ${analysis.wordCount} palabras de la transcripción real`,
       });
     }, 3000);
   };
