@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,9 @@ import {
   Users, 
   FileText, 
   BookOpen,
-  Target,
+  ClipboardList,
+  Eye,
+  FolderOpen,
   UserCheck,
   GraduationCap,
   TrendingUp
@@ -20,7 +21,11 @@ import { useClass } from '@/contexts/ClassContext';
 import { RecordingControls } from '@/components/class-detail/RecordingControls';
 import { TranscriptTab } from '@/components/class-detail/TranscriptTab';
 import { SummaryTab } from '@/components/class-detail/SummaryTab';
-import { SwotTab } from '@/components/class-detail/SwotTab';
+import { RubricTab } from '@/components/class-detail/RubricTab';
+import { ObservationTab } from '@/components/class-detail/ObservationTab';
+import { Feedback360Tab } from '@/components/class-detail/Feedback360Tab';
+import { PortfolioTab } from '@/components/class-detail/PortfolioTab';
+import { ECDFTab } from '@/components/class-detail/ECDFTab';
 import { ParticipationTab } from '@/components/class-detail/ParticipationTab';
 import { ProfessorTab } from '@/components/class-detail/ProfessorTab';
 import { InsightsTab } from '@/components/class-detail/InsightsTab';
@@ -33,10 +38,8 @@ const ClassDetail = () => {
   const { toast } = useToast();
   const { getClassById } = useClass();
   
-  // Get class data from context
   const classData = getClassById(classId || '');
   
-  // Custom hooks
   const {
     isRecording,
     isPaused,
@@ -58,7 +61,6 @@ const ClassDetail = () => {
     resetAnalysis
   } = useAnalysis();
 
-  // If class not found, show error
   if (!classData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
@@ -133,7 +135,7 @@ const ClassDetail = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="transcript" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-12 gap-1">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 h-12 gap-1">
             <TabsTrigger value="transcript" className="flex items-center text-xs">
               <FileText className="w-4 h-4 mr-1" />
               Transcripción
@@ -142,17 +144,29 @@ const ClassDetail = () => {
               <BookOpen className="w-4 h-4 mr-1" />
               Resumen
             </TabsTrigger>
-            <TabsTrigger value="swot" className="flex items-center text-xs">
-              <Target className="w-4 h-4 mr-1" />
-              FODA
+            <TabsTrigger value="rubric" className="flex items-center text-xs">
+              <ClipboardList className="w-4 h-4 mr-1" />
+              Rúbricas
+            </TabsTrigger>
+            <TabsTrigger value="observation" className="flex items-center text-xs">
+              <Eye className="w-4 h-4 mr-1" />
+              Observación
+            </TabsTrigger>
+            <TabsTrigger value="feedback360" className="flex items-center text-xs">
+              <Users className="w-4 h-4 mr-1" />
+              360°
+            </TabsTrigger>
+            <TabsTrigger value="portfolio" className="flex items-center text-xs">
+              <FolderOpen className="w-4 h-4 mr-1" />
+              Portafolio
+            </TabsTrigger>
+            <TabsTrigger value="ecdf" className="flex items-center text-xs">
+              <GraduationCap className="w-4 h-4 mr-1" />
+              ECDF
             </TabsTrigger>
             <TabsTrigger value="participation" className="flex items-center text-xs">
               <UserCheck className="w-4 h-4 mr-1" />
               Participación
-            </TabsTrigger>
-            <TabsTrigger value="professor" className="flex items-center text-xs">
-              <GraduationCap className="w-4 h-4 mr-1" />
-              Profesor
             </TabsTrigger>
             <TabsTrigger value="insights" className="flex items-center text-xs">
               <TrendingUp className="w-4 h-4 mr-1" />
@@ -180,19 +194,28 @@ const ClassDetail = () => {
             />
           </TabsContent>
 
-          <TabsContent value="swot">
-            <SwotTab classAnalysis={classAnalysis} />
+          <TabsContent value="rubric">
+            <RubricTab classAnalysis={classAnalysis} />
+          </TabsContent>
+
+          <TabsContent value="observation">
+            <ObservationTab classAnalysis={classAnalysis} />
+          </TabsContent>
+
+          <TabsContent value="feedback360">
+            <Feedback360Tab classAnalysis={classAnalysis} />
+          </TabsContent>
+
+          <TabsContent value="portfolio">
+            <PortfolioTab classAnalysis={classAnalysis} />
+          </TabsContent>
+
+          <TabsContent value="ecdf">
+            <ECDFTab classAnalysis={classAnalysis} />
           </TabsContent>
 
           <TabsContent value="participation">
             <ParticipationTab
-              classAnalysis={classAnalysis}
-              formatTime={formatTime}
-            />
-          </TabsContent>
-
-          <TabsContent value="professor">
-            <ProfessorTab
               classAnalysis={classAnalysis}
               formatTime={formatTime}
             />

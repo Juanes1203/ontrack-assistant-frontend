@@ -14,11 +14,51 @@ export interface ContentAnalysis {
   keywordFrequency: { [key: string]: number };
 }
 
+export interface RubricEvaluation {
+  domainKnowledge: number;
+  teachingMethodology: number;
+  studentEngagement: number;
+  classroomManagement: number;
+  communicationSkills: number;
+  comments: string[];
+}
+
+export interface StructuredObservation {
+  planningAndPreparation: string[];
+  instructionalDelivery: string[];
+  classroomEnvironment: string[];
+  professionalResponsibilities: string[];
+}
+
+export interface Feedback360 {
+  selfEvaluation: string[];
+  studentPerspective: string[];
+  peerObservations: string[];
+  improvementAreas: string[];
+}
+
+export interface TeachingPortfolio {
+  strengths: string[];
+  innovativePractices: string[];
+  studentLearningEvidence: string[];
+  reflectiveInsights: string[];
+}
+
+export interface ECDFModel {
+  domainExpertise: string;
+  pedagogicalKnowledge: string;
+  contextualKnowledge: string;
+  professionalDevelopment: string;
+  score: number;
+}
+
 export interface ClassAnalysis {
   summary: string;
-  strengths: string[];
-  weaknesses: string[];
-  opportunities: string[];
+  rubricEvaluation: RubricEvaluation;
+  structuredObservation: StructuredObservation;
+  feedback360: Feedback360;
+  teachingPortfolio: TeachingPortfolio;
+  ecdfModel: ECDFModel;
   studentParticipation: string;
   professorPerformance: string;
   voiceAnalysis: VoiceAnalysis;

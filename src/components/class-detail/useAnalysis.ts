@@ -7,9 +7,39 @@ export const useAnalysis = () => {
   
   const [classAnalysis, setClassAnalysis] = useState<ClassAnalysis>({
     summary: '',
-    strengths: [],
-    weaknesses: [],
-    opportunities: [],
+    rubricEvaluation: {
+      domainKnowledge: 0,
+      teachingMethodology: 0,
+      studentEngagement: 0,
+      classroomManagement: 0,
+      communicationSkills: 0,
+      comments: []
+    },
+    structuredObservation: {
+      planningAndPreparation: [],
+      instructionalDelivery: [],
+      classroomEnvironment: [],
+      professionalResponsibilities: []
+    },
+    feedback360: {
+      selfEvaluation: [],
+      studentPerspective: [],
+      peerObservations: [],
+      improvementAreas: []
+    },
+    teachingPortfolio: {
+      strengths: [],
+      innovativePractices: [],
+      studentLearningEvidence: [],
+      reflectiveInsights: []
+    },
+    ecdfModel: {
+      domainExpertise: '',
+      pedagogicalKnowledge: '',
+      contextualKnowledge: '',
+      professionalDevelopment: '',
+      score: 0
+    },
     studentParticipation: '',
     professorPerformance: '',
     voiceAnalysis: {
@@ -99,15 +129,12 @@ export const useAnalysis = () => {
   };
 
   const generateContentBasedSummary = (text: string, analysis: any, recordingTime: number, formatTime: (seconds: number) => string) => {
-    // Si la transcripción está vacía o es muy corta, devolver un mensaje apropiado
     if (!text.trim() || analysis.wordCount < 5) {
       return "No se detectó contenido suficiente en la transcripción para generar un resumen detallado. Asegúrate de que la grabación capture audio claro y que haya contenido hablado durante la sesión.";
     }
 
-    // Crear un resumen basado en el contenido real
     let summary = "";
     
-    // Extraer las primeras oraciones más significativas del contenido
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
     const firstSentences = sentences.slice(0, 3).map(s => s.trim()).join('. ');
     
@@ -115,18 +142,15 @@ export const useAnalysis = () => {
       summary += `Durante la sesión de ${formatTime(recordingTime)}, se abordó el siguiente contenido: "${firstSentences}". `;
     }
 
-    // Agregar información sobre los temas principales detectados
     if (analysis.topicsDiscussed.length > 0) {
       summary += `Los temas principales identificados fueron: ${analysis.topicsDiscussed.join(', ')}. `;
     }
 
-    // Incluir las palabras más frecuentes del contenido real
     if (analysis.mainWords.length > 0) {
       const keyTerms = analysis.mainWords.slice(0, 3).map(([word, count]) => `${word} (${count} veces)`).join(', ');
       summary += `Los términos más mencionados durante la clase fueron: ${keyTerms}. `;
     }
 
-    // Información sobre preguntas detectadas
     if (analysis.questionCount > 0) {
       summary += `Se registraron ${analysis.questionCount} preguntas o cuestionamientos`;
       if (analysis.actualQuestions.length > 0) {
@@ -136,15 +160,12 @@ export const useAnalysis = () => {
       summary += '. ';
     }
 
-    // Información sobre explicaciones
     if (analysis.explanationCount > 0) {
       summary += `Se identificaron ${analysis.explanationCount} explicaciones o ejemplificaciones durante la sesión. `;
     }
 
-    // Agregar estadísticas del contenido
     summary += `El contenido transcrito incluyó ${analysis.wordCount} palabras distribuidas en ${analysis.sentenceCount} oraciones, `;
     
-    // Evaluar el tipo de sesión basado en indicadores reales
     const totalIndicators = analysis.professorIndicators + analysis.studentIndicators;
     if (totalIndicators > 0) {
       const professorPercentage = Math.round((analysis.professorIndicators / totalIndicators) * 100);
@@ -171,41 +192,103 @@ export const useAnalysis = () => {
     const analysis = analyzeTranscriptContent(transcript);
     
     setTimeout(() => {
-      // Generar resumen basado en contenido real
       const summary = generateContentBasedSummary(transcript, analysis, recordingTime, formatTime);
 
-      const strengths = [];
-      if (analysis.questionCount >= 3) strengths.push(`Excelente interacción: ${analysis.questionCount} preguntas registradas demuestran engagement activo`);
-      if (analysis.explanationCount >= 2) strengths.push(`Metodología efectiva: ${analysis.explanationCount} explicaciones detalladas registradas`);
-      if (analysis.topicsDiscussed.length >= 3) strengths.push(`Cobertura amplia: ${analysis.topicsDiscussed.length} temas diferentes abordados`);
-      if (analysis.wordCount > 200) strengths.push(`Contenido sustancial: ${analysis.wordCount} palabras registradas indican profundidad temática`);
-      if (analysis.sentenceCount > 10) strengths.push(`Comunicación estructurada: ${analysis.sentenceCount} oraciones bien formadas`);
-      
-      if (strengths.length === 0) {
-        if (analysis.wordCount > 50) {
-          strengths.push("Transmisión clara de información académica");
-        } else {
-          strengths.push("Sesión registrada con contenido básico");
-        }
-      }
+      // Generar evaluación por rúbricas basada en el análisis
+      const rubricEvaluation = {
+        domainKnowledge: Math.min(5, 2 + (analysis.explanationCount * 0.5) + (analysis.topicsDiscussed.length * 0.3)),
+        teachingMethodology: Math.min(5, 2 + (analysis.professorIndicators * 0.1) + (analysis.explanationCount * 0.4)),
+        studentEngagement: Math.min(5, 1 + (analysis.questionCount * 0.3) + (analysis.studentIndicators * 0.2)),
+        classroomManagement: Math.min(5, 3 + (analysis.interactionCount * 0.1)),
+        communicationSkills: Math.min(5, 2.5 + (analysis.wordCount > 200 ? 1 : 0) + (analysis.explanationCount * 0.3)),
+        comments: [
+          `Se identificaron ${analysis.explanationCount} explicaciones detalladas durante la sesión`,
+          `La participación estudiantil registró ${analysis.questionCount} preguntas`,
+          `El contenido cubrió ${analysis.topicsDiscussed.length} temas principales`,
+          analysis.wordCount > 200 ? 'Contenido sustancial registrado' : 'Oportunidad de ampliar el contenido'
+        ]
+      };
 
-      const weaknesses = [];
-      if (analysis.questionCount === 0) weaknesses.push("Ausencia total de preguntas: no se detectó verificación de comprensión");
-      if (analysis.explanationCount === 0) weaknesses.push("Falta de ejemplificación: no se registraron explicaciones detalladas");
-      if (analysis.studentIndicators === 0) weaknesses.push("Sin participación estudiantil detectada en la transcripción");
-      if (analysis.wordCount < 100) weaknesses.push(`Contenido limitado: solo ${analysis.wordCount} palabras para ${formatTime(recordingTime)} de duración`);
-      if (analysis.topicsDiscussed.length <= 1) weaknesses.push("Cobertura temática restringida detectada en el contenido");
-      
-      if (weaknesses.length === 0) {
-        weaknesses.push("Oportunidad de incrementar la interacción bidireccional registrada");
-      }
+      // Generar observación estructurada
+      const structuredObservation = {
+        planningAndPreparation: [
+          analysis.topicsDiscussed.length > 2 ? 'Contenido bien estructurado con múltiples temas' : 'Estructura temática básica',
+          analysis.explanationCount > 0 ? 'Explicaciones preparadas y coherentes' : 'Oportunidad de incluir más explicaciones'
+        ],
+        instructionalDelivery: [
+          `Se registraron ${analysis.explanationCount} explicaciones durante la clase`,
+          analysis.questionCount > 0 ? `${analysis.questionCount} preguntas facilitaron la comprensión` : 'Poca verificación de comprensión registrada',
+          analysis.examplesUsed.length > 0 ? `Uso de ejemplos: ${analysis.examplesUsed.join(', ')}` : 'Oportunidad de incluir más ejemplos prácticos'
+        ],
+        classroomEnvironment: [
+          analysis.studentIndicators > 0 ? 'Ambiente propicio para la participación estudiantil' : 'Ambiente principalmente expositivo',
+          analysis.questionCount > 2 ? 'Alta interactividad registrada' : 'Oportunidad de aumentar la interactividad'
+        ],
+        professionalResponsibilities: [
+          'Uso de tecnología para registro y análisis de la clase',
+          analysis.wordCount > 100 ? 'Contenido académico sustancial' : 'Contenido básico registrado'
+        ]
+      };
 
-      const opportunities = [];
-      if (analysis.questionCount < 2) opportunities.push("Implementar técnicas para generar más preguntas y verificación de comprensión");
-      if (analysis.explanationCount < 2) opportunities.push("Incorporar más ejemplos prácticos y casos de estudio detallados");
-      if (analysis.studentIndicators < analysis.professorIndicators * 0.3) opportunities.push("Desarrollar estrategias para aumentar la participación estudiantil registrable");
-      opportunities.push("Enriquecer el contenido con actividades que generen más interacción verbal");
-      if (analysis.examplesUsed.length === 0) opportunities.push("Integrar ejemplos prácticos y demostraciones más evidentes");
+      // Generar retroalimentación 360°
+      const feedback360 = {
+        selfEvaluation: [
+          analysis.explanationCount > 2 ? 'Metodología explicativa efectiva implementada' : 'Oportunidad de enriquecer las explicaciones',
+          analysis.topicsDiscussed.length > 1 ? 'Cobertura temática diversificada lograda' : 'Enfoque temático concentrado'
+        ],
+        studentPerspective: [
+          analysis.questionCount > 0 ? `Los estudiantes formularon ${analysis.questionCount} preguntas, indicando engagement` : 'Poca participación estudiantil registrada',
+          analysis.studentIndicators > 0 ? 'Indicadores de participación estudiantil detectados' : 'Oportunidad de estimular más participación'
+        ],
+        peerObservations: [
+          analysis.professorIndicators > 2 ? 'Metodología docente estructurada observable' : 'Metodología básica registrada',
+          analysis.contentAnalysis ? 'Uso de análisis de contenido para mejora continua' : 'Enfoque tradicional de enseñanza'
+        ],
+        improvementAreas: [
+          analysis.questionCount < 2 ? 'Incrementar técnicas de verificación de comprensión' : 'Mantener el nivel de interactividad',
+          analysis.examplesUsed.length === 0 ? 'Incorporar más ejemplos prácticos y casos de estudio' : 'Continuar con el uso efectivo de ejemplos'
+        ]
+      };
+
+      // Generar portafolio docente
+      const teachingPortfolio = {
+        strengths: [
+          analysis.explanationCount > 0 ? `Capacidad explicativa: ${analysis.explanationCount} explicaciones registradas` : 'Enfoque directo de enseñanza',
+          analysis.topicsDiscussed.length > 1 ? `Cobertura temática amplia: ${analysis.topicsDiscussed.join(', ')}` : 'Enfoque temático específico',
+          analysis.wordCount > 150 ? 'Riqueza de contenido verbal' : 'Comunicación concisa'
+        ],
+        innovativePractices: [
+          'Implementación de análisis automatizado de clases',
+          'Uso de transcripción para mejora pedagógica',
+          analysis.contentAnalysis ? 'Análisis de frecuencia de palabras clave' : 'Enfoque tradicional'
+        ],
+        studentLearningEvidence: [
+          analysis.questionCount > 0 ? `${analysis.questionCount} preguntas estudiantiles demuestran engagement` : 'Participación estudiantil limitada',
+          analysis.studentIndicators > 0 ? 'Indicadores de participación activa registrados' : 'Formato principalmente expositivo'
+        ],
+        reflectiveInsights: [
+          `La clase de ${formatTime(recordingTime)} generó ${analysis.wordCount} palabras de contenido`,
+          analysis.mainWords.length > 0 ? `Términos clave identificados: ${analysis.mainWords.slice(0, 3).map(([word]) => word).join(', ')}` : 'Vocabulario académico estándar',
+          'El análisis automático permite identificar patrones para mejora continua'
+        ]
+      };
+
+      // Generar evaluación ECDF
+      const ecdfScore = Math.min(4, 1 + (analysis.explanationCount * 0.3) + (analysis.questionCount * 0.2) + (analysis.topicsDiscussed.length * 0.2));
+      
+      const ecdfModel = {
+        domainExpertise: analysis.topicsDiscussed.length > 1 ? 
+          `Demuestra conocimiento sólido en ${analysis.topicsDiscussed.length} áreas temáticas: ${analysis.topicsDiscussed.join(', ')}` :
+          'Conocimiento básico del área temática evidenciado',
+        pedagogicalKnowledge: analysis.explanationCount > 1 ?
+          `Aplicación efectiva de estrategias explicativas (${analysis.explanationCount} explicaciones registradas)` :
+          'Metodología pedagógica básica implementada',
+        contextualKnowledge: analysis.studentIndicators > 0 ?
+          'Adaptación al contexto estudiantil evidenciada en las interacciones registradas' :
+          'Oportunidad de mayor adaptación al contexto estudiantil',
+        professionalDevelopment: 'Uso de herramientas tecnológicas para análisis y mejora de la práctica docente',
+        score: ecdfScore
+      };
 
       let studentParticipation = '';
       if (analysis.studentIndicators > 0) {
@@ -250,9 +333,11 @@ export const useAnalysis = () => {
 
       setClassAnalysis({
         summary,
-        strengths,
-        weaknesses,
-        opportunities,
+        rubricEvaluation,
+        structuredObservation,
+        feedback360,
+        teachingPortfolio,
+        ecdfModel,
         studentParticipation,
         professorPerformance,
         voiceAnalysis: {
@@ -274,7 +359,7 @@ export const useAnalysis = () => {
       
       toast({
         title: "Análisis completado",
-        description: `Resumen generado basado en el contenido real de ${analysis.wordCount} palabras`,
+        description: `Evaluaciones generadas basadas en el contenido real de ${analysis.wordCount} palabras`,
       });
     }, 3000);
   };
@@ -282,9 +367,39 @@ export const useAnalysis = () => {
   const resetAnalysis = () => {
     setClassAnalysis({
       summary: '',
-      strengths: [],
-      weaknesses: [],
-      opportunities: [],
+      rubricEvaluation: {
+        domainKnowledge: 0,
+        teachingMethodology: 0,
+        studentEngagement: 0,
+        classroomManagement: 0,
+        communicationSkills: 0,
+        comments: []
+      },
+      structuredObservation: {
+        planningAndPreparation: [],
+        instructionalDelivery: [],
+        classroomEnvironment: [],
+        professionalResponsibilities: []
+      },
+      feedback360: {
+        selfEvaluation: [],
+        studentPerspective: [],
+        peerObservations: [],
+        improvementAreas: []
+      },
+      teachingPortfolio: {
+        strengths: [],
+        innovativePractices: [],
+        studentLearningEvidence: [],
+        reflectiveInsights: []
+      },
+      ecdfModel: {
+        domainExpertise: '',
+        pedagogicalKnowledge: '',
+        contextualKnowledge: '',
+        professionalDevelopment: '',
+        score: 0
+      },
       studentParticipation: '',
       professorPerformance: '',
       voiceAnalysis: {
