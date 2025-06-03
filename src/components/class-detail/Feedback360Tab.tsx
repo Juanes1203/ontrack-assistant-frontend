@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users } from 'lucide-react';
 import { ClassAnalysis } from '@/types/classAnalysis';
@@ -9,6 +8,18 @@ interface Feedback360TabProps {
 }
 
 export const Feedback360Tab: React.FC<Feedback360TabProps> = ({ classAnalysis }) => {
+  useEffect(() => {
+    // Dynamically add the ElevenLabs script if it hasn't been added yet
+    if (!document.getElementById("elevenlabs-convai-script")) {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
+      script.async = true;
+      script.type = "text/javascript";
+      script.id = "elevenlabs-convai-script";
+      document.body.appendChild(script);
+    }
+  }, []);
+
   const feedbackSections = [
     {
       title: 'Autoevaluación Docente',
@@ -40,7 +51,7 @@ export const Feedback360Tab: React.FC<Feedback360TabProps> = ({ classAnalysis })
     <Card className="border-2 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
-          <Users className="w-5 h-5 mr-2 text-green-600" />
+          <Users className="w-5 h-5 mr-2 text-pink-600" />
           Retroalimentación 360°
         </CardTitle>
       </CardHeader>
@@ -57,7 +68,7 @@ export const Feedback360Tab: React.FC<Feedback360TabProps> = ({ classAnalysis })
                   <ul className="space-y-3">
                     {section.items.map((item, itemIndex) => (
                       <li key={itemIndex} className="flex items-start">
-                        <span className="text-gray-500 mr-3 mt-1">•</span>
+                        <span className="text-pink-500 mr-3 mt-1">•</span>
                         <span className="text-gray-700 leading-relaxed">{item}</span>
                       </li>
                     ))}
@@ -72,13 +83,14 @@ export const Feedback360Tab: React.FC<Feedback360TabProps> = ({ classAnalysis })
           <div className="text-center py-12">
             <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-4">
-              Evaluación 360° de la Práctica Docente
+              Retroalimentación 360°
             </p>
             <p className="text-gray-400 text-sm">
-              Genera el análisis para ver retroalimentación desde múltiples perspectivas
+              Genera el análisis para ver la retroalimentación detallada
             </p>
           </div>
         )}
+        <elevenlabs-convai agent-id="agent_01jwsqvdyeeqkv6jvmrwnw7z2g"></elevenlabs-convai>
       </CardContent>
     </Card>
   );

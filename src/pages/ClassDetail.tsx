@@ -135,7 +135,7 @@ const ClassDetail = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="transcript" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 h-12 gap-1">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-10 h-12 gap-1">
             <TabsTrigger value="transcript" className="flex items-center text-xs text-blue-500 hover:text-blue-600 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">
               <FileText className="w-4 h-4 mr-1" />
               Transcripción

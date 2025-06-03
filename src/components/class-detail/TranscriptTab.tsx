@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,6 +19,16 @@ interface TranscriptTabProps {
   saveChanges: () => void;
 }
 
+// Add custom element type for TypeScript
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'elevenlabs-convai': any;
+    }
+  }
+}
+
 export const TranscriptTab: React.FC<TranscriptTabProps> = ({
   transcript,
   setTranscript,
@@ -28,6 +37,18 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
   generateAnalysis,
   saveChanges
 }) => {
+  useEffect(() => {
+    // Dynamically add the ElevenLabs script if it hasn't been added yet
+    if (!document.getElementById("elevenlabs-convai-script")) {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
+      script.async = true;
+      script.type = "text/javascript";
+      script.id = "elevenlabs-convai-script";
+      document.body.appendChild(script);
+    }
+  }, []);
+
   return (
     <Card className="border-2 shadow-lg">
       <CardHeader>
@@ -90,7 +111,10 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
             </div>
           )}
         </div>
+        <elevenlabs-convai agent-id="agent_01jwsqvdyeeqkv6jvmrwnw7z2g"></elevenlabs-convai>
       </CardContent>
     </Card>
   );
 };
+
+export default TranscriptTab;

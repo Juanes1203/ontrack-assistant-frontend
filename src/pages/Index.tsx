@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, BookOpen, Clock, User, Calendar, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,13 +42,16 @@ const Index = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              📚 Gestión de Clases
-            </h1>
-            <p className="text-gray-600 text-lg">
-              Organiza, graba y analiza tus clases con inteligencia artificial
-            </p>
+          <div className="flex items-center">
+            <img src="/mentorai-logo.png" alt="MentorAI Logo" style={{ height: 110, marginRight: 32 }} />
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Gestión de Clases
+              </h1>
+              <p className="text-gray-600 text-lg">
+                Organiza, graba y analiza tus clases con inteligencia artificial
+              </p>
+            </div>
           </div>
           <Button 
             onClick={() => setShowCreateModal(true)}

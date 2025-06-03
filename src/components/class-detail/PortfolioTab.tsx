@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FolderOpen } from 'lucide-react';
 import { ClassAnalysis } from '@/types/classAnalysis';
@@ -9,6 +8,18 @@ interface PortfolioTabProps {
 }
 
 export const PortfolioTab: React.FC<PortfolioTabProps> = ({ classAnalysis }) => {
+  useEffect(() => {
+    // Dynamically add the ElevenLabs script if it hasn't been added yet
+    if (!document.getElementById("elevenlabs-convai-script")) {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
+      script.async = true;
+      script.type = "text/javascript";
+      script.id = "elevenlabs-convai-script";
+      document.body.appendChild(script);
+    }
+  }, []);
+
   const portfolioSections = [
     {
       title: 'Fortalezas Identificadas',
@@ -40,7 +51,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ classAnalysis }) => 
     <Card className="border-2 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
-          <FolderOpen className="w-5 h-5 mr-2 text-indigo-600" />
+          <FolderOpen className="w-5 h-5 mr-2 text-amber-600" />
           Portafolio Docente
         </CardTitle>
       </CardHeader>
@@ -79,6 +90,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ classAnalysis }) => 
             </p>
           </div>
         )}
+        <elevenlabs-convai agent-id="agent_01jwsqvdyeeqkv6jvmrwnw7z2g"></elevenlabs-convai>
       </CardContent>
     </Card>
   );

@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { GraduationCap } from 'lucide-react';
@@ -42,12 +41,24 @@ export const ECDFTab: React.FC<ECDFTabProps> = ({ classAnalysis }) => {
 
   const scoreInfo = getScoreLabel(classAnalysis.ecdfModel.score);
 
+  useEffect(() => {
+    // Dynamically add the ElevenLabs script if it hasn't been added yet
+    if (!document.getElementById("elevenlabs-convai-script")) {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
+      script.async = true;
+      script.type = "text/javascript";
+      script.id = "elevenlabs-convai-script";
+      document.body.appendChild(script);
+    }
+  }, []);
+
   return (
     <Card className="border-2 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
-          <GraduationCap className="w-5 h-5 mr-2 text-red-600" />
-          Evaluación ECDF (Colombia)
+          <GraduationCap className="w-5 h-5 mr-2 text-teal-600" />
+          Evaluación ECDF
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -95,13 +106,14 @@ export const ECDFTab: React.FC<ECDFTabProps> = ({ classAnalysis }) => {
           <div className="text-center py-12">
             <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-4">
-              Evaluación ECDF Colombia
+              Evaluación ECDF
             </p>
             <p className="text-gray-400 text-sm">
-              Genera el análisis para ver la evaluación según el marco colombiano ECDF
+              Genera el análisis para ver la evaluación detallada
             </p>
           </div>
         )}
+        <elevenlabs-convai agent-id="agent_01jwsqvdyeeqkv6jvmrwnw7z2g"></elevenlabs-convai>
       </CardContent>
     </Card>
   );
