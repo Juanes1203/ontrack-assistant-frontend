@@ -136,39 +136,39 @@ const ClassDetail = () => {
         {/* Main Tabs */}
         <Tabs defaultValue="transcript" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 h-12 gap-1">
-            <TabsTrigger value="transcript" className="flex items-center text-xs">
+            <TabsTrigger value="transcript" className="flex items-center text-xs text-blue-500 hover:text-blue-600 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">
               <FileText className="w-4 h-4 mr-1" />
               Transcripción
             </TabsTrigger>
-            <TabsTrigger value="summary" className="flex items-center text-xs">
+            <TabsTrigger value="summary" className="flex items-center text-xs text-green-500 hover:text-green-600 data-[state=active]:bg-green-100 data-[state=active]:text-green-700">
               <BookOpen className="w-4 h-4 mr-1" />
               Resumen
             </TabsTrigger>
-            <TabsTrigger value="rubric" className="flex items-center text-xs">
+            <TabsTrigger value="rubric" className="flex items-center text-xs text-purple-500 hover:text-purple-600 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700">
               <ClipboardList className="w-4 h-4 mr-1" />
               Rúbricas
             </TabsTrigger>
-            <TabsTrigger value="observation" className="flex items-center text-xs">
+            <TabsTrigger value="observation" className="flex items-center text-xs text-indigo-500 hover:text-indigo-600 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700">
               <Eye className="w-4 h-4 mr-1" />
               Observación
             </TabsTrigger>
-            <TabsTrigger value="feedback360" className="flex items-center text-xs">
+            <TabsTrigger value="feedback360" className="flex items-center text-xs text-pink-500 hover:text-pink-600 data-[state=active]:bg-pink-100 data-[state=active]:text-pink-700">
               <Users className="w-4 h-4 mr-1" />
               360°
             </TabsTrigger>
-            <TabsTrigger value="portfolio" className="flex items-center text-xs">
+            <TabsTrigger value="portfolio" className="flex items-center text-xs text-amber-500 hover:text-amber-600 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700">
               <FolderOpen className="w-4 h-4 mr-1" />
               Portafolio
             </TabsTrigger>
-            <TabsTrigger value="ecdf" className="flex items-center text-xs">
+            <TabsTrigger value="ecdf" className="flex items-center text-xs text-teal-500 hover:text-teal-600 data-[state=active]:bg-teal-100 data-[state=active]:text-teal-700">
               <GraduationCap className="w-4 h-4 mr-1" />
               ECDF
             </TabsTrigger>
-            <TabsTrigger value="participation" className="flex items-center text-xs">
+            <TabsTrigger value="participation" className="flex items-center text-xs text-rose-500 hover:text-rose-600 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-700">
               <UserCheck className="w-4 h-4 mr-1" />
               Participación
             </TabsTrigger>
-            <TabsTrigger value="insights" className="flex items-center text-xs">
+            <TabsTrigger value="insights" className="flex items-center text-xs text-cyan-500 hover:text-cyan-600 data-[state=active]:bg-cyan-100 data-[state=active]:text-cyan-700">
               <TrendingUp className="w-4 h-4 mr-1" />
               Insights
             </TabsTrigger>
