@@ -6,56 +6,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { useClass } from '@/contexts/ClassContext';
 import CreateClassModal from '@/components/CreateClassModal';
-
-interface Class {
-  id: string;
-  name: string;
-  teacher: string;
-  day: string;
-  time: string;
-  description: string;
-  subject: string;
-  duration: number;
-  createdAt: Date;
-}
 
 const Index = () => {
   const navigate = useNavigate();
-  const [classes, setClasses] = useState<Class[]>([
-    {
-      id: '1',
-      name: 'Introducción a React',
-      teacher: 'María González',
-      day: 'Lunes',
-      time: '10:00',
-      description: 'Conceptos básicos de React y componentes',
-      subject: 'Programación',
-      duration: 90,
-      createdAt: new Date('2024-01-15')
-    },
-    {
-      id: '2',
-      name: 'Historia del Arte',
-      teacher: 'Carlos Ruiz',
-      day: 'Miércoles',
-      time: '14:30',
-      description: 'Renacimiento y arte clásico',
-      subject: 'Arte',
-      duration: 120,
-      createdAt: new Date('2024-01-10')
-    }
-  ]);
+  const { classes, addClass } = useClass();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const handleCreateClass = (newClass: Omit<Class, 'id' | 'createdAt'>) => {
-    const classWithId: Class = {
-      ...newClass,
-      id: Date.now().toString(),
-      createdAt: new Date()
-    };
-    setClasses(prev => [classWithId, ...prev]);
+  const handleCreateClass = (newClass: {
+    name: string;
+    teacher: string;
+    day: string;
+    time: string;
+    description: string;
+    subject: string;
+    duration: number;
+  }) => {
+    addClass(newClass);
     setShowCreateModal(false);
   };
 

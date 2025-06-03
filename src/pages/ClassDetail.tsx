@@ -15,6 +15,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useClass } from '@/contexts/ClassContext';
 
 import { RecordingControls } from '@/components/class-detail/RecordingControls';
 import { TranscriptTab } from '@/components/class-detail/TranscriptTab';
@@ -25,12 +26,15 @@ import { ProfessorTab } from '@/components/class-detail/ProfessorTab';
 import { InsightsTab } from '@/components/class-detail/InsightsTab';
 import { useRecording } from '@/components/class-detail/useRecording';
 import { useAnalysis } from '@/components/class-detail/useAnalysis';
-import { ClassData } from '@/types/classAnalysis';
 
 const ClassDetail = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { getClassById } = useClass();
+  
+  // Get class data from context
+  const classData = getClassById(classId || '');
   
   // Custom hooks
   const {
@@ -54,17 +58,21 @@ const ClassDetail = () => {
     resetAnalysis
   } = useAnalysis();
 
-  // Class data
-  const classData: ClassData = {
-    id: classId,
-    name: 'Introducción a React',
-    teacher: 'María González',
-    day: 'Lunes',
-    time: '10:00',
-    description: 'Conceptos básicos de React y componentes',
-    subject: 'Programación',
-    duration: 90
-  };
+  // If class not found, show error
+  if (!classData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Clase no encontrada</h1>
+          <p className="text-gray-600 mb-6">La clase que buscas no existe o ha sido eliminada.</p>
+          <Button onClick={() => navigate('/')}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver al inicio
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const handleGenerateAnalysis = () => {
     generateAnalysis(transcript, recordingTime, formatTime);
