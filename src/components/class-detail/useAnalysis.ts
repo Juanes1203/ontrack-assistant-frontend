@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ClassAnalysis } from '@/types/classAnalysis';
 import { useToast } from '@/hooks/use-toast';
@@ -94,8 +93,67 @@ export const useAnalysis = () => {
       sentenceCount: sentences.length,
       wordCount: words.length,
       actualQuestions: questions,
-      mainWords: Object.entries(keywordFrequency).sort(([,a], [,b]) => (b as number) - (a as number)).slice(0, 5)
+      mainWords: Object.entries(keywordFrequency).sort(([,a], [,b]) => (b as number) - (a as number)).slice(0, 5),
+      actualContent: text.trim()
     };
+  };
+
+  const generateContentBasedSummary = (text: string, analysis: any, recordingTime: number, formatTime: (seconds: number) => string) => {
+    // Si la transcripción está vacía o es muy corta, devolver un mensaje apropiado
+    if (!text.trim() || analysis.wordCount < 5) {
+      return "No se detectó contenido suficiente en la transcripción para generar un resumen detallado. Asegúrate de que la grabación capture audio claro y que haya contenido hablado durante la sesión.";
+    }
+
+    // Crear un resumen basado en el contenido real
+    let summary = "";
+    
+    // Extraer las primeras oraciones más significativas del contenido
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
+    const firstSentences = sentences.slice(0, 3).map(s => s.trim()).join('. ');
+    
+    if (firstSentences) {
+      summary += `Durante la sesión de ${formatTime(recordingTime)}, se abordó el siguiente contenido: "${firstSentences}". `;
+    }
+
+    // Agregar información sobre los temas principales detectados
+    if (analysis.topicsDiscussed.length > 0) {
+      summary += `Los temas principales identificados fueron: ${analysis.topicsDiscussed.join(', ')}. `;
+    }
+
+    // Incluir las palabras más frecuentes del contenido real
+    if (analysis.mainWords.length > 0) {
+      const keyTerms = analysis.mainWords.slice(0, 3).map(([word, count]) => `${word} (${count} veces)`).join(', ');
+      summary += `Los términos más mencionados durante la clase fueron: ${keyTerms}. `;
+    }
+
+    // Información sobre preguntas detectadas
+    if (analysis.questionCount > 0) {
+      summary += `Se registraron ${analysis.questionCount} preguntas o cuestionamientos`;
+      if (analysis.actualQuestions.length > 0) {
+        const firstQuestion = analysis.actualQuestions[0].substring(0, 80) + "...";
+        summary += `, incluyendo: "${firstQuestion}"`;
+      }
+      summary += '. ';
+    }
+
+    // Información sobre explicaciones
+    if (analysis.explanationCount > 0) {
+      summary += `Se identificaron ${analysis.explanationCount} explicaciones o ejemplificaciones durante la sesión. `;
+    }
+
+    // Agregar estadísticas del contenido
+    summary += `El contenido transcrito incluyó ${analysis.wordCount} palabras distribuidas en ${analysis.sentenceCount} oraciones, `;
+    
+    // Evaluar el tipo de sesión basado en indicadores reales
+    const totalIndicators = analysis.professorIndicators + analysis.studentIndicators;
+    if (totalIndicators > 0) {
+      const professorPercentage = Math.round((analysis.professorIndicators / totalIndicators) * 100);
+      summary += `con un ${professorPercentage}% de contenido de tipo instructivo y ${100 - professorPercentage}% de participación o interacción.`;
+    } else {
+      summary += "con un formato principalmente de contenido académico o informativo.";
+    }
+
+    return summary;
   };
 
   const generateAnalysis = async (transcript: string, recordingTime: number, formatTime: (seconds: number) => string) => {
@@ -113,55 +171,8 @@ export const useAnalysis = () => {
     const analysis = analyzeTranscriptContent(transcript);
     
     setTimeout(() => {
-      let summary = '';
-      
-      summary += `Durante la sesión de ${formatTime(recordingTime)}, se registraron ${analysis.wordCount} palabras y ${analysis.sentenceCount} oraciones. `;
-      
-      if (analysis.topicsDiscussed.length > 0) {
-        summary += `Los principales temas abordados fueron: ${analysis.topicsDiscussed.join(', ')}. `;
-      } else if (analysis.mainWords.length > 0) {
-        const mainConcepts = analysis.mainWords.map(([word]) => word).join(', ');
-        summary += `Los conceptos más mencionados durante la clase fueron: ${mainConcepts}. `;
-      }
-      
-      if (analysis.questionCount > 0) {
-        summary += `Se identificaron ${analysis.questionCount} preguntas o cuestionamientos durante la sesión`;
-        if (analysis.actualQuestions.length > 0) {
-          summary += `, incluyendo: "${analysis.actualQuestions[0].substring(0, 50)}..."`;
-        }
-        summary += '. ';
-        
-        if (analysis.questionCount >= 5) {
-          summary += "Esto indica un alto nivel de interacción y engagement por parte de los participantes. ";
-        } else if (analysis.questionCount >= 2) {
-          summary += "Esto muestra un nivel moderado de participación activa. ";
-        } else {
-          summary += "Esto sugiere una participación inicial que podría incrementarse. ";
-        }
-      } else {
-        summary += "No se detectaron preguntas directas en la transcripción, sugiriendo un formato más expositivo. ";
-      }
-      
-      if (analysis.explanationCount > 0) {
-        summary += `Se registraron ${analysis.explanationCount} instancias de explicaciones detalladas o ejemplificaciones, `;
-        summary += "mostrando un enfoque pedagógico estructurado. ";
-      }
-      
-      const totalIndicators = analysis.professorIndicators + analysis.studentIndicators;
-      if (totalIndicators > 0) {
-        const professorPercentage = Math.round((analysis.professorIndicators / totalIndicators) * 100);
-        const studentPercentage = Math.round((analysis.studentIndicators / totalIndicators) * 100);
-        
-        if (studentPercentage >= 40) {
-          summary += `La sesión mostró un equilibrio saludable con ${professorPercentage}% de instrucción docente y ${studentPercentage}% de participación estudiantil.`;
-        } else if (studentPercentage >= 20) {
-          summary += `La clase fue mayormente dirigida por el instructor (${professorPercentage}%) con participación estudiantil moderada (${studentPercentage}%).`;
-        } else {
-          summary += `La sesión fue predominantemente expositiva con ${professorPercentage}% de instrucción docente y participación estudiantil limitada.`;
-        }
-      } else {
-        summary += "La transcripción refleja principalmente contenido académico sin indicadores claros de roles específicos.";
-      }
+      // Generar resumen basado en contenido real
+      const summary = generateContentBasedSummary(transcript, analysis, recordingTime, formatTime);
 
       const strengths = [];
       if (analysis.questionCount >= 3) strengths.push(`Excelente interacción: ${analysis.questionCount} preguntas registradas demuestran engagement activo`);
@@ -263,7 +274,7 @@ export const useAnalysis = () => {
       
       toast({
         title: "Análisis completado",
-        description: `Análisis generado basado en ${analysis.wordCount} palabras de la transcripción real`,
+        description: `Resumen generado basado en el contenido real de ${analysis.wordCount} palabras`,
       });
     }, 3000);
   };
