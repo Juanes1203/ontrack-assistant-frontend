@@ -1,6 +1,6 @@
 # MentorAI Virtual Teacher
 
-![MentorAI Logo](mentorai-logo.png)
+![MentorAI Logo](mentorai-logo2.png)
 
 Un asistente virtual educativo construido con tecnologías modernas para ofrecer una experiencia de aprendizaje interactiva y personalizada.
 
