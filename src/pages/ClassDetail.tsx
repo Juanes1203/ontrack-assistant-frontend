@@ -13,7 +13,8 @@ import {
   FolderOpen,
   UserCheck,
   GraduationCap,
-  TrendingUp
+  TrendingUp,
+  Target
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useClass } from '@/contexts/ClassContext';
@@ -31,6 +32,7 @@ import { ProfessorTab } from '@/components/class-detail/ProfessorTab';
 import { InsightsTab } from '@/components/class-detail/InsightsTab';
 import { useRecording } from '@/components/class-detail/useRecording';
 import { useAnalysis } from '@/components/class-detail/useAnalysis';
+import { ObjectiveTab } from '@/components/class-detail/ObjectiveTab';
 
 const ClassDetail = () => {
   const { classId } = useParams();
@@ -51,7 +53,8 @@ const ClassDetail = () => {
     stopRecording,
     pauseRecording,
     resetRecording,
-    formatTime
+    formatTime,
+    audioBlob
   } = useRecording();
 
   const {
@@ -135,7 +138,7 @@ const ClassDetail = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="transcript" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-10 h-12 gap-1">
+          <TabsList className="grid w-full grid-cols-9 h-12 gap-1">
             <TabsTrigger value="transcript" className="flex items-center text-xs text-blue-500 hover:text-blue-600 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">
               <FileText className="w-4 h-4 mr-1" />
               Transcripción
@@ -146,15 +149,15 @@ const ClassDetail = () => {
             </TabsTrigger>
             <TabsTrigger value="rubric" className="flex items-center text-xs text-purple-500 hover:text-purple-600 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700">
               <ClipboardList className="w-4 h-4 mr-1" />
-              Rúbricas
+              Rúbrica
             </TabsTrigger>
             <TabsTrigger value="observation" className="flex items-center text-xs text-indigo-500 hover:text-indigo-600 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700">
               <Eye className="w-4 h-4 mr-1" />
               Observación
             </TabsTrigger>
-            <TabsTrigger value="feedback360" className="flex items-center text-xs text-pink-500 hover:text-pink-600 data-[state=active]:bg-pink-100 data-[state=active]:text-pink-700">
+            <TabsTrigger value="feedback" className="flex items-center text-xs text-pink-500 hover:text-pink-600 data-[state=active]:bg-pink-100 data-[state=active]:text-pink-700">
               <Users className="w-4 h-4 mr-1" />
-              360°
+              Feedback
             </TabsTrigger>
             <TabsTrigger value="portfolio" className="flex items-center text-xs text-amber-500 hover:text-amber-600 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700">
               <FolderOpen className="w-4 h-4 mr-1" />
@@ -171,6 +174,10 @@ const ClassDetail = () => {
             <TabsTrigger value="insights" className="flex items-center text-xs text-cyan-500 hover:text-cyan-600 data-[state=active]:bg-cyan-100 data-[state=active]:text-cyan-700">
               <TrendingUp className="w-4 h-4 mr-1" />
               Insights
+            </TabsTrigger>
+            <TabsTrigger value="objective" className="flex items-center text-xs text-blue-500 hover:text-blue-600 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">
+              <Target className="w-4 h-4 mr-1" />
+              Objetivos
             </TabsTrigger>
           </TabsList>
 
@@ -202,7 +209,7 @@ const ClassDetail = () => {
             <ObservationTab classAnalysis={classAnalysis} />
           </TabsContent>
 
-          <TabsContent value="feedback360">
+          <TabsContent value="feedback">
             <Feedback360Tab classAnalysis={classAnalysis} />
           </TabsContent>
 
@@ -226,7 +233,12 @@ const ClassDetail = () => {
               classAnalysis={classAnalysis}
               recordingTime={recordingTime}
               transcript={transcript}
+              audioBlob={audioBlob}
             />
+          </TabsContent>
+
+          <TabsContent value="objective">
+            <ObjectiveTab classAnalysis={classAnalysis} />
           </TabsContent>
         </Tabs>
       </div>
