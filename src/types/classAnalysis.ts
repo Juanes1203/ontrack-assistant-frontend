@@ -1,4 +1,3 @@
-
 export interface VoiceAnalysis {
   totalSpeakers: number;
   professorSpeechTime: number;
@@ -52,6 +51,14 @@ export interface ECDFModel {
   score: number;
 }
 
+export interface ClassObjective {
+  mainObjective: string;
+  specificObjectives: string[];
+  achievementStatus: 'achieved' | 'partially_achieved' | 'not_achieved';
+  evidence: string[];
+  recommendations: string[];
+}
+
 export interface ClassAnalysis {
   summary: string;
   rubricEvaluation: RubricEvaluation;
@@ -63,6 +70,7 @@ export interface ClassAnalysis {
   professorPerformance: string;
   voiceAnalysis: VoiceAnalysis;
   contentAnalysis: ContentAnalysis;
+  classObjective: ClassObjective;
 }
 
 export interface ClassData {

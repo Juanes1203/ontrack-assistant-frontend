@@ -101,7 +101,7 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
             value={transcript}
             onChange={(e) => setTranscript(e.target.value)}
             placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. Habla claramente para mejores resultados. Puedes editarla manualmente después de la grabación."
-            className="min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed"
+            className="min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400"
           />
           
           {transcript && (
