@@ -31,7 +31,7 @@ export const ParticipationTab: React.FC<ParticipationTabProps> = ({
                 {classAnalysis.participacion_estudiantes.nivel_participacion}
               </p>
             </div>
-
+            
             {classAnalysis.participacion_estudiantes.tipos_interaccion.length > 0 && (
               <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-lg">
                 <h3 className="text-lg font-semibold text-blue-800 mb-4">

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useClass } from '@/contexts/ClassContext';
 import CreateClassModal from '@/components/CreateClassModal';
+import { MentorAILogo } from '@/components/MentorAILogo';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -35,7 +36,9 @@ const Index = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div className="flex items-center">
-            <img src="/mentorai-logo.png" alt="MentorAI Logo" style={{ height: 110, marginRight: 32 }} />
+            <div style={{ height: 110, marginRight: 32 }}>
+              <MentorAILogo />
+            </div>
             <div>
               <h1 className="text-4xl font-bold text-gray-900 mb-2">
                 Gestión de Clases
