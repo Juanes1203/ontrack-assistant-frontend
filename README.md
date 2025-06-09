@@ -1,9 +1,5 @@
 # MentorAI Virtual Teacher 
 
-<div align="center">
-  <img src="mentorai-logo2.png" alt="MentorAI Logo" width="200"/>
-</div>
-
 *Asistente virtual educativo con inteligencia artificial para aprendizaje personalizado*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
