@@ -13,64 +13,163 @@ export interface ContentAnalysis {
   keywordFrequency: { [key: string]: number };
 }
 
-export interface RubricEvaluation {
-  domainKnowledge: number;
-  teachingMethodology: number;
-  studentEngagement: number;
-  classroomManagement: number;
-  communicationSkills: number;
-  comments: string[];
+export interface CriterioEvaluacion {
+  nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+  evidencias: string[];
+  recomendaciones: string[];
 }
 
-export interface StructuredObservation {
-  planningAndPreparation: string[];
-  instructionalDelivery: string[];
-  classroomEnvironment: string[];
-  professionalResponsibilities: string[];
+export interface ContextoPractica {
+  comprension_contexto: CriterioEvaluacion;
+  flexibilidad_practica: CriterioEvaluacion;
+  vinculacion_familias: CriterioEvaluacion;
 }
 
-export interface Feedback360 {
-  selfEvaluation: string[];
-  studentPerspective: string[];
-  peerObservations: string[];
-  improvementAreas: string[];
+export interface ReflexionPlaneacion {
+  propositos_claros: CriterioEvaluacion;
+  articulacion_contenidos: CriterioEvaluacion;
+  organizacion_conocimiento: CriterioEvaluacion;
 }
 
-export interface TeachingPortfolio {
-  strengths: string[];
-  innovativePractices: string[];
-  studentLearningEvidence: string[];
-  reflectiveInsights: string[];
+export interface PraxisPedagogica {
+  comunicacion_docente_estudiantes: CriterioEvaluacion;
+  estrategias_participacion: CriterioEvaluacion;
+  interes_estudiantes: CriterioEvaluacion;
 }
 
-export interface ECDFModel {
-  domainExpertise: string;
-  pedagogicalKnowledge: string;
-  contextualKnowledge: string;
-  professionalDevelopment: string;
-  score: number;
+export interface AmbienteAula {
+  clima_respeto: CriterioEvaluacion;
+  toma_decisiones: CriterioEvaluacion;
+  estructura_organizacion: CriterioEvaluacion;
 }
 
-export interface ClassObjective {
-  mainObjective: string;
-  specificObjectives: string[];
-  achievementStatus: 'achieved' | 'partially_achieved' | 'not_achieved';
-  evidence: string[];
-  recommendations: string[];
+export interface CriteriosEvaluacion {
+  contexto_practica: ContextoPractica;
+  reflexion_planeacion: ReflexionPlaneacion;
+  praxis_pedagogica: PraxisPedagogica;
+  ambiente_aula: AmbienteAula;
+}
+
+export interface MomentoClave {
+  tiempo: string;
+  tipo: string;
+  descripcion: string;
+  impacto: string;
+}
+
+export interface ParticipacionEstudiantes {
+  nivel_participacion: string;
+  tipos_interaccion: string[];
+  momentos_destacados: string[];
+}
+
+export interface AreasMejora {
+  fortalezas: string[];
+  oportunidades: string[];
+  recomendaciones_generales: string[];
+}
+
+export interface Resumen {
+  tema: string;
+  objetivos: string;
+  duracion: string;
+  participantes: string;
 }
 
 export interface ClassAnalysis {
-  summary: string;
-  rubricEvaluation: RubricEvaluation;
-  structuredObservation: StructuredObservation;
-  feedback360: Feedback360;
-  teachingPortfolio: TeachingPortfolio;
-  ecdfModel: ECDFModel;
-  studentParticipation: string;
-  professorPerformance: string;
-  voiceAnalysis: VoiceAnalysis;
-  contentAnalysis: ContentAnalysis;
-  classObjective: ClassObjective;
+  transcript: string;
+  resumen: {
+    tema: string;
+    objetivos: string;
+    duracion: string;
+    participantes: string;
+  };
+  criterios_evaluacion: {
+    contexto_practica: {
+      comprension_contexto: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+      flexibilidad_practica: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+      vinculacion_familias: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+    };
+    reflexion_planeacion: {
+      propositos_claros: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+      articulacion_contenidos: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+      organizacion_conocimiento: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+    };
+    praxis_pedagogica: {
+      comunicacion_docente_estudiantes: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+      estrategias_participacion: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+      interes_estudiantes: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+    };
+    ambiente_aula: {
+      clima_respeto: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+      toma_decisiones: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+      estructura_organizacion: {
+        nivel: 'AVANZADO' | 'SATISFACTORIO' | 'MÍNIMO' | 'INFERIOR';
+        evidencias: string[];
+        recomendaciones: string[];
+      };
+    };
+  };
+  momentos_clave: Array<{
+    tiempo: string;
+    tipo: string;
+    descripcion: string;
+    impacto: string;
+  }>;
+  participacion_estudiantes: {
+    nivel_participacion: string;
+    tipos_interaccion: string[];
+    momentos_destacados: string[];
+  };
+  areas_mejora: {
+    fortalezas: string[];
+    oportunidades: string[];
+    recomendaciones_generales: string[];
+  };
 }
 
 export interface ClassData {

@@ -14,7 +14,8 @@ import {
   UserCheck,
   GraduationCap,
   TrendingUp,
-  Target
+  Target,
+  Clock
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useClass } from '@/contexts/ClassContext';
@@ -33,6 +34,7 @@ import { InsightsTab } from '@/components/class-detail/InsightsTab';
 import { useRecording } from '@/components/class-detail/useRecording';
 import { useAnalysis } from '@/components/class-detail/useAnalysis';
 import { ObjectiveTab } from '@/components/class-detail/ObjectiveTab';
+import { MomentsTab } from '@/components/class-detail/MomentsTab';
 
 const ClassDetail = () => {
   const { classId } = useParams();
@@ -138,46 +140,26 @@ const ClassDetail = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="transcript" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9 h-12 gap-1">
+          <TabsList className="grid w-full grid-cols-5 h-12 gap-1">
             <TabsTrigger value="transcript" className="flex items-center text-xs text-blue-500 hover:text-blue-600 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">
               <FileText className="w-4 h-4 mr-1" />
               Transcripción
             </TabsTrigger>
-            <TabsTrigger value="summary" className="flex items-center text-xs text-green-500 hover:text-green-600 data-[state=active]:bg-green-100 data-[state=active]:text-green-700">
+            <TabsTrigger value="resumen" className="flex items-center text-xs text-green-500 hover:text-green-600 data-[state=active]:bg-green-100 data-[state=active]:text-green-700">
               <BookOpen className="w-4 h-4 mr-1" />
               Resumen
             </TabsTrigger>
-            <TabsTrigger value="rubric" className="flex items-center text-xs text-purple-500 hover:text-purple-600 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700">
+            <TabsTrigger value="criterios" className="flex items-center text-xs text-purple-500 hover:text-purple-600 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700">
               <ClipboardList className="w-4 h-4 mr-1" />
-              Rúbrica
+              Criterios ECDF
             </TabsTrigger>
-            <TabsTrigger value="observation" className="flex items-center text-xs text-indigo-500 hover:text-indigo-600 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700">
-              <Eye className="w-4 h-4 mr-1" />
-              Observación
+            <TabsTrigger value="momentos" className="flex items-center text-xs text-indigo-500 hover:text-indigo-600 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700">
+              <Clock className="w-4 h-4 mr-1" />
+              Momentos Clave
             </TabsTrigger>
-            <TabsTrigger value="feedback" className="flex items-center text-xs text-pink-500 hover:text-pink-600 data-[state=active]:bg-pink-100 data-[state=active]:text-pink-700">
+            <TabsTrigger value="participacion" className="flex items-center text-xs text-pink-500 hover:text-pink-600 data-[state=active]:bg-pink-100 data-[state=active]:text-pink-700">
               <Users className="w-4 h-4 mr-1" />
-              Feedback
-            </TabsTrigger>
-            <TabsTrigger value="portfolio" className="flex items-center text-xs text-amber-500 hover:text-amber-600 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-700">
-              <FolderOpen className="w-4 h-4 mr-1" />
-              Portafolio
-            </TabsTrigger>
-            <TabsTrigger value="ecdf" className="flex items-center text-xs text-teal-500 hover:text-teal-600 data-[state=active]:bg-teal-100 data-[state=active]:text-teal-700">
-              <GraduationCap className="w-4 h-4 mr-1" />
-              ECDF
-            </TabsTrigger>
-            <TabsTrigger value="participation" className="flex items-center text-xs text-rose-500 hover:text-rose-600 data-[state=active]:bg-rose-100 data-[state=active]:text-rose-700">
-              <UserCheck className="w-4 h-4 mr-1" />
               Participación
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="flex items-center text-xs text-cyan-500 hover:text-cyan-600 data-[state=active]:bg-cyan-100 data-[state=active]:text-cyan-700">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              Insights
-            </TabsTrigger>
-            <TabsTrigger value="objective" className="flex items-center text-xs text-blue-500 hover:text-blue-600 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">
-              <Target className="w-4 h-4 mr-1" />
-              Objetivos
             </TabsTrigger>
           </TabsList>
 
@@ -192,7 +174,7 @@ const ClassDetail = () => {
             />
           </TabsContent>
 
-          <TabsContent value="summary">
+          <TabsContent value="resumen">
             <SummaryTab
               classAnalysis={classAnalysis}
               recordingTime={recordingTime}
@@ -201,44 +183,19 @@ const ClassDetail = () => {
             />
           </TabsContent>
 
-          <TabsContent value="rubric">
-            <RubricTab classAnalysis={classAnalysis} />
-          </TabsContent>
-
-          <TabsContent value="observation">
-            <ObservationTab classAnalysis={classAnalysis} />
-          </TabsContent>
-
-          <TabsContent value="feedback">
-            <Feedback360Tab classAnalysis={classAnalysis} />
-          </TabsContent>
-
-          <TabsContent value="portfolio">
-            <PortfolioTab classAnalysis={classAnalysis} />
-          </TabsContent>
-
-          <TabsContent value="ecdf">
+          <TabsContent value="criterios">
             <ECDFTab classAnalysis={classAnalysis} />
           </TabsContent>
 
-          <TabsContent value="participation">
+          <TabsContent value="momentos">
+            <MomentsTab classAnalysis={classAnalysis} />
+          </TabsContent>
+
+          <TabsContent value="participacion">
             <ParticipationTab
               classAnalysis={classAnalysis}
               formatTime={formatTime}
             />
-          </TabsContent>
-
-          <TabsContent value="insights">
-            <InsightsTab
-              classAnalysis={classAnalysis}
-              recordingTime={recordingTime}
-              transcript={transcript}
-              audioBlob={audioBlob}
-            />
-          </TabsContent>
-
-          <TabsContent value="objective">
-            <ObjectiveTab classAnalysis={classAnalysis} />
           </TabsContent>
         </Tabs>
       </div>

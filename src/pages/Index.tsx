@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { Plus, BookOpen, Clock, User, Calendar, Search } from 'lucide-react';
+import { Plus, BookOpen, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useClass } from '@/contexts/ClassContext';
 import CreateClassModal from '@/components/CreateClassModal';
@@ -17,11 +15,6 @@ const Index = () => {
   const handleCreateClass = (newClass: {
     name: string;
     teacher: string;
-    day: string;
-    time: string;
-    description: string;
-    subject: string;
-    duration: number;
   }) => {
     addClass(newClass);
     setShowCreateModal(false);
@@ -29,8 +22,7 @@ const Index = () => {
 
   const filteredClasses = classes.filter(cls =>
     cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cls.teacher.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cls.subject.toLowerCase().includes(searchTerm.toLowerCase())
+    cls.teacher.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleClassClick = (classId: string) => {
@@ -66,114 +58,37 @@ const Index = () => {
         <div className="relative mb-8">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
-            placeholder="Buscar clases por nombre, profesor o materia..."
+            placeholder="Buscar clases por nombre o profesor..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 py-3 text-lg border-2 border-gray-200 focus:border-blue-400 rounded-lg"
           />
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm">Total de Clases</p>
-                  <p className="text-3xl font-bold">{classes.length}</p>
-                </div>
-                <BookOpen className="w-12 h-12 text-blue-200" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-100 text-sm">Clases esta Semana</p>
-                  <p className="text-3xl font-bold">{classes.length}</p>
-                </div>
-                <Calendar className="w-12 h-12 text-green-200" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-purple-100 text-sm">Horas Totales</p>
-                  <p className="text-3xl font-bold">{classes.reduce((sum, cls) => sum + cls.duration, 0)}min</p>
-                </div>
-                <Clock className="w-12 h-12 text-purple-200" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Classes Grid */}
+        {/* Class List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredClasses.map((classItem) => (
-            <Card 
-              key={classItem.id} 
-              className="hover:shadow-xl transition-all duration-200 transform hover:scale-105 cursor-pointer border-2 hover:border-blue-300 bg-white"
-              onClick={() => handleClassClick(classItem.id)}
+          {filteredClasses.map((cls) => (
+            <div
+              key={cls.id}
+              onClick={() => handleClassClick(cls.id)}
+              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:scale-105 border-2 border-gray-100"
             >
-              <CardHeader className="pb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <CardTitle className="text-xl font-bold text-gray-900 line-clamp-2">
-                    {classItem.name}
-                  </CardTitle>
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 font-medium">
-                    {classItem.subject}
-                  </Badge>
-                </div>
-                <CardDescription className="text-gray-600 line-clamp-2">
-                  {classItem.description}
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  <div className="flex items-center text-gray-700">
-                    <User className="w-4 h-4 mr-2 text-blue-500" />
-                    <span className="font-medium">{classItem.teacher}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-700">
-                    <Calendar className="w-4 h-4 mr-2 text-green-500" />
-                    <span>{classItem.day}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-gray-700">
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-2 text-purple-500" />
-                      <span>{classItem.time}</span>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {classItem.duration} min
-                    </Badge>
-                  </div>
-                </div>
-                
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <Button 
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClassClick(classItem.id);
-                    }}
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{cls.name}</h3>
+                <p className="text-gray-600 mb-4">Profesor: {cls.teacher}</p>
+                <div className="flex justify-end">
+                  <Button
+                    variant="ghost"
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                   >
-                    Abrir Clase
+                    Iniciar Clase
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* Empty State */}
         {filteredClasses.length === 0 && (
           <div className="text-center py-16">
             <BookOpen className="w-24 h-24 text-gray-300 mx-auto mb-4 float-animation" />

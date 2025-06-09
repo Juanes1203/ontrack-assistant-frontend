@@ -9,37 +9,91 @@ interface ECDFTabProps {
 }
 
 export const ECDFTab: React.FC<ECDFTabProps> = ({ classAnalysis }) => {
-  const domains = [
-    {
-      title: 'Conocimiento Disciplinar',
-      content: classAnalysis.ecdfModel.domainExpertise,
-      icon: '📚'
-    },
-    {
-      title: 'Conocimiento Pedagógico',
-      content: classAnalysis.ecdfModel.pedagogicalKnowledge,
-      icon: '🎯'
-    },
-    {
-      title: 'Conocimiento del Contexto',
-      content: classAnalysis.ecdfModel.contextualKnowledge,
-      icon: '🌍'
-    },
-    {
-      title: 'Desarrollo Profesional',
-      content: classAnalysis.ecdfModel.professionalDevelopment,
-      icon: '📈'
+  const getNivelColor = (nivel: string) => {
+    switch (nivel) {
+      case 'AVANZADO':
+        return 'text-green-600 bg-green-100';
+      case 'SATISFACTORIO':
+        return 'text-blue-600 bg-blue-100';
+      case 'MÍNIMO':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'INFERIOR':
+        return 'text-red-600 bg-red-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
     }
-  ];
-
-  const getScoreLabel = (score: number) => {
-    if (score >= 4) return { label: 'Destacado', color: 'text-green-600 bg-green-100' };
-    if (score >= 3) return { label: 'Satisfactorio', color: 'text-blue-600 bg-blue-100' };
-    if (score >= 2) return { label: 'Mínimo', color: 'text-yellow-600 bg-yellow-100' };
-    return { label: 'Insatisfactorio', color: 'text-red-600 bg-red-100' };
   };
 
-  const scoreInfo = getScoreLabel(classAnalysis.ecdfModel.score);
+  const criterios = [
+    {
+      titulo: 'Contexto de Práctica',
+      criterios: [
+        {
+          titulo: 'Comprensión del Contexto',
+          data: classAnalysis.criterios_evaluacion.contexto_practica.comprension_contexto
+        },
+        {
+          titulo: 'Flexibilidad de la Práctica',
+          data: classAnalysis.criterios_evaluacion.contexto_practica.flexibilidad_practica
+        },
+        {
+          titulo: 'Vinculación con Familias',
+          data: classAnalysis.criterios_evaluacion.contexto_practica.vinculacion_familias
+        }
+      ]
+    },
+    {
+      titulo: 'Reflexión y Planeación',
+      criterios: [
+        {
+          titulo: 'Propósitos Claros',
+          data: classAnalysis.criterios_evaluacion.reflexion_planeacion.propositos_claros
+        },
+        {
+          titulo: 'Articulación de Contenidos',
+          data: classAnalysis.criterios_evaluacion.reflexion_planeacion.articulacion_contenidos
+        },
+        {
+          titulo: 'Organización del Conocimiento',
+          data: classAnalysis.criterios_evaluacion.reflexion_planeacion.organizacion_conocimiento
+        }
+      ]
+    },
+    {
+      titulo: 'Praxis Pedagógica',
+      criterios: [
+        {
+          titulo: 'Comunicación Docente-Estudiantes',
+          data: classAnalysis.criterios_evaluacion.praxis_pedagogica.comunicacion_docente_estudiantes
+        },
+        {
+          titulo: 'Estrategias de Participación',
+          data: classAnalysis.criterios_evaluacion.praxis_pedagogica.estrategias_participacion
+        },
+        {
+          titulo: 'Interés de los Estudiantes',
+          data: classAnalysis.criterios_evaluacion.praxis_pedagogica.interes_estudiantes
+        }
+      ]
+    },
+    {
+      titulo: 'Ambiente de Aula',
+      criterios: [
+        {
+          titulo: 'Clima de Respeto',
+          data: classAnalysis.criterios_evaluacion.ambiente_aula.clima_respeto
+        },
+        {
+          titulo: 'Toma de Decisiones',
+          data: classAnalysis.criterios_evaluacion.ambiente_aula.toma_decisiones
+        },
+        {
+          titulo: 'Estructura y Organización',
+          data: classAnalysis.criterios_evaluacion.ambiente_aula.estructura_organizacion
+        }
+      ]
+    }
+  ];
 
   useEffect(() => {
     // Dynamically add the ElevenLabs script if it hasn't been added yet
@@ -62,45 +116,51 @@ export const ECDFTab: React.FC<ECDFTabProps> = ({ classAnalysis }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {classAnalysis.ecdfModel.score > 0 ? (
-          <div className="space-y-6">
-            {/* Puntuación General */}
-            <div className="text-center p-6 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Puntuación General ECDF</h3>
-              <div className={`inline-block px-4 py-2 rounded-full text-xl font-bold ${scoreInfo.color}`}>
-                {classAnalysis.ecdfModel.score.toFixed(1)} - {scoreInfo.label}
-              </div>
-              <Progress 
-                value={(classAnalysis.ecdfModel.score / 4) * 100} 
-                className="h-3 mt-4"
-              />
-            </div>
-
-            {/* Dominios de Evaluación */}
-            <div className="grid gap-6">
-              {domains.map((domain, index) => (
-                <div key={index} className="border-l-4 border-red-400 bg-red-50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                    <span className="mr-3 text-2xl">{domain.icon}</span>
-                    {domain.title}
-                  </h3>
-                  {domain.content ? (
-                    <p className="text-gray-700 leading-relaxed">{domain.content}</p>
-                  ) : (
-                    <p className="text-gray-500 italic">No hay evaluación específica para este dominio.</p>
-                  )}
+        {classAnalysis.criterios_evaluacion.contexto_practica.comprension_contexto.nivel !== 'MÍNIMO' ? (
+          <div className="space-y-8">
+            {criterios.map((seccion, index) => (
+              <div key={index} className="space-y-4">
+                <h3 className="text-xl font-semibold text-gray-800 border-b pb-2">
+                  {seccion.titulo}
+                </h3>
+                <div className="grid gap-6">
+                  {seccion.criterios.map((criterio, idx) => (
+                    <div key={idx} className="bg-white border rounded-lg p-6 shadow-sm">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="text-lg font-medium text-gray-800">
+                          {criterio.titulo}
+                        </h4>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getNivelColor(criterio.data.nivel)}`}>
+                          {criterio.data.nivel}
+                        </span>
+                      </div>
+                      
+                      {criterio.data.evidencias.length > 0 && (
+                        <div className="mb-4">
+                          <h5 className="font-medium text-gray-700 mb-2">Evidencias:</h5>
+                          <ul className="list-disc pl-5 space-y-1">
+                            {criterio.data.evidencias.map((evidencia, i) => (
+                              <li key={i} className="text-gray-600">{evidencia}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {criterio.data.recomendaciones.length > 0 && (
+                        <div>
+                          <h5 className="font-medium text-gray-700 mb-2">Recomendaciones:</h5>
+                          <ul className="list-disc pl-5 space-y-1">
+                            {criterio.data.recomendaciones.map((recomendacion, i) => (
+                              <li key={i} className="text-gray-600">{recomendacion}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            {/* Información sobre ECDF */}
-            <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-semibold text-blue-800 mb-2">Sobre la Evaluación ECDF</h4>
-              <p className="text-sm text-blue-700">
-                La Evaluación de Competencias Directivos Docentes y Docentes (ECDF) es el proceso de evaluación 
-                que realiza el Estado colombiano para medir las competencias de los educadores del sector público.
-              </p>
-            </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="text-center py-12">
