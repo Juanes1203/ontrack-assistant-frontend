@@ -6,6 +6,37 @@ import { ClassAnalysis } from '@/types/classAnalysis';
 import { elevenLabsService } from '@/services/elevenLabsService';
 import { toast } from 'sonner';
 
+interface CriterioEvaluacion {
+  nivel: string;
+  evidencias: string[];
+  recomendaciones: string[];
+}
+
+interface CriteriosEvaluacion {
+  [categoria: string]: {
+    [criterio: string]: CriterioEvaluacion;
+  };
+}
+
+interface MomentoClave {
+  tiempo: string;
+  tipo: string;
+  descripcion: string;
+  impacto: string;
+}
+
+interface ParticipacionEstudiantes {
+  nivel_participacion: string;
+  tipos_interaccion: string[];
+  momentos_destacados: string[];
+}
+
+interface AreasMejora {
+  fortalezas: string[];
+  oportunidades: string[];
+  recomendaciones_generales: string[];
+}
+
 interface SummaryTabProps {
   classAnalysis: ClassAnalysis;
 }
@@ -38,45 +69,86 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({ classAnalysis }) => {
   };
 
   const handleSendToElevenLabs = async () => {
-    if (!classAnalysis.transcript) {
-      toast.error('No hay análisis disponible para enviar');
-      return;
-    }
+    if (!classAnalysis) return;
 
-    setIsLoading(true);
     try {
-      // Preparar el texto del análisis
-      const analysisText = `
-        Tema: ${classAnalysis.resumen.tema}
-        Objetivos: ${classAnalysis.resumen.objetivos}
-        Duración: ${classAnalysis.resumen.duracion}
-        Participantes: ${classAnalysis.resumen.participantes}
+      setIsLoading(true);
+      
+      // Prepare the analysis text
+      const analysisText = [
+        `Tema: ${classAnalysis.resumen.tema}`,
+        `Objetivos: ${classAnalysis.resumen.objetivos}`,
+        `Duración: ${classAnalysis.resumen.duracion}`,
+        `Participantes: ${classAnalysis.resumen.participantes}`,
+        `\nCriterios de Evaluación:`,
+        formatCriteriosEvaluacion(classAnalysis.criterios_evaluacion),
+        `\nMomentos Clave:`,
+        formatMomentosClave(classAnalysis.momentos_clave),
+        `\nParticipación de Estudiantes:`,
+        formatParticipacionEstudiantes(classAnalysis.participacion_estudiantes),
+        `\nÁreas de Mejora:`,
+        formatAreasMejora(classAnalysis.areas_mejora)
+      ].join('\n\n');
 
-        Criterios de Evaluación:
-        ${JSON.stringify(classAnalysis.criterios_evaluacion, null, 2)}
-
-        Momentos Clave:
-        ${JSON.stringify(classAnalysis.momentos_clave, null, 2)}
-
-        Participación Estudiantil:
-        ${JSON.stringify(classAnalysis.participacion_estudiantes, null, 2)}
-
-        Áreas de Mejora:
-        ${JSON.stringify(classAnalysis.areas_mejora, null, 2)}
-      `;
+      console.log('Sending analysis to ElevenLabs:', {
+        textLength: analysisText.length,
+        preview: analysisText.substring(0, 100) + '...'
+      });
 
       const response = await elevenLabsService.createKnowledgeBase(analysisText);
-      if (response.error) {
-        toast.error(response.error);
-        return;
+      
+      if (response.success) {
+        toast.success('Análisis enviado exitosamente a ElevenLabs');
+      } else {
+        toast.error(response.error || 'Error al enviar el análisis');
       }
-      toast.success('Análisis enviado exitosamente a ElevenLabs');
     } catch (error) {
-      toast.error('Error al enviar el análisis');
-      console.error('Error:', error);
+      console.error('Error sending to ElevenLabs:', error);
+      toast.error('Error al enviar el análisis a ElevenLabs');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Funciones auxiliares para formatear el texto
+  const formatCriteriosEvaluacion = (criterios: CriteriosEvaluacion) => {
+    const lines: string[] = [];
+    for (const [categoria, items] of Object.entries(criterios)) {
+      lines.push(`${categoria}:`);
+      for (const [criterio, data] of Object.entries(items)) {
+        lines.push(`- ${criterio}: ${data.nivel}`);
+        lines.push(`  Evidencias: ${data.evidencias.join(', ')}`);
+        lines.push(`  Recomendaciones: ${data.recomendaciones.join(', ')}`);
+      }
+    }
+    return lines.join('\n');
+  };
+
+  const formatMomentosClave = (momentos: MomentoClave[]) => {
+    return momentos.map(momento => 
+      `- ${momento.tiempo}: ${momento.tipo}\n  ${momento.descripcion}\n  Impacto: ${momento.impacto}`
+    ).join('\n\n');
+  };
+
+  const formatParticipacionEstudiantes = (participacion: ParticipacionEstudiantes) => {
+    return [
+      `Nivel de Participación: ${participacion.nivel_participacion}`,
+      `Tipos de Interacción: ${participacion.tipos_interaccion.join(', ')}`,
+      `Momentos Destacados: ${participacion.momentos_destacados.join(', ')}`
+    ].join('\n');
+  };
+
+  const formatAreasMejora = (areas: AreasMejora) => {
+    return [
+      'Fortalezas:',
+      ...areas.fortalezas.map(f => `- ${f}`),
+      '',
+      'Oportunidades:',
+      ...areas.oportunidades.map(o => `- ${o}`),
+      '',
+      'Recomendaciones Generales:',
+      ...areas.recomendaciones_generales.map(r => `- ${r}`)
+    ].join('\n');
   };
 
   return (

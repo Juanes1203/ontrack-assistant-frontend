@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const ELEVENLABS_API_KEY = import.meta.env.VITE_ELEVENLABS_API_KEY;
+// Use the new API key
+const ELEVENLABS_API_KEY = 'sk_26f2b5ad23c63b0ec8bb0006d617ec9552d08af04a103f16';
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/convai';
 const ELEVENLABS_AGENT_ID = 'agent_01jwsqvdyeeqkv6jvmrwnw7z2g';
 
@@ -12,6 +13,8 @@ interface TextToSpeechResponse {
 interface KnowledgeBaseResponse {
   success: boolean;
   error?: string;
+  id?: string;
+  name?: string;
 }
 
 export const elevenLabsService = {
@@ -65,28 +68,107 @@ export const elevenLabsService = {
 
   async createKnowledgeBase(text: string): Promise<KnowledgeBaseResponse> {
     try {
-      // Enviar el texto a la base de conocimiento del agente
+      // First, create a text file from the content
+      const blob = new Blob([text], { type: 'text/plain' });
+      const file = new File([blob], 'transcript.txt', { type: 'text/plain' });
+
+      // Create FormData
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('name', `Análisis de Clase - ${new Date().toLocaleDateString()}`);
+
+      console.log('Sending file to ElevenLabs:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        name: formData.get('name')
+      });
+
+      // Create the knowledge base document using the file endpoint
       const response = await axios({
         method: 'POST',
-        url: `${ELEVENLABS_API_URL}/knowledge-base/text`,
+        url: `${ELEVENLABS_API_URL}/knowledge-base/file`,
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY
+        },
+        data: formData
+      });
+
+      console.log('ElevenLabs response:', response.data);
+
+      // After creating the document, trigger RAG indexing
+      if (response.data.id) {
+        try {
+          await this.computeRagIndex(response.data.id);
+        } catch (ragError) {
+          console.warn('RAG indexing failed, but document was created:', ragError);
+          // We don't want to fail the whole operation if RAG indexing fails
+          return { 
+            success: true,
+            id: response.data.id,
+            name: response.data.name,
+            error: 'Documento creado pero el índice RAG no pudo ser generado. Puedes intentar indexarlo más tarde.'
+          };
+        }
+      }
+
+      return { 
+        success: true,
+        id: response.data.id,
+        name: response.data.name
+      };
+    } catch (error: any) {
+      // Enhanced error logging
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        statusText: error.response?.statusText
+      });
+
+      let errorMessage = 'Error al enviar el análisis a ElevenLabs. ';
+      
+      if (error.response?.data?.detail) {
+        if (Array.isArray(error.response.data.detail)) {
+          errorMessage += error.response.data.detail.join(', ');
+        } else {
+          errorMessage += error.response.data.detail;
+        }
+      } else if (error.message) {
+        errorMessage += error.message;
+      } else {
+        errorMessage += 'Por favor, verifica tu API key.';
+      }
+
+      return { 
+        success: false,
+        error: errorMessage
+      };
+    }
+  },
+
+  async computeRagIndex(documentId: string): Promise<void> {
+    try {
+      const response = await axios({
+        method: 'POST',
+        url: `${ELEVENLABS_API_URL}/knowledge-base/${documentId}/rag-index`,
         headers: {
           'Content-Type': 'application/json',
           'xi-api-key': ELEVENLABS_API_KEY
         },
         data: {
-          text,
-          name: `Análisis de Clase - ${new Date().toLocaleDateString()}`,
-          agent_id: ELEVENLABS_AGENT_ID
+          model: 'multilingual_e5_large_instruct'
         }
       });
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error creating knowledge base:', error);
-      return { 
-        success: false,
-        error: 'Error al enviar el análisis a ElevenLabs. Por favor, verifica tu API key.'
-      };
+      console.log('RAG indexing response:', response.data);
+    } catch (error: any) {
+      console.error('Error computing RAG index:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        statusText: error.response?.statusText
+      });
+      throw error;
     }
   }
 }; 

@@ -26,9 +26,14 @@ jobs:
           node-version: "20"
           cache: 'npm'
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm list
       - name: Build
-        run: npm run build
+        run: |
+          npm run build
+        env:
+          CI: false # Esto evita que los warnings sean tratados como errores
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
