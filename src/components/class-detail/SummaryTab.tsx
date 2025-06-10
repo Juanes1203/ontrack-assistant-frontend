@@ -92,7 +92,7 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({ classAnalysis }) => {
           <div className="space-y-6">
             <div className="bg-white border rounded-lg p-6 shadow-sm">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Información General</h3>
-              <div className="space-y-4">
+          <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-700">Tema</h4>
                   <p className="text-gray-600">{classAnalysis.resumen.tema}</p>
@@ -111,7 +111,7 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({ classAnalysis }) => {
                 </div>
               </div>
             </div>
-
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white border rounded-lg p-4 shadow-sm">
                 <h4 className="font-medium text-gray-700 mb-2">Duración de la Clase</h4>
@@ -159,7 +159,7 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({ classAnalysis }) => {
                       </ul>
                     </div>
                   )}
-                </div>
+              </div>
               </div>
             )}
 

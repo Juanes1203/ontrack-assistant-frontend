@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, BookOpen, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,12 +6,26 @@ import { useNavigate } from 'react-router-dom';
 import { useClass } from '@/contexts/ClassContext';
 import CreateClassModal from '@/components/CreateClassModal';
 import { MentorAILogo } from '@/components/MentorAILogo';
+import { AnalysisService } from '@/services/analysisService';
+import { ClassAnalysis } from '@/components/ClassAnalysis';
+import { RAGInitializer } from '@/components/RAGInitializer';
+import { DocumentUploader } from '@/components/DocumentUploader';
+
+const STRAICO_TOKEN = 'nF-pDByZtLBgRjEquS8Ril0h04tfEGMInrLVUrdSCttTcqIRB24';
 
 const Index = () => {
   const navigate = useNavigate();
   const { classes, addClass } = useClass();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [analysis, setAnalysis] = useState<{
+    transcript: string;
+    analysis: string;
+    references: Array<{ page_content: string; page: number }>;
+    coinsUsed: number;
+  } | null>(null);
+  const [ragId, setRagId] = useState<string | null>(null);
+  const [ragInfo, setRagInfo] = useState<any>(null);
 
   const handleCreateClass = (newClass: {
     name: string;
@@ -29,6 +43,53 @@ const Index = () => {
   const handleClassClick = (classId: string) => {
     navigate(`/class/${classId}`);
   };
+
+  const handleAnalysis = async (audioUrl: string) => {
+    try {
+      const analysisService = new AnalysisService(STRAICO_TOKEN, ragId!);
+      const result = await analysisService.analyzeClass({
+        audioUrl,
+        ragId: ragId!,
+        straicoToken: STRAICO_TOKEN,
+        searchOptions: {
+          search_type: 'mmr',
+          k: 5,
+          fetch_k: 20,
+          lambda_mult: 0.7
+        }
+      });
+
+      setAnalysis({
+        transcript: result.data.transcript,
+        analysis: result.data.analysis,
+        references: result.data.references,
+        coinsUsed: result.data.coins_used
+      });
+    } catch (error) {
+      console.error('Error al analizar la clase:', error);
+      // Manejar el error apropiadamente
+    }
+  };
+
+  const handleRAGCreated = (newRagId: string, response: any) => {
+    setRagId(newRagId);
+    setRagInfo(response);
+    // Guardar información en localStorage
+    localStorage.setItem('mentorai_rag_id', newRagId);
+    localStorage.setItem('mentorai_rag_info', JSON.stringify(response));
+  };
+
+  // Cargar RAG ID del localStorage al iniciar
+  useEffect(() => {
+    const savedRagId = localStorage.getItem('mentorai_rag_id');
+    const savedRagInfo = localStorage.getItem('mentorai_rag_info');
+    if (savedRagId) {
+      setRagId(savedRagId);
+    }
+    if (savedRagInfo) {
+      setRagInfo(JSON.parse(savedRagInfo));
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -113,6 +174,47 @@ const Index = () => {
                 Crear Primera Clase
               </Button>
             )}
+          </div>
+        )}
+
+        {analysis && (
+          <ClassAnalysis
+            transcript={analysis.transcript}
+            analysis={analysis.analysis}
+            references={analysis.references}
+            coinsUsed={analysis.coinsUsed}
+          />
+        )}
+
+        {!ragId ? (
+          <div className="max-w-2xl mx-auto mt-8">
+            <RAGInitializer
+              token={STRAICO_TOKEN}
+              onRAGCreated={handleRAGCreated}
+            />
+          </div>
+        ) : (
+          <div className="max-w-4xl mx-auto mt-8 space-y-6">
+            {ragInfo && (
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <h3 className="text-lg font-semibold mb-2">RAG Information</h3>
+                <div className="text-sm text-gray-600">
+                  <p><strong>Name:</strong> {ragInfo.data.name}</p>
+                  <p><strong>Files:</strong> {ragInfo.data.original_filename}</p>
+                  <p><strong>Total Words:</strong> {ragInfo.total_words}</p>
+                  <p><strong>Coins Used:</strong> {ragInfo.total_coins}</p>
+                </div>
+              </div>
+            )}
+            
+            <DocumentUploader
+              token={STRAICO_TOKEN}
+              ragId={ragId}
+              onUploadComplete={(response) => {
+                console.log('Documentos cargados:', response);
+                // Actualizar la información del RAG si es necesario
+              }}
+            />
           </div>
         )}
       </div>

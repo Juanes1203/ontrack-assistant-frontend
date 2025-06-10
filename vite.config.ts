@@ -4,20 +4,35 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  base: '/mentorai-virtual-teacher/',
-  server: {
-    host: "::",
-    port: 8080,
-  },
-  plugins: [
-    react(),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+export default defineConfig(({ command }) => {
+  const config = {
+    base: '/mentorai-virtual-teacher/',
+    plugins: [react()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
     },
-  },
-}));
+  };
+
+  // Solo agregar el proxy en desarrollo
+  if (command === 'serve') {
+    return {
+      ...config,
+      server: {
+        host: "::",
+        port: 8080,
+        proxy: {
+          '/api/straico': {
+            target: 'https://api.straico.com',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api\/straico/, ''),
+            secure: false,
+          },
+        },
+      },
+    };
+  }
+
+  return config;
+});

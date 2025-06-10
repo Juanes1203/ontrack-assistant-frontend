@@ -20,7 +20,7 @@ export const useAnalysis = () => {
           nivel: 'MÍNIMO',
           evidencias: [],
           recomendaciones: []
-        },
+    },
         flexibilidad_practica: {
           nivel: 'MÍNIMO',
           evidencias: [],
@@ -37,7 +37,7 @@ export const useAnalysis = () => {
           nivel: 'MÍNIMO',
           evidencias: [],
           recomendaciones: []
-        },
+    },
         articulacion_contenidos: {
           nivel: 'MÍNIMO',
           evidencias: [],
@@ -159,7 +159,7 @@ export const useAnalysis = () => {
             nivel: 'MÍNIMO',
             evidencias: [],
             recomendaciones: []
-          },
+      },
           flexibilidad_practica: {
             nivel: 'MÍNIMO',
             evidencias: [],
@@ -176,7 +176,7 @@ export const useAnalysis = () => {
             nivel: 'MÍNIMO',
             evidencias: [],
             recomendaciones: []
-          },
+      },
           articulacion_contenidos: {
             nivel: 'MÍNIMO',
             evidencias: [],
