@@ -1,3 +1,39 @@
+# MentorAI Virtual Teacher
+
+Aplicación web para análisis de clases y materiales educativos usando IA.
+
+## Características
+
+- Análisis de clases en tiempo real
+- Integración con RAG para procesamiento de materiales educativos
+- Interfaz moderna y responsiva
+- Despliegue automático en GitHub Pages
+
+## Tecnologías
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Straico API
+
+## Desarrollo
+
+```bash
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
+npm run dev
+
+# Construir para producción
+npm run build
+```
+
+## Despliegue
+
+La aplicación se despliega automáticamente en GitHub Pages cuando se hace push a la rama main.
+
 # MentorAI Virtual Teacher 
 
 *Asistente virtual educativo con inteligencia artificial para aprendizaje personalizado*
