@@ -9,12 +9,6 @@ import {
   FileText, 
   BookOpen,
   ClipboardList,
-  Eye,
-  FolderOpen,
-  UserCheck,
-  GraduationCap,
-  TrendingUp,
-  Target,
   Clock
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -23,18 +17,11 @@ import { useClass } from '@/contexts/ClassContext';
 import { RecordingControls } from '@/components/class-detail/RecordingControls';
 import { TranscriptTab } from '@/components/class-detail/TranscriptTab';
 import { SummaryTab } from '@/components/class-detail/SummaryTab';
-import { RubricTab } from '@/components/class-detail/RubricTab';
-import { ObservationTab } from '@/components/class-detail/ObservationTab';
-import { Feedback360Tab } from '@/components/class-detail/Feedback360Tab';
-import { PortfolioTab } from '@/components/class-detail/PortfolioTab';
 import { ECDFTab } from '@/components/class-detail/ECDFTab';
 import { ParticipationTab } from '@/components/class-detail/ParticipationTab';
-import { ProfessorTab } from '@/components/class-detail/ProfessorTab';
-import { InsightsTab } from '@/components/class-detail/InsightsTab';
+import { MomentsTab } from '@/components/class-detail/MomentsTab';
 import { useRecording } from '@/components/class-detail/useRecording';
 import { useAnalysis } from '@/components/class-detail/useAnalysis';
-import { ObjectiveTab } from '@/components/class-detail/ObjectiveTab';
-import { MomentsTab } from '@/components/class-detail/MomentsTab';
 
 const ClassDetail = () => {
   const { classId } = useParams();
@@ -46,17 +33,13 @@ const ClassDetail = () => {
   
   const {
     isRecording,
-    isPaused,
-    recordingTime,
-    transcript,
-    isListening,
-    setTranscript,
+    participants,
     startRecording,
     stopRecording,
-    pauseRecording,
-    resetRecording,
-    formatTime,
-    audioBlob
+    addParticipant,
+    removeParticipant,
+    transcript,
+    setTranscript
   } = useRecording();
 
   const {
@@ -82,11 +65,11 @@ const ClassDetail = () => {
   }
 
   const handleGenerateAnalysis = () => {
-    generateAnalysis(transcript, recordingTime, formatTime);
+    generateAnalysis(transcript);
   };
 
   const handleResetRecording = () => {
-    resetRecording();
+    setTranscript('');
     resetAnalysis();
   };
 
@@ -119,8 +102,8 @@ const ClassDetail = () => {
                 <Users className="w-4 h-4 mr-1" />
                 {classData.teacher}
               </span>
-              <span>{classData.day} - {classData.time}</span>
-              <Badge variant="secondary">{classData.subject}</Badge>
+              <span>{new Date(classData.createdAt).toLocaleDateString()}</span>
+              <Badge variant="secondary">Clase</Badge>
             </div>
           </div>
         </div>
@@ -128,14 +111,11 @@ const ClassDetail = () => {
         {/* Recording Controls */}
         <RecordingControls
           isRecording={isRecording}
-          isPaused={isPaused}
-          recordingTime={recordingTime}
-          isListening={isListening}
-          formatTime={formatTime}
+          participants={participants}
           startRecording={startRecording}
           stopRecording={stopRecording}
-          pauseRecording={pauseRecording}
-          resetRecording={handleResetRecording}
+          addParticipant={addParticipant}
+          removeParticipant={removeParticipant}
         />
 
         {/* Main Tabs */}
@@ -177,9 +157,6 @@ const ClassDetail = () => {
           <TabsContent value="resumen">
             <SummaryTab
               classAnalysis={classAnalysis}
-              recordingTime={recordingTime}
-              transcript={transcript}
-              formatTime={formatTime}
             />
           </TabsContent>
 
@@ -194,7 +171,6 @@ const ClassDetail = () => {
           <TabsContent value="participacion">
             <ParticipationTab
               classAnalysis={classAnalysis}
-              formatTime={formatTime}
             />
           </TabsContent>
         </Tabs>

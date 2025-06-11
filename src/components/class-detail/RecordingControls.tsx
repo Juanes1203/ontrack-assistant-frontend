@@ -1,121 +1,124 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 import { 
   Mic, 
-  Square, 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  Clock,
-  MicOff
+  MicOff, 
+  Plus, 
+  X,
+  UserPlus
 } from 'lucide-react';
+
+interface Participant {
+  id: string;
+  name: string;
+  isRecording: boolean;
+  transcript: string;
+}
 
 interface RecordingControlsProps {
   isRecording: boolean;
-  isPaused: boolean;
-  recordingTime: number;
-  isListening: boolean;
-  formatTime: (seconds: number) => string;
-  startRecording: () => void;
-  stopRecording: () => void;
-  pauseRecording: () => void;
-  resetRecording: () => void;
+  participants: Participant[];
+  startRecording: (participantId: string) => void;
+  stopRecording: (participantId: string) => void;
+  addParticipant: (name: string) => void;
+  removeParticipant: (id: string) => void;
 }
 
 export const RecordingControls: React.FC<RecordingControlsProps> = ({
   isRecording,
-  isPaused,
-  recordingTime,
-  isListening,
-  formatTime,
+  participants,
   startRecording,
   stopRecording,
-  pauseRecording,
-  resetRecording
+  addParticipant,
+  removeParticipant
 }) => {
-  return (
-    <Card className="mb-8 border-2 shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center text-xl">
-          <Mic className="w-6 h-6 mr-2 text-red-500" />
-          Control de Grabación y Transcripción
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-4">
-            {!isRecording ? (
-              <Button 
-                onClick={startRecording}
-                className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                <Mic className="w-5 h-5 mr-2" />
-                Iniciar Grabación
-              </Button>
-            ) : (
-              <div className="flex space-x-2">
-                <Button 
-                  onClick={pauseRecording}
-                  variant="outline"
-                  className="border-2"
-                >
-                  {isPaused ? <Play className="w-4 h-4 mr-2" /> : <Pause className="w-4 h-4 mr-2" />}
-                  {isPaused ? 'Reanudar' : 'Pausar'}
-                </Button>
-                <Button 
-                  onClick={stopRecording}
-                  className="bg-gray-600 hover:bg-gray-700 text-white"
-                >
-                  <Square className="w-4 h-4 mr-2" />
-                  Detener
-                </Button>
-              </div>
-            )}
-            
-            <Button 
-              onClick={resetRecording}
-              variant="outline"
-              className="border-2"
-            >
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Reiniciar
-            </Button>
-          </div>
+  const [newParticipantName, setNewParticipantName] = useState('');
 
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center text-lg font-mono">
-              <Clock className="w-5 h-5 mr-2 text-blue-500" />
-              <span className={`${isRecording && !isPaused ? 'text-red-600 pulse-slow' : 'text-gray-700'}`}>
-                {formatTime(recordingTime)}
-              </span>
+  const handleAddParticipant = () => {
+    if (newParticipantName.trim()) {
+      addParticipant(newParticipantName.trim());
+      setNewParticipantName('');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Add Participant Section */}
+      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-100">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-blue-900 mb-2 flex items-center">
+              <UserPlus className="w-5 h-5 mr-2" />
+              Agregar Participante
+            </h3>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Nombre del participante"
+                value={newParticipantName}
+                onChange={(e) => setNewParticipantName(e.target.value)}
+                className="flex-1 bg-white border-blue-200 focus:border-blue-400"
+                onKeyPress={(e) => e.key === 'Enter' && handleAddParticipant()}
+              />
+              <Button 
+                onClick={handleAddParticipant}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar
+              </Button>
             </div>
-            
-            {isRecording && (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-red-500 rounded-full mr-2 pulse-slow"></div>
-                  <span className="text-red-600 font-medium">
-                    {isPaused ? 'Pausado' : 'Grabando'}
-                  </span>
-                </div>
-                
-                <div className="flex items-center">
-                  {isListening ? (
-                    <Mic className="w-4 h-4 text-green-500 mr-1" />
-                  ) : (
-                    <MicOff className="w-4 h-4 text-gray-400 mr-1" />
-                  )}
-                  <span className={`text-sm ${isListening ? 'text-green-600' : 'text-gray-500'}`}>
-                    {isListening ? 'Escuchando' : 'Sin audio'}
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </Card>
+
+      {/* Participants Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {participants.map((participant) => (
+          <Card 
+            key={participant.id}
+            className={`p-4 transition-all duration-200 ${
+              participant.isRecording 
+                ? 'bg-red-50 border-red-200 shadow-lg' 
+                : 'bg-white hover:shadow-md'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium text-gray-900">{participant.name}</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeParticipant(participant.id)}
+                className="text-gray-500 hover:text-red-500"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <Button
+              onClick={() => participant.isRecording ? stopRecording(participant.id) : startRecording(participant.id)}
+              className={`w-full ${
+                participant.isRecording
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {participant.isRecording ? (
+                <>
+                  <MicOff className="w-4 h-4 mr-2" />
+                  Detener Grabación
+                </>
+              ) : (
+                <>
+                  <Mic className="w-4 h-4 mr-2" />
+                  Iniciar Grabación
+                </>
+              )}
+            </Button>
+          </Card>
+        ))}
+      </div>
+    </div>
   );
 };

@@ -7,7 +7,9 @@ import {
   Brain, 
   Download,
   Save,
-  Mic
+  Mic,
+  Users,
+  Edit
 } from 'lucide-react';
 
 interface TranscriptTabProps {
@@ -48,6 +50,10 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
       document.body.appendChild(script);
     }
   }, []);
+
+  const handleTranscriptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTranscript(e.target.value);
+  };
 
   return (
     <Card className="border-2 shadow-lg">
@@ -97,17 +103,42 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
             </div>
           )}
           
-          <Textarea
-            value={transcript}
-            onChange={(e) => setTranscript(e.target.value)}
-            placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. Habla claramente para mejores resultados. Puedes editarla manualmente después de la grabación."
-            className="min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400"
-          />
+          <div className="relative">
+            <div className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+              <div className="flex items-center text-sm text-gray-600">
+                <Edit className="w-4 h-4 mr-2 text-blue-500" />
+                <span>Editable</span>
+              </div>
+            </div>
+            <Textarea
+              value={transcript}
+              onChange={handleTranscriptChange}
+              placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. También puedes editar el texto manualmente. Usa el formato 'Nombre: Texto' para cada intervención."
+              className="min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400"
+            />
+            {transcript && (
+              <div className="absolute bottom-2 right-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-gray-200 shadow-sm">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Users className="w-4 h-4 mr-2 text-blue-500" />
+                  <span>
+                    {transcript.split('\n\n').length} {transcript.split('\n\n').length === 1 ? 'participante' : 'participantes'}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
           
           {transcript && (
-            <div className="text-sm text-gray-600">
-              Palabras: {transcript.split(' ').filter(word => word.length > 0).length} | 
-              Caracteres: {transcript.length}
+            <div className="flex justify-between items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div>
+                Palabras: {transcript.split(/\s+/).filter(word => word.length > 0).length}
+              </div>
+              <div>
+                Caracteres: {transcript.length}
+              </div>
+              <div>
+                Intervenciones: {transcript.split('\n\n').length}
+              </div>
             </div>
           )}
         </div>
