@@ -220,22 +220,41 @@ ${transcript}`;
     console.log('Analysis content:', analysisContent);
     
     try {
-      // Limpiar el contenido de los backticks de markdown
-      const cleanContent = analysisContent.replace(/```json\n?|\n?```/g, '').trim();
+      // Limpiar el contenido de los backticks de markdown y cualquier otro formato
+      const cleanContent = analysisContent
+        .replace(/```json\n?|\n?```/g, '') // Remove markdown code blocks
+        .replace(/^[\s\n]+|[\s\n]+$/g, '') // Trim whitespace and newlines
+        .replace(/[\u2018\u2019]/g, "'") // Replace smart quotes with regular quotes
+        .replace(/[\u201C\u201D]/g, '"'); // Replace smart quotes with regular quotes
+      
       console.log('Cleaned content:', cleanContent);
       
-      const analysis = JSON.parse(cleanContent);
-      console.log('Successfully parsed analysis');
-      
-      // Retornar el análisis con la transcripción incluida
-      return {
-        transcript,
-        ...analysis
-      };
-    } catch (parseError) {
-      console.error('Error parsing analysis content:', parseError);
-      console.error('Raw content:', analysisContent);
-      throw new Error('Failed to parse analysis response');
+      try {
+        const analysis = JSON.parse(cleanContent);
+        console.log('Successfully parsed analysis');
+        
+        // Validate the analysis structure
+        if (!analysis.resumen || !analysis.criterios_evaluacion) {
+          throw new Error('Invalid analysis structure: missing required fields');
+        }
+        
+        // Retornar el análisis con la transcripción incluida
+        return {
+          transcript,
+          ...analysis
+        };
+      } catch (parseError) {
+        console.error('Error parsing analysis content:', parseError);
+        console.error('Raw content:', analysisContent);
+        console.error('Cleaned content:', cleanContent);
+        throw new Error(`Failed to parse analysis response: ${parseError.message}`);
+      }
+    } catch (error) {
+      console.error('Error processing analysis content:', error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to process analysis response: ${error.message}`);
+      }
+      throw new Error('Failed to process analysis response: Unknown error');
     }
   } catch (error) {
     console.error('Error analyzing transcript:', error);
