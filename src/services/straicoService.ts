@@ -61,7 +61,11 @@ export const analyzeTranscript = async (transcript: string): Promise<ClassAnalys
     throw new Error('Transcript is empty');
   }
 
-  const systemPrompt = `Eres un analista educativo experto en la Evaluación de Carácter Diagnóstico Formativa (ECDF) para docentes. Analiza la siguiente transcripción de clase y proporciona un análisis detallado basado en los criterios de evaluación ECDF. Enfócate en identificar aspectos clave de la práctica docente según los criterios establecidos. IMPORTANTE: Proporciona TODO el análisis en español.`;
+  const systemPrompt = `Eres un analista educativo experto en la Evaluación de Carácter Diagnóstico Formativa (ECDF) para docentes. Analiza la siguiente transcripción de clase y proporciona un análisis detallado basado en los criterios de evaluación ECDF. Enfócate en identificar aspectos clave de la práctica docente según los criterios establecidos. IMPORTANTE: Proporciona TODO el análisis en español.
+
+La transcripción incluye intervenciones de profesores y estudiantes, identificados por sus roles. Analiza la interacción entre ellos y cómo contribuye al aprendizaje.
+
+IMPORTANTE: Responde SOLO con el JSON del análisis, sin ningún texto adicional antes o después.`;
 
   const userPrompt = `Por favor, analiza esta transcripción de clase y proporciona un análisis estructurado en el siguiente formato JSON, basado en los criterios de la Evaluación de Carácter Diagnóstico Formativa (ECDF):
 
@@ -70,7 +74,10 @@ export const analyzeTranscript = async (transcript: string): Promise<ClassAnalys
     "tema": "string",
     "objetivos": "string",
     "duracion": "string",
-    "participantes": "string"
+    "participantes": {
+      "profesores": ["string"],
+      "estudiantes": ["string"]
+    }
   },
   "criterios_evaluacion": {
     "contexto_practica": {
@@ -147,13 +154,24 @@ export const analyzeTranscript = async (transcript: string): Promise<ClassAnalys
       "tiempo": "string",
       "tipo": "string",
       "descripcion": "string",
-      "impacto": "string"
+      "impacto": "string",
+      "participante": "string"
     }
   ],
   "participacion_estudiantes": {
     "nivel_participacion": "string",
     "tipos_interaccion": ["string"],
-    "momentos_destacados": ["string"]
+    "momentos_destacados": ["string"],
+    "distribucion_participacion": {
+      "profesores": {
+        "tiempo_total": "string",
+        "intervenciones": "number"
+      },
+      "estudiantes": {
+        "tiempo_total": "string",
+        "intervenciones": "number"
+      }
+    }
   },
   "areas_mejora": {
     "fortalezas": ["string"],
@@ -163,6 +181,8 @@ export const analyzeTranscript = async (transcript: string): Promise<ClassAnalys
 }
 
 Para cada criterio de evaluación, asigna un nivel según la descripción proporcionada en el ECDF y fundamenta tu evaluación con evidencias específicas de la transcripción. Las recomendaciones deben ser prácticas y orientadas a la mejora continua.
+
+IMPORTANTE: Responde SOLO con el JSON del análisis, sin ningún texto adicional antes o después.
 
 Transcripción a analizar:
 ${transcript}`;
@@ -207,7 +227,6 @@ ${transcript}`;
     const data: StraicoResponse = await response.json();
     console.log('Received response from Straico API:', data);
     
-    // Obtener el primer modelo de la respuesta
     const firstModelKey = Object.keys(data.data.completions)[0];
     const completion = data.data.completions[firstModelKey].completion;
     
@@ -220,12 +239,13 @@ ${transcript}`;
     console.log('Analysis content:', analysisContent);
     
     try {
-      // Limpiar el contenido de los backticks de markdown y cualquier otro formato
+      // Limpiar el contenido para obtener solo el JSON
       const cleanContent = analysisContent
         .replace(/```json\n?|\n?```/g, '') // Remove markdown code blocks
         .replace(/^[\s\n]+|[\s\n]+$/g, '') // Trim whitespace and newlines
         .replace(/[\u2018\u2019]/g, "'") // Replace smart quotes with regular quotes
-        .replace(/[\u201C\u201D]/g, '"'); // Replace smart quotes with regular quotes
+        .replace(/[\u201C\u201D]/g, '"') // Replace smart quotes with regular quotes
+        .replace(/^[^{]*({[\s\S]*})[^}]*$/, '$1'); // Extract only the JSON object
       
       console.log('Cleaned content:', cleanContent);
       
@@ -233,12 +253,10 @@ ${transcript}`;
         const analysis = JSON.parse(cleanContent);
         console.log('Successfully parsed analysis');
         
-        // Validate the analysis structure
         if (!analysis.resumen || !analysis.criterios_evaluacion) {
           throw new Error('Invalid analysis structure: missing required fields');
         }
-        
-        // Retornar el análisis con la transcripción incluida
+      
         return {
           transcript,
           ...analysis

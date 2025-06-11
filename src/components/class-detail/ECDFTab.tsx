@@ -8,93 +8,22 @@ interface ECDFTabProps {
   classAnalysis: ClassAnalysis;
 }
 
+const getNivelValue = (nivel: string): number => {
+  switch (nivel) {
+    case 'AVANZADO':
+      return 100;
+    case 'SATISFACTORIO':
+      return 75;
+    case 'MÍNIMO':
+      return 50;
+    case 'INFERIOR':
+      return 25;
+    default:
+      return 0;
+  }
+};
+
 export const ECDFTab: React.FC<ECDFTabProps> = ({ classAnalysis }) => {
-  const getNivelColor = (nivel: string) => {
-    switch (nivel) {
-      case 'AVANZADO':
-        return 'text-green-600 bg-green-100';
-      case 'SATISFACTORIO':
-        return 'text-blue-600 bg-blue-100';
-      case 'MÍNIMO':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'INFERIOR':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-  const criterios = [
-    {
-      titulo: 'Contexto de Práctica',
-      criterios: [
-        {
-          titulo: 'Comprensión del Contexto',
-          data: classAnalysis.criterios_evaluacion.contexto_practica.comprension_contexto
-        },
-        {
-          titulo: 'Flexibilidad de la Práctica',
-          data: classAnalysis.criterios_evaluacion.contexto_practica.flexibilidad_practica
-        },
-        {
-          titulo: 'Vinculación con Familias',
-          data: classAnalysis.criterios_evaluacion.contexto_practica.vinculacion_familias
-        }
-      ]
-    },
-    {
-      titulo: 'Reflexión y Planeación',
-      criterios: [
-        {
-          titulo: 'Propósitos Claros',
-          data: classAnalysis.criterios_evaluacion.reflexion_planeacion.propositos_claros
-        },
-        {
-          titulo: 'Articulación de Contenidos',
-          data: classAnalysis.criterios_evaluacion.reflexion_planeacion.articulacion_contenidos
-        },
-        {
-          titulo: 'Organización del Conocimiento',
-          data: classAnalysis.criterios_evaluacion.reflexion_planeacion.organizacion_conocimiento
-        }
-      ]
-    },
-    {
-      titulo: 'Praxis Pedagógica',
-      criterios: [
-        {
-          titulo: 'Comunicación Docente-Estudiantes',
-          data: classAnalysis.criterios_evaluacion.praxis_pedagogica.comunicacion_docente_estudiantes
-        },
-        {
-          titulo: 'Estrategias de Participación',
-          data: classAnalysis.criterios_evaluacion.praxis_pedagogica.estrategias_participacion
-        },
-        {
-          titulo: 'Interés de los Estudiantes',
-          data: classAnalysis.criterios_evaluacion.praxis_pedagogica.interes_estudiantes
-        }
-      ]
-    },
-    {
-      titulo: 'Ambiente de Aula',
-      criterios: [
-        {
-          titulo: 'Clima de Respeto',
-          data: classAnalysis.criterios_evaluacion.ambiente_aula.clima_respeto
-        },
-        {
-          titulo: 'Toma de Decisiones',
-          data: classAnalysis.criterios_evaluacion.ambiente_aula.toma_decisiones
-        },
-        {
-          titulo: 'Estructura y Organización',
-          data: classAnalysis.criterios_evaluacion.ambiente_aula.estructura_organizacion
-        }
-      ]
-    }
-  ];
-
   useEffect(() => {
     // Dynamically add the ElevenLabs script if it hasn't been added yet
     if (!document.getElementById("elevenlabs-convai-script")) {
@@ -111,68 +40,352 @@ export const ECDFTab: React.FC<ECDFTabProps> = ({ classAnalysis }) => {
     <Card className="border-2 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
-          <GraduationCap className="w-5 h-5 mr-2 text-teal-600" />
-          Evaluación ECDF
+          <GraduationCap className="w-5 h-5 mr-2 text-purple-600" />
+          Criterios de Evaluación ECDF
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {classAnalysis.criterios_evaluacion.contexto_practica.comprension_contexto.nivel !== 'MÍNIMO' ? (
-          <div className="space-y-8">
-            {criterios.map((seccion, index) => (
-              <div key={index} className="space-y-4">
-                <h3 className="text-xl font-semibold text-gray-800 border-b pb-2">
-                  {seccion.titulo}
-                </h3>
-                <div className="grid gap-6">
-                  {seccion.criterios.map((criterio, idx) => (
-                    <div key={idx} className="bg-white border rounded-lg p-6 shadow-sm">
-                      <div className="flex justify-between items-start mb-4">
-                        <h4 className="text-lg font-medium text-gray-800">
-                          {criterio.titulo}
-                        </h4>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getNivelColor(criterio.data.nivel)}`}>
-                          {criterio.data.nivel}
-                        </span>
-                      </div>
-                      
-                      {criterio.data.evidencias.length > 0 && (
-                        <div className="mb-4">
-                          <h5 className="font-medium text-gray-700 mb-2">Evidencias:</h5>
-                          <ul className="list-disc pl-5 space-y-1">
-                            {criterio.data.evidencias.map((evidencia, i) => (
-                              <li key={i} className="text-gray-600">{evidencia}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {criterio.data.recomendaciones.length > 0 && (
-                        <div>
-                          <h5 className="font-medium text-gray-700 mb-2">Recomendaciones:</h5>
-                          <ul className="list-disc pl-5 space-y-1">
-                            {criterio.data.recomendaciones.map((recomendacion, i) => (
-                              <li key={i} className="text-gray-600">{recomendacion}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+        <div className="space-y-8">
+          {/* Contexto de la Práctica */}
+          <div className="bg-white border rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Contexto de la Práctica</h3>
+            
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Comprensión del Contexto</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.contexto_practica.comprension_contexto.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.contexto_practica.comprension_contexto.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.contexto_practica.comprension_contexto.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.contexto_practica.comprension_contexto.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
                 </div>
               </div>
-            ))}
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Flexibilidad de la Práctica</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.contexto_practica.flexibilidad_practica.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.contexto_practica.flexibilidad_practica.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.contexto_practica.flexibilidad_practica.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.contexto_practica.flexibilidad_practica.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Vinculación con Familias</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.contexto_practica.vinculacion_familias.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.contexto_practica.vinculacion_familias.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.contexto_practica.vinculacion_familias.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.contexto_practica.vinculacion_familias.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg mb-4">
-              Evaluación ECDF
-            </p>
-            <p className="text-gray-400 text-sm">
-              Genera el análisis para ver la evaluación detallada
-            </p>
+
+          {/* Reflexión y Planeación */}
+          <div className="bg-white border rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Reflexión y Planeación</h3>
+            
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Propósitos Claros</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.reflexion_planeacion.propositos_claros.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.reflexion_planeacion.propositos_claros.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.reflexion_planeacion.propositos_claros.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.reflexion_planeacion.propositos_claros.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Articulación de Contenidos</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.reflexion_planeacion.articulacion_contenidos.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.reflexion_planeacion.articulacion_contenidos.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.reflexion_planeacion.articulacion_contenidos.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.reflexion_planeacion.articulacion_contenidos.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Organización del Conocimiento</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.reflexion_planeacion.organizacion_conocimiento.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.reflexion_planeacion.organizacion_conocimiento.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.reflexion_planeacion.organizacion_conocimiento.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.reflexion_planeacion.organizacion_conocimiento.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Praxis Pedagógica */}
+          <div className="bg-white border rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Praxis Pedagógica</h3>
+            
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Comunicación Docente-Estudiantes</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.praxis_pedagogica.comunicacion_docente_estudiantes.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.praxis_pedagogica.comunicacion_docente_estudiantes.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.praxis_pedagogica.comunicacion_docente_estudiantes.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.praxis_pedagogica.comunicacion_docente_estudiantes.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Estrategias de Participación</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.praxis_pedagogica.estrategias_participacion.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.praxis_pedagogica.estrategias_participacion.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.praxis_pedagogica.estrategias_participacion.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.praxis_pedagogica.estrategias_participacion.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Interés de los Estudiantes</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.praxis_pedagogica.interes_estudiantes.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.praxis_pedagogica.interes_estudiantes.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.praxis_pedagogica.interes_estudiantes.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.praxis_pedagogica.interes_estudiantes.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Ambiente del Aula */}
+          <div className="bg-white border rounded-lg p-6 shadow-sm">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Ambiente del Aula</h3>
+            
+            <div className="space-y-6">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Clima de Respeto</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.ambiente_aula.clima_respeto.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.ambiente_aula.clima_respeto.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.ambiente_aula.clima_respeto.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.ambiente_aula.clima_respeto.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Toma de Decisiones</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.ambiente_aula.toma_decisiones.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.ambiente_aula.toma_decisiones.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.ambiente_aula.toma_decisiones.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.ambiente_aula.toma_decisiones.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-medium text-gray-700">Estructura y Organización</h4>
+                  <span className="text-sm font-medium text-gray-600">
+                    {classAnalysis.criterios_evaluacion.ambiente_aula.estructura_organizacion.nivel}
+                  </span>
+                </div>
+                <Progress value={getNivelValue(classAnalysis.criterios_evaluacion.ambiente_aula.estructura_organizacion.nivel)} className="h-2" />
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Evidencias</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.ambiente_aula.estructura_organizacion.evidencias.map((evidencia, index) => (
+                      <li key={index} className="text-gray-600">{evidencia}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Recomendaciones</h5>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {classAnalysis.criterios_evaluacion.ambiente_aula.estructura_organizacion.recomendaciones.map((recomendacion, index) => (
+                      <li key={index} className="text-gray-600">{recomendacion}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <elevenlabs-convai agent-id="agent_01jwsqvdyeeqkv6jvmrwnw7z2g"></elevenlabs-convai>
       </CardContent>
     </Card>

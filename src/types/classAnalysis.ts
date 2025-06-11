@@ -82,7 +82,10 @@ export interface ClassAnalysis {
     tema: string;
     objetivos: string;
     duracion: string;
-    participantes: string;
+    participantes: {
+      profesores: string[];
+      estudiantes: string[];
+    };
   };
   criterios_evaluacion: {
     contexto_practica: {
@@ -159,11 +162,22 @@ export interface ClassAnalysis {
     tipo: string;
     descripcion: string;
     impacto: string;
+    participante: string;
   }>;
   participacion_estudiantes: {
     nivel_participacion: string;
     tipos_interaccion: string[];
     momentos_destacados: string[];
+    distribucion_participacion: {
+      profesores: {
+        tiempo_total: string;
+        intervenciones: number;
+      };
+      estudiantes: {
+        tiempo_total: string;
+        intervenciones: number;
+      };
+    };
   };
   areas_mejora: {
     fortalezas: string[];

@@ -179,7 +179,24 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({ classAnalysis }) => {
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-700">Participantes</h4>
-                  <p className="text-gray-600">{classAnalysis.resumen.participantes}</p>
+                  <div className="text-gray-600">
+                    <div className="mb-2">
+                      <span className="font-medium">Profesores:</span>
+                      <ul className="list-disc pl-5">
+                        {classAnalysis.resumen.participantes.profesores.map((profesor, index) => (
+                          <li key={index}>{profesor}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <span className="font-medium">Estudiantes:</span>
+                      <ul className="list-disc pl-5">
+                        {classAnalysis.resumen.participantes.estudiantes.map((estudiante, index) => (
+                          <li key={index}>{estudiante}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

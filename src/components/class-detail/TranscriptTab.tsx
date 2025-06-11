@@ -110,12 +110,12 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
                 <span>Editable</span>
               </div>
             </div>
-            <Textarea
-              value={transcript}
+          <Textarea
+            value={transcript}
               onChange={handleTranscriptChange}
               placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. También puedes editar el texto manualmente. Usa el formato 'Nombre: Texto' para cada intervención."
-              className="min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400"
-            />
+            className="min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400"
+          />
             {transcript && (
               <div className="absolute bottom-2 right-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-gray-200 shadow-sm">
                 <div className="flex items-center text-sm text-gray-600">
@@ -134,7 +134,7 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
                 Palabras: {transcript.split(/\s+/).filter(word => word.length > 0).length}
               </div>
               <div>
-                Caracteres: {transcript.length}
+              Caracteres: {transcript.length}
               </div>
               <div>
                 Intervenciones: {transcript.split('\n\n').length}

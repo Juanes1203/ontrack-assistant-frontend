@@ -19,6 +19,7 @@ interface Participant {
   isRecording: boolean;
   transcript: string;
   transcriptHistory: TranscriptEntry[];
+  type: 'teacher' | 'student';
 }
 
 interface UseRecordingReturn {
@@ -28,7 +29,7 @@ interface UseRecordingReturn {
   transcript: string;
   setTranscript: (value: string) => void;
   participants: Participant[];
-  addParticipant: (name: string) => void;
+  addParticipant: (name: string, type: 'teacher' | 'student') => void;
   removeParticipant: (id: string) => void;
   getCombinedTranscript: () => string;
 }
@@ -42,13 +43,14 @@ export const useRecording = (): UseRecordingReturn => {
   const [recognitionInstances, setRecognitionInstances] = useState<{ [key: string]: any }>({});
   const [currentTranscripts, setCurrentTranscripts] = useState<{ [key: string]: { text: string; timestamp: number } }>({});
 
-  const addParticipant = useCallback((name: string) => {
+  const addParticipant = useCallback((name: string, type: 'teacher' | 'student') => {
     const newParticipant: Participant = {
       id: Math.random().toString(36).substr(2, 9),
       name,
       isRecording: false,
       transcript: '',
-      transcriptHistory: []
+      transcriptHistory: [],
+      type
     };
     setParticipants(prev => [...prev, newParticipant]);
   }, []);

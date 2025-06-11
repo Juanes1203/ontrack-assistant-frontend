@@ -12,7 +12,10 @@ export const useAnalysis = () => {
       tema: '',
       objetivos: '',
       duracion: '',
-      participantes: ''
+      participantes: {
+        profesores: [],
+        estudiantes: []
+      }
     },
     criterios_evaluacion: {
       contexto_practica: {
@@ -20,7 +23,7 @@ export const useAnalysis = () => {
           nivel: 'MÍNIMO',
           evidencias: [],
           recomendaciones: []
-    },
+        },
         flexibilidad_practica: {
           nivel: 'MÍNIMO',
           evidencias: [],
@@ -37,7 +40,7 @@ export const useAnalysis = () => {
           nivel: 'MÍNIMO',
           evidencias: [],
           recomendaciones: []
-    },
+        },
         articulacion_contenidos: {
           nivel: 'MÍNIMO',
           evidencias: [],
@@ -88,7 +91,17 @@ export const useAnalysis = () => {
     participacion_estudiantes: {
       nivel_participacion: '',
       tipos_interaccion: [],
-      momentos_destacados: []
+      momentos_destacados: [],
+      distribucion_participacion: {
+        profesores: {
+          tiempo_total: '',
+          intervenciones: 0
+        },
+        estudiantes: {
+          tiempo_total: '',
+          intervenciones: 0
+        }
+      }
     },
     areas_mejora: {
       fortalezas: [],
@@ -151,7 +164,10 @@ export const useAnalysis = () => {
         tema: '',
         objetivos: '',
         duracion: '',
-        participantes: ''
+        participantes: {
+          profesores: [],
+          estudiantes: []
+        }
       },
       criterios_evaluacion: {
         contexto_practica: {
@@ -159,7 +175,7 @@ export const useAnalysis = () => {
             nivel: 'MÍNIMO',
             evidencias: [],
             recomendaciones: []
-      },
+          },
           flexibilidad_practica: {
             nivel: 'MÍNIMO',
             evidencias: [],
@@ -176,7 +192,7 @@ export const useAnalysis = () => {
             nivel: 'MÍNIMO',
             evidencias: [],
             recomendaciones: []
-      },
+          },
           articulacion_contenidos: {
             nivel: 'MÍNIMO',
             evidencias: [],
@@ -227,7 +243,17 @@ export const useAnalysis = () => {
       participacion_estudiantes: {
         nivel_participacion: '',
         tipos_interaccion: [],
-        momentos_destacados: []
+        momentos_destacados: [],
+        distribucion_participacion: {
+          profesores: {
+            tiempo_total: '',
+            intervenciones: 0
+          },
+          estudiantes: {
+            tiempo_total: '',
+            intervenciones: 0
+          }
+        }
       },
       areas_mejora: {
         fortalezas: [],

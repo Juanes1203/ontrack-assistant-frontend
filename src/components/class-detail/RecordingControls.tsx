@@ -7,7 +7,9 @@ import {
   MicOff, 
   Plus, 
   X,
-  UserPlus
+  UserPlus,
+  GraduationCap,
+  User
 } from 'lucide-react';
 
 interface Participant {
@@ -15,6 +17,7 @@ interface Participant {
   name: string;
   isRecording: boolean;
   transcript: string;
+  type: 'teacher' | 'student';
 }
 
 interface RecordingControlsProps {
@@ -22,7 +25,7 @@ interface RecordingControlsProps {
   participants: Participant[];
   startRecording: (participantId: string) => void;
   stopRecording: (participantId: string) => void;
-  addParticipant: (name: string) => void;
+  addParticipant: (name: string, type: 'teacher' | 'student') => void;
   removeParticipant: (id: string) => void;
 }
 
@@ -36,9 +39,9 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
 }) => {
   const [newParticipantName, setNewParticipantName] = useState('');
 
-  const handleAddParticipant = () => {
+  const handleAddParticipant = (type: 'teacher' | 'student') => {
     if (newParticipantName.trim()) {
-      addParticipant(newParticipantName.trim());
+      addParticipant(newParticipantName.trim(), type);
       setNewParticipantName('');
     }
   };
@@ -60,15 +63,24 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
                 value={newParticipantName}
                 onChange={(e) => setNewParticipantName(e.target.value)}
                 className="flex-1 bg-white border-blue-200 focus:border-blue-400"
-                onKeyPress={(e) => e.key === 'Enter' && handleAddParticipant()}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddParticipant('student')}
               />
-              <Button 
-                onClick={handleAddParticipant}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Agregar
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => handleAddParticipant('teacher')}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <GraduationCap className="w-4 h-4 mr-2" />
+                  Profesor
+                </Button>
+                <Button 
+                  onClick={() => handleAddParticipant('student')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Estudiante
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -86,7 +98,17 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
             }`}
           >
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium text-gray-900">{participant.name}</h3>
+              <div className="flex items-center gap-2">
+                {participant.type === 'teacher' ? (
+                  <GraduationCap className="w-4 h-4 text-green-600" />
+                ) : (
+                  <User className="w-4 h-4 text-blue-600" />
+                )}
+                <h3 className="font-medium text-gray-900">{participant.name}</h3>
+                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                  {participant.type === 'teacher' ? 'Profesor' : 'Estudiante'}
+                </span>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
