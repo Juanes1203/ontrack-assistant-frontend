@@ -39,18 +39,6 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
   generateAnalysis,
   saveChanges
 }) => {
-  useEffect(() => {
-    // Dynamically add the ElevenLabs script if it hasn't been added yet
-    if (!document.getElementById("elevenlabs-convai-script")) {
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
-      script.async = true;
-      script.type = "text/javascript";
-      script.id = "elevenlabs-convai-script";
-      document.body.appendChild(script);
-    }
-  }, []);
-
   const handleTranscriptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTranscript(e.target.value);
   };
@@ -142,7 +130,6 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
             </div>
           )}
         </div>
-        <elevenlabs-convai agent-id="agent_01jwsqvdyeeqkv6jvmrwnw7z2g"></elevenlabs-convai>
       </CardContent>
     </Card>
   );
