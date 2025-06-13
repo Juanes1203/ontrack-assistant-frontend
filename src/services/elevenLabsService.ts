@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 // Use the new API key
-const ELEVENLABS_API_KEY = 'sk_26f2b5ad23c63b0ec8bb0006d617ec9552d08af04a103f16';
+const ELEVENLABS_API_KEY = 'sk_a0292539a8df6c0104b3a9b0baa2b2a009ec9a4bec33efb7';
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/convai';
-const ELEVENLABS_AGENT_ID = 'agent_01jwsqvdyeeqkv6jvmrwnw7z2g';
+const ELEVENLABS_AGENT_ID = 'agent_01jxkjj751fsktj1ekm63k0pkd';
 
 interface TextToSpeechResponse {
   audio: string;

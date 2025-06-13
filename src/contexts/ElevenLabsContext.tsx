@@ -50,7 +50,7 @@ export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           const container = document.getElementById('elevenlabs-widget-container');
           if (container && !container.querySelector('elevenlabs-convai')) {
             const widget = document.createElement('elevenlabs-convai');
-            widget.setAttribute('agent-id', 'agent_01jwsqvdyeeqkv6jvmrwnw7z2g');
+            widget.setAttribute('agent-id', 'agent_01jxkjj751fsktj1ekm63k0pkd');
             container.appendChild(widget);
             widgetLoaded.current = true;
           }
