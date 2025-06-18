@@ -210,6 +210,8 @@ export interface ClassAnalysis {
     communicationSkills: number;
     comments: string[];
   };
+  voiceAnalysis?: VoiceAnalysis;
+  contentAnalysis?: ContentAnalysis;
 }
 
 export interface ClassData {

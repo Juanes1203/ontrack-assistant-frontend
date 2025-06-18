@@ -133,7 +133,9 @@ export const useAnalysis = () => {
       classroomManagement: 0,
       communicationSkills: 0,
       comments: []
-    }
+    },
+    voiceAnalysis: undefined,
+    contentAnalysis: undefined
   });
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -311,7 +313,9 @@ export const useAnalysis = () => {
         classroomManagement: 0,
         communicationSkills: 0,
         comments: []
-      }
+      },
+      voiceAnalysis: undefined,
+      contentAnalysis: undefined
     });
   };
 

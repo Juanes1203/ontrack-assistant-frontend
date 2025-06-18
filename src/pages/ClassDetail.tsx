@@ -30,6 +30,7 @@ const ClassDetail = () => {
   const { toast } = useToast();
   const { getClassById } = useClass();
   const [selectedLanguages, setSelectedLanguages] = useState(['en-US', 'es-ES']);
+  const [activeTab, setActiveTab] = useState('transcript');
   
   const classData = getClassById(classId || '');
   
@@ -112,7 +113,7 @@ const ClassDetail = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
-        <div className="flex items-center mb-8">
+        <div className="flex items-center mb-8 relative z-40">
           <Button 
             variant="outline" 
             onClick={() => navigate('/')}
@@ -121,7 +122,7 @@ const ClassDetail = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {classData.name}
             </h1>
@@ -137,7 +138,7 @@ const ClassDetail = () => {
         </div>
 
         {/* Recording Controls */}
-        <div className="mb-6">
+        <div className="mb-6 relative z-40">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Controles de Grabación</h2>
             <MultiLanguageSelector 
@@ -156,65 +157,110 @@ const ClassDetail = () => {
         </div>
 
         {/* Main Tabs */}
-        <Tabs defaultValue="transcript" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 h-12 gap-1">
-            <TabsTrigger value="transcript" className="flex items-center text-xs text-blue-500 hover:text-blue-600 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700">
+        <div className="space-y-6 relative z-40">
+          <div className="grid w-full grid-cols-5 h-12 gap-1 bg-gray-100 p-1 rounded-lg">
+            <button 
+              onClick={() => setActiveTab('transcript')}
+              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
+                activeTab === 'transcript' 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'text-blue-500 hover:text-blue-600 hover:bg-blue-50'
+              }`}
+            >
               <FileText className="w-4 h-4 mr-1" />
               Transcripción
-            </TabsTrigger>
-            <TabsTrigger value="resumen" className="flex items-center text-xs text-green-500 hover:text-green-600 data-[state=active]:bg-green-100 data-[state=active]:text-green-700">
+            </button>
+            <button 
+              onClick={() => setActiveTab('resumen')}
+              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
+                activeTab === 'resumen' 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'text-green-500 hover:text-green-600 hover:bg-green-50'
+              }`}
+            >
               <BookOpen className="w-4 h-4 mr-1" />
               Resumen
-            </TabsTrigger>
-            <TabsTrigger value="criterios" className="flex items-center text-xs text-purple-500 hover:text-purple-600 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700">
+            </button>
+            <button 
+              onClick={() => setActiveTab('criterios')}
+              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
+                activeTab === 'criterios' 
+                  ? 'bg-purple-100 text-purple-700' 
+                  : 'text-purple-500 hover:text-purple-600 hover:bg-purple-50'
+              }`}
+            >
               <ClipboardList className="w-4 h-4 mr-1" />
               Criterios ECDF
-            </TabsTrigger>
-            <TabsTrigger value="momentos" className="flex items-center text-xs text-indigo-500 hover:text-indigo-600 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-700">
+            </button>
+            <button 
+              onClick={() => setActiveTab('momentos')}
+              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
+                activeTab === 'momentos' 
+                  ? 'bg-indigo-100 text-indigo-700' 
+                  : 'text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50'
+              }`}
+            >
               <Clock className="w-4 h-4 mr-1" />
               Momentos Clave
-            </TabsTrigger>
-            <TabsTrigger value="participacion" className="flex items-center text-xs text-pink-500 hover:text-pink-600 data-[state=active]:bg-pink-100 data-[state=active]:text-pink-700">
+            </button>
+            <button 
+              onClick={() => setActiveTab('participacion')}
+              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
+                activeTab === 'participacion' 
+                  ? 'bg-pink-100 text-pink-700' 
+                  : 'text-pink-500 hover:text-pink-600 hover:bg-pink-50'
+              }`}
+            >
               <Users className="w-4 h-4 mr-1" />
               Participación
-            </TabsTrigger>
-          </TabsList>
+            </button>
+          </div>
 
-          <TabsContent value="transcript">
-            <TranscriptTab
-              transcript={transcript}
-              setTranscript={setTranscript}
-              isRecording={isRecording}
-              isAnalyzing={isAnalyzing}
-              generateAnalysis={handleGenerateAnalysis}
-              saveChanges={saveChanges}
-              classAnalysis={classAnalysis}
-              className={classData.name}
-              teacher={classData.teacher}
-              date={new Date(classData.createdAt).toLocaleDateString('es-ES')}
-            />
-          </TabsContent>
+          {activeTab === 'transcript' && (
+            <div className="relative z-10">
+              <TranscriptTab
+                transcript={transcript}
+                setTranscript={setTranscript}
+                isRecording={isRecording}
+                isAnalyzing={isAnalyzing}
+                generateAnalysis={handleGenerateAnalysis}
+                saveChanges={saveChanges}
+                classAnalysis={classAnalysis}
+                className={classData.name}
+                teacher={classData.teacher}
+                date={new Date(classData.createdAt).toLocaleDateString('es-ES')}
+              />
+            </div>
+          )}
 
-          <TabsContent value="resumen">
-            <SummaryTab
-              classAnalysis={classAnalysis}
-            />
-          </TabsContent>
+          {activeTab === 'resumen' && (
+            <div className="relative z-10">
+              <SummaryTab
+                classAnalysis={classAnalysis}
+              />
+            </div>
+          )}
 
-          <TabsContent value="criterios">
-            <ECDFTab classAnalysis={classAnalysis} />
-          </TabsContent>
+          {activeTab === 'criterios' && (
+            <div className="relative z-10">
+              <ECDFTab classAnalysis={classAnalysis} />
+            </div>
+          )}
 
-          <TabsContent value="momentos">
-            <MomentsTab classAnalysis={classAnalysis} />
-          </TabsContent>
+          {activeTab === 'momentos' && (
+            <div className="relative z-10">
+              <MomentsTab classAnalysis={classAnalysis} />
+            </div>
+          )}
 
-          <TabsContent value="participacion">
-            <ParticipationTab
-              classAnalysis={classAnalysis}
-            />
-          </TabsContent>
-        </Tabs>
+          {activeTab === 'participacion' && (
+            <div className="relative z-10">
+              <ParticipationTab
+                classAnalysis={classAnalysis}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 interface ElevenLabsContextType {
   sendToAgent: (transcript: string, analysis: any) => Promise<void>;
+  toggleWidget: () => void;
+  isWidgetVisible: boolean;
 }
 
 const ElevenLabsContext = createContext<ElevenLabsContextType | null>(null);
@@ -9,6 +11,7 @@ const ElevenLabsContext = createContext<ElevenLabsContextType | null>(null);
 export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const scriptLoaded = useRef(false);
   const widgetLoaded = useRef(false);
+  const [isWidgetVisible, setIsWidgetVisible] = useState(true);
 
   useEffect(() => {
     const loadWidget = async () => {
@@ -87,10 +90,19 @@ export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     widget.dispatchEvent(event);
   };
 
+  const toggleWidget = () => {
+    setIsWidgetVisible(!isWidgetVisible);
+  };
+
   return (
-    <ElevenLabsContext.Provider value={{ sendToAgent }}>
+    <ElevenLabsContext.Provider value={{ sendToAgent, toggleWidget, isWidgetVisible }}>
       {children}
-      <div id="elevenlabs-widget-container" className="fixed bottom-4 right-4 w-[400px] h-[600px] z-50" />
+      {isWidgetVisible && (
+        <div 
+          id="elevenlabs-widget-container" 
+          className="fixed bottom-4 right-4 w-[320px] h-[480px] z-25"
+        />
+      )}
     </ElevenLabsContext.Provider>
   );
 };
