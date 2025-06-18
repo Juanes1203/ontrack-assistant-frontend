@@ -85,7 +85,7 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
           {isRecording && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-blue-700 text-sm flex items-center">
-                <Mic className="w-4 h-4 mr-2" />
+                <Mic className="w-4 h-4 mr-2 animate-pulse" />
                 Transcripción en tiempo real activa. El texto aparecerá automáticamente mientras hablas.
               </p>
             </div>
@@ -98,12 +98,14 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
                 <span>Editable</span>
               </div>
             </div>
-          <Textarea
-            value={transcript}
+            <Textarea
+              value={transcript}
               onChange={handleTranscriptChange}
-              placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. También puedes editar el texto manualmente. Usa el formato 'Nombre: Texto' para cada intervención."
-            className="min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400"
-          />
+              placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. También puedes editar el texto manualmente. Usa el formato 'Nombre [HH:MM:SS]: Texto' para cada intervención."
+              className={`min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400 ${
+                isRecording ? 'border-blue-300 bg-blue-50/30' : ''
+              }`}
+            />
             {transcript && (
               <div className="absolute bottom-2 right-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-gray-200 shadow-sm">
                 <div className="flex items-center text-sm text-gray-600">
@@ -112,6 +114,11 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
                     {transcript.split('\n\n').length} {transcript.split('\n\n').length === 1 ? 'participante' : 'participantes'}
                   </span>
                 </div>
+              </div>
+            )}
+            {isRecording && (
+              <div className="absolute bottom-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium animate-pulse">
+                Grabando...
               </div>
             )}
           </div>

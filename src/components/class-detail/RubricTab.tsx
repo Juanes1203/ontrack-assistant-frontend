@@ -31,18 +31,6 @@ export const RubricTab: React.FC<RubricTabProps> = ({ classAnalysis }) => {
     return 'Necesita Mejora';
   };
 
-  useEffect(() => {
-    // Dynamically add the ElevenLabs script if it hasn't been added yet
-    if (!document.getElementById("elevenlabs-convai-script")) {
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
-      script.async = true;
-      script.type = "text/javascript";
-      script.id = "elevenlabs-convai-script";
-      document.body.appendChild(script);
-    }
-  }, []);
-
   return (
     <Card className="border-2 shadow-lg">
       <CardHeader>
@@ -94,7 +82,6 @@ export const RubricTab: React.FC<RubricTabProps> = ({ classAnalysis }) => {
             </p>
           </div>
         )}
-        <elevenlabs-convai agent-id="agent_01jwsqvdyeeqkv6jvmrwnw7z2g"></elevenlabs-convai>
       </CardContent>
     </Card>
   );

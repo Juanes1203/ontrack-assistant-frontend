@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,12 +22,14 @@ import { ParticipationTab } from '@/components/class-detail/ParticipationTab';
 import { MomentsTab } from '@/components/class-detail/MomentsTab';
 import { useRecording } from '@/components/class-detail/useRecording';
 import { useAnalysis } from '@/components/class-detail/useAnalysis';
+import { MultiLanguageSelector } from '@/components/class-detail/MultiLanguageSelector';
 
 const ClassDetail = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { getClassById } = useClass();
+  const [selectedLanguages, setSelectedLanguages] = useState(['en-US', 'es-ES']);
   
   const classData = getClassById(classId || '');
   
@@ -40,7 +42,7 @@ const ClassDetail = () => {
     removeParticipant,
     transcript,
     setTranscript
-  } = useRecording();
+  } = useRecording(selectedLanguages);
 
   const {
     classAnalysis,
@@ -71,6 +73,32 @@ const ClassDetail = () => {
   const handleResetRecording = () => {
     setTranscript('');
     resetAnalysis();
+  };
+
+  const handleLanguageChange = (newLanguages: string[]) => {
+    setSelectedLanguages(newLanguages);
+    const languageNames = newLanguages.map(lang => {
+      const langMap: { [key: string]: string } = {
+        'en-US': 'English (US)',
+        'en-GB': 'English (UK)',
+        'es-ES': 'Español (España)',
+        'es-MX': 'Español (México)',
+        'fr-FR': 'Français',
+        'de-DE': 'Deutsch',
+        'it-IT': 'Italiano',
+        'pt-BR': 'Português (Brasil)',
+        'ja-JP': '日本語',
+        'ko-KR': '한국어',
+        'zh-CN': '中文 (简体)',
+        'zh-TW': '中文 (繁體)'
+      };
+      return langMap[lang] || lang;
+    }).join(', ');
+    
+    toast({
+      title: "Idiomas actualizados",
+      description: `Reconocimiento configurado para: ${languageNames}`,
+    });
   };
 
   const saveChanges = () => {
@@ -109,14 +137,23 @@ const ClassDetail = () => {
         </div>
 
         {/* Recording Controls */}
-        <RecordingControls
-          isRecording={isRecording}
-          participants={participants}
-          startRecording={startRecording}
-          stopRecording={stopRecording}
-          addParticipant={addParticipant}
-          removeParticipant={removeParticipant}
-        />
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Controles de Grabación</h2>
+            <MultiLanguageSelector 
+              selectedLanguages={selectedLanguages} 
+              onLanguagesChange={handleLanguageChange} 
+            />
+          </div>
+          <RecordingControls
+            isRecording={isRecording}
+            participants={participants}
+            startRecording={startRecording}
+            stopRecording={stopRecording}
+            addParticipant={addParticipant}
+            removeParticipant={removeParticipant}
+          />
+        </div>
 
         {/* Main Tabs */}
         <Tabs defaultValue="transcript" className="space-y-6">

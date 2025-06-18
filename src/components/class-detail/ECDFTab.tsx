@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { GraduationCap } from 'lucide-react';
@@ -24,18 +24,6 @@ const getNivelValue = (nivel: string): number => {
 };
 
 export const ECDFTab: React.FC<ECDFTabProps> = ({ classAnalysis }) => {
-  useEffect(() => {
-    // Dynamically add the ElevenLabs script if it hasn't been added yet
-    if (!document.getElementById("elevenlabs-convai-script")) {
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
-      script.async = true;
-      script.type = "text/javascript";
-      script.id = "elevenlabs-convai-script";
-      document.body.appendChild(script);
-    }
-  }, []);
-
   return (
     <Card className="border-2 shadow-lg">
       <CardHeader>
@@ -386,7 +374,6 @@ export const ECDFTab: React.FC<ECDFTabProps> = ({ classAnalysis }) => {
             </div>
           </div>
         </div>
-        <elevenlabs-convai agent-id="agent_01jwsqvdyeeqkv6jvmrwnw7z2g"></elevenlabs-convai>
       </CardContent>
     </Card>
   );

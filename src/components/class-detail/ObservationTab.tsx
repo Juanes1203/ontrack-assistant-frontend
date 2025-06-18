@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye } from 'lucide-react';
 import { ClassAnalysis } from '@/types/classAnalysis';
@@ -30,18 +30,6 @@ export const ObservationTab: React.FC<ObservationTabProps> = ({ classAnalysis })
       color: 'border-orange-400 bg-orange-50'
     }
   ];
-
-  useEffect(() => {
-    // Dynamically add the ElevenLabs script if it hasn't been added yet
-    if (!document.getElementById("elevenlabs-convai-script")) {
-      const script = document.createElement("script");
-      script.src = "https://unpkg.com/@elevenlabs/convai-widget-embed";
-      script.async = true;
-      script.type = "text/javascript";
-      script.id = "elevenlabs-convai-script";
-      document.body.appendChild(script);
-    }
-  }, []);
 
   return (
     <Card className="border-2 shadow-lg">
@@ -85,7 +73,6 @@ export const ObservationTab: React.FC<ObservationTabProps> = ({ classAnalysis })
             </p>
           </div>
         )}
-        <elevenlabs-convai agent-id="agent_01jwsqvdyeeqkv6jvmrwnw7z2g"></elevenlabs-convai>
       </CardContent>
     </Card>
   );

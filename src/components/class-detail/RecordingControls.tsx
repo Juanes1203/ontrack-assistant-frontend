@@ -93,7 +93,7 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
             key={participant.id}
             className={`p-4 transition-all duration-200 ${
               participant.isRecording 
-                ? 'bg-red-50 border-red-200 shadow-lg' 
+                ? 'bg-red-50 border-red-200 shadow-lg ring-2 ring-red-200' 
                 : 'bg-white hover:shadow-md'
             }`}
           >
@@ -108,6 +108,12 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
                 <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
                   {participant.type === 'teacher' ? 'Profesor' : 'Estudiante'}
                 </span>
+                {participant.isRecording && (
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-red-600 font-medium">Grabando</span>
+                  </div>
+                )}
               </div>
               <Button
                 variant="ghost"

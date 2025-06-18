@@ -17,6 +17,12 @@ export const useAnalysis = () => {
         estudiantes: []
       }
     },
+    structuredObservation: {
+      planningAndPreparation: [],
+      instructionalDelivery: [],
+      classroomEnvironment: [],
+      professionalResponsibilities: []
+    },
     criterios_evaluacion: {
       contexto_practica: {
         comprension_contexto: {
@@ -107,6 +113,26 @@ export const useAnalysis = () => {
       fortalezas: [],
       oportunidades: [],
       recomendaciones_generales: []
+    },
+    teachingPortfolio: {
+      strengths: [],
+      innovativePractices: [],
+      studentLearningEvidence: [],
+      reflectiveInsights: []
+    },
+    feedback360: {
+      selfEvaluation: [],
+      studentPerspective: [],
+      peerObservations: [],
+      improvementAreas: []
+    },
+    rubricEvaluation: {
+      domainKnowledge: 0,
+      teachingMethodology: 0,
+      studentEngagement: 0,
+      classroomManagement: 0,
+      communicationSkills: 0,
+      comments: []
     }
   });
 
@@ -168,6 +194,12 @@ export const useAnalysis = () => {
           profesores: [],
           estudiantes: []
         }
+      },
+      structuredObservation: {
+        planningAndPreparation: [],
+        instructionalDelivery: [],
+        classroomEnvironment: [],
+        professionalResponsibilities: []
       },
       criterios_evaluacion: {
         contexto_practica: {
@@ -259,6 +291,26 @@ export const useAnalysis = () => {
         fortalezas: [],
         oportunidades: [],
         recomendaciones_generales: []
+      },
+      teachingPortfolio: {
+        strengths: [],
+        innovativePractices: [],
+        studentLearningEvidence: [],
+        reflectiveInsights: []
+      },
+      feedback360: {
+        selfEvaluation: [],
+        studentPerspective: [],
+        peerObservations: [],
+        improvementAreas: []
+      },
+      rubricEvaluation: {
+        domainKnowledge: 0,
+        teachingMethodology: 0,
+        studentEngagement: 0,
+        classroomManagement: 0,
+        communicationSkills: 0,
+        comments: []
       }
     });
   };

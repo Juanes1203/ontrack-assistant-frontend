@@ -34,14 +34,14 @@ interface UseRecordingReturn {
   getCombinedTranscript: () => string;
 }
 
-export const useRecording = (): UseRecordingReturn => {
+export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecordingReturn => {
   const { toast } = useToast();
   
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [recognitionInstances, setRecognitionInstances] = useState<{ [key: string]: any }>({});
-  const [currentTranscripts, setCurrentTranscripts] = useState<{ [key: string]: { text: string; timestamp: number } }>({});
+  const [recognitionInstances, setRecognitionInstances] = useState<{ [key: string]: { [lang: string]: any } }>({});
+  const [currentTranscripts, setCurrentTranscripts] = useState<{ [key: string]: { text: string; timestamp: number; language: string } }>({});
 
   const addParticipant = useCallback((name: string, type: 'teacher' | 'student') => {
     const newParticipant: Participant = {
@@ -56,10 +56,12 @@ export const useRecording = (): UseRecordingReturn => {
   }, []);
 
   const removeParticipant = useCallback((id: string) => {
-    const recognition = recognitionInstances[id];
-    if (recognition) {
+    const recognitionInstancesForParticipant = recognitionInstances[id];
+    if (recognitionInstancesForParticipant) {
       try {
-        recognition.stop();
+        Object.values(recognitionInstancesForParticipant).forEach(recognition => {
+          recognition.stop();
+        });
       } catch (error) {
         console.error('Error stopping recognition:', error);
       }
@@ -78,17 +80,19 @@ export const useRecording = (): UseRecordingReturn => {
     });
   }, [recognitionInstances]);
 
-  // Initialize speech recognition for a participant
+  // Initialize speech recognition for a participant with multiple languages
   const initializeRecognition = useCallback((participantId: string) => {
     if (!('webkitSpeechRecognition' in window)) {
       console.error('Speech recognition not supported');
       return null;
     }
 
+    // Use only the first language for recognition to avoid duplicates
+    const primaryLanguage = languages[0];
     const recognition = new (window as any).webkitSpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'es-ES';
+    recognition.lang = primaryLanguage;
 
     recognition.onresult = (event: any) => {
       const participant = participants.find(p => p.id === participantId);
@@ -98,17 +102,26 @@ export const useRecording = (): UseRecordingReturn => {
         .map((result: any) => result[0].transcript)
         .join('');
 
-      setCurrentTranscripts(prev => ({
-        ...prev,
-        [participantId]: {
-          text: `${participant.name}: ${currentTranscript}`,
-          timestamp: Date.now()
-        }
-      }));
+      if (currentTranscript.trim()) {
+        const timestamp = new Date().toLocaleTimeString('es-ES', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        });
+        
+        setCurrentTranscripts(prev => ({
+          ...prev,
+          [participantId]: {
+            text: `${participant.name} [${timestamp}]: ${currentTranscript}`,
+            timestamp: Date.now(),
+            language: primaryLanguage
+          }
+        }));
+      }
     };
 
     recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
+      console.error(`Speech recognition error for ${primaryLanguage}:`, event.error);
       if (event.error === 'no-speech') {
         recognition.stop();
       }
@@ -117,12 +130,16 @@ export const useRecording = (): UseRecordingReturn => {
     recognition.onend = () => {
       const participant = participants.find(p => p.id === participantId);
       if (participant?.isRecording) {
-        recognition.start();
+        try {
+          recognition.start();
+        } catch (error) {
+          console.error(`Error restarting recognition for ${primaryLanguage}:`, error);
+        }
       }
     };
 
-    return recognition;
-  }, [participants]);
+    return { [primaryLanguage]: recognition };
+  }, [participants, languages]);
 
   // Start recording for a specific participant
   const startRecording = useCallback((participantId: string) => {
@@ -133,20 +150,23 @@ export const useRecording = (): UseRecordingReturn => {
       return p;
     }));
 
-    let recognition = recognitionInstances[participantId];
-    if (!recognition) {
-      recognition = initializeRecognition(participantId);
-      if (recognition) {
+    let recognitionInstancesForParticipant = recognitionInstances[participantId];
+    if (!recognitionInstancesForParticipant) {
+      recognitionInstancesForParticipant = initializeRecognition(participantId);
+      if (recognitionInstancesForParticipant) {
         setRecognitionInstances(prev => ({
           ...prev,
-          [participantId]: recognition
+          [participantId]: recognitionInstancesForParticipant
         }));
       }
     }
 
-    if (recognition) {
+    if (recognitionInstancesForParticipant) {
       try {
-        recognition.start();
+        // Start all language instances
+        Object.values(recognitionInstancesForParticipant).forEach(recognition => {
+          recognition.start();
+        });
         setIsRecording(true);
       } catch (error) {
         console.error('Error starting recognition:', error);
@@ -160,9 +180,17 @@ export const useRecording = (): UseRecordingReturn => {
     
     setParticipants(prev => prev.map(p => {
       if (p.id === participantId) {
-        // Add current transcript to history if it's not empty
-        const newHistory = currentTranscript && currentTranscript.text.trim() 
-          ? [...p.transcriptHistory, currentTranscript]
+        // Only add to history if the transcript is different from the last one
+        const lastHistoryItem = p.transcriptHistory[p.transcriptHistory.length - 1];
+        const shouldAddToHistory = currentTranscript && 
+          currentTranscript.text.trim() !== '' && 
+          (!lastHistoryItem || lastHistoryItem.text !== currentTranscript.text);
+        
+        const newHistory = shouldAddToHistory 
+          ? [...p.transcriptHistory, {
+              text: currentTranscript.text,
+              timestamp: currentTranscript.timestamp
+            }]
           : p.transcriptHistory;
         
         return { 
@@ -181,10 +209,13 @@ export const useRecording = (): UseRecordingReturn => {
       return newTranscripts;
     });
 
-    const recognition = recognitionInstances[participantId];
-    if (recognition) {
+    const recognitionInstancesForParticipant = recognitionInstances[participantId];
+    if (recognitionInstancesForParticipant) {
       try {
-        recognition.stop();
+        // Stop all language instances
+        Object.values(recognitionInstancesForParticipant).forEach(recognition => {
+          recognition.stop();
+        });
       } catch (error) {
         console.error('Error stopping recognition:', error);
       }
@@ -202,16 +233,78 @@ export const useRecording = (): UseRecordingReturn => {
       .flat()
       .filter(t => t.text.trim() !== '')
       .sort((a, b) => a.timestamp - b.timestamp)
-      .map(t => t.text);
+      .map(t => {
+        // Clean up any existing timestamps and reformat
+        const cleanText = t.text.replace(/\[\d{2}:\d{2}:\d{2}\]:\s*\d{2}:\d{2}:\d{2}\]:\s*/, '');
+        const match = cleanText.match(/^([^:]+):\s*(.+)$/);
+        if (match) {
+          const [, participantInfo, content] = match;
+          const participantName = participantInfo.split(' ')[0]; // Get just the name
+          const timestamp = new Date(t.timestamp).toLocaleTimeString('es-ES', { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit' 
+          });
+          return `${participantName} [${timestamp}]: ${content}`;
+        }
+        return cleanText;
+      });
     
-    return allTranscripts.join('\n\n');
-  }, [participants]);
+    // Add current transcripts that are still being recorded
+    const currentActiveTranscripts = Object.values(currentTranscripts)
+      .filter(t => t.text.trim() !== '')
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .map(t => {
+        // Clean up any duplicate timestamps in current transcripts
+        const cleanText = t.text.replace(/\[\d{2}:\d{2}:\d{2}\]:\s*\d{2}:\d{2}:\d{2}\]:\s*/, '');
+        return cleanText;
+      });
+    
+    // Combine and remove duplicates
+    const combinedTranscripts = [...allTranscripts, ...currentActiveTranscripts];
+    const uniqueTranscripts = combinedTranscripts.filter((text, index, array) => 
+      array.indexOf(text) === index
+    );
+    
+    return uniqueTranscripts.join('\n\n');
+  }, [participants, currentTranscripts]);
 
   // Update combined transcript whenever any participant's transcript changes
   useEffect(() => {
     const combined = getCombinedTranscript();
     setTranscript(combined);
   }, [participants, getCombinedTranscript]);
+
+  // Update transcript more frequently for real-time display
+  useEffect(() => {
+    const combined = getCombinedTranscript();
+    setTranscript(combined);
+  }, [currentTranscripts, getCombinedTranscript]);
+
+  // Reset recognition instances when languages change
+  useEffect(() => {
+    // Stop all current recognition instances
+    Object.values(recognitionInstances).forEach(participantInstances => {
+      Object.values(participantInstances).forEach(recognition => {
+        try {
+          recognition.stop();
+        } catch (error) {
+          console.error('Error stopping recognition:', error);
+        }
+      });
+    });
+
+    // Clear all instances
+    setRecognitionInstances({});
+    setCurrentTranscripts({});
+
+    // Restart recording for participants that were recording
+    participants.forEach(participant => {
+      if (participant.isRecording) {
+        setTimeout(() => startRecording(participant.id), 100);
+      }
+    });
+  }, [languages]);
 
   return {
     isRecording,

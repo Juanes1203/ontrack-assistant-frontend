@@ -87,6 +87,12 @@ export interface ClassAnalysis {
       estudiantes: string[];
     };
   };
+  structuredObservation: {
+    planningAndPreparation: string[];
+    instructionalDelivery: string[];
+    classroomEnvironment: string[];
+    professionalResponsibilities: string[];
+  };
   criterios_evaluacion: {
     contexto_practica: {
       comprension_contexto: {
@@ -183,6 +189,26 @@ export interface ClassAnalysis {
     fortalezas: string[];
     oportunidades: string[];
     recomendaciones_generales: string[];
+  };
+  teachingPortfolio: {
+    strengths: string[];
+    innovativePractices: string[];
+    studentLearningEvidence: string[];
+    reflectiveInsights: string[];
+  };
+  feedback360: {
+    selfEvaluation: string[];
+    studentPerspective: string[];
+    peerObservations: string[];
+    improvementAreas: string[];
+  };
+  rubricEvaluation: {
+    domainKnowledge: number;
+    teachingMethodology: number;
+    studentEngagement: number;
+    classroomManagement: number;
+    communicationSkills: number;
+    comments: string[];
   };
 }
 
