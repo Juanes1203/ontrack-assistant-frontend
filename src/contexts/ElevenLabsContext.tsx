@@ -100,7 +100,7 @@ export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       {isWidgetVisible && (
         <div 
           id="elevenlabs-widget-container" 
-          className="fixed bottom-4 right-4 w-[320px] h-[480px] z-25"
+          className="fixed bottom-4 right-4 w-[320px] h-[480px] z-50"
         />
       )}
     </ElevenLabsContext.Provider>
