@@ -228,58 +228,51 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
 
   // Get combined transcript from all participants
   const getCombinedTranscript = useCallback(() => {
+    // Get all completed transcripts from history
     const allTranscripts = participants
       .map(p => p.transcriptHistory)
       .flat()
       .filter(t => t.text.trim() !== '')
       .sort((a, b) => a.timestamp - b.timestamp)
-      .map(t => {
-        // Clean up any existing timestamps and reformat
-        const cleanText = t.text.replace(/\[\d{2}:\d{2}:\d{2}\]:\s*\d{2}:\d{2}:\d{2}\]:\s*/, '');
-        const match = cleanText.match(/^([^:]+):\s*(.+)$/);
-        if (match) {
-          const [, participantInfo, content] = match;
-          const participantName = participantInfo.split(' ')[0]; // Get just the name
-          const timestamp = new Date(t.timestamp).toLocaleTimeString('es-ES', { 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            second: '2-digit' 
-          });
-          return `${participantName} [${timestamp}]: ${content}`;
-        }
-        return cleanText;
-      });
+      .map(t => t.text); // Use the text as is, since it already has the correct format
     
-    // Add current transcripts that are still being recorded
-    const currentActiveTranscripts = Object.values(currentTranscripts)
-      .filter(t => t.text.trim() !== '')
+    // Add current active transcripts (only for participants still recording)
+    const currentActiveTranscripts = Object.entries(currentTranscripts)
+      .filter(([participantId, transcript]) => {
+        const participant = participants.find(p => p.id === participantId);
+        return participant?.isRecording && transcript.text.trim() !== '';
+      })
+      .map(([, transcript]) => transcript)
       .sort((a, b) => a.timestamp - b.timestamp)
-      .map(t => {
-        // Clean up any duplicate timestamps in current transcripts
-        const cleanText = t.text.replace(/\[\d{2}:\d{2}:\d{2}\]:\s*\d{2}:\d{2}:\d{2}\]:\s*/, '');
-        return cleanText;
+      .map(t => t.text);
+    
+    // Only include current transcripts if they're not already in history
+    const finalTranscripts = [...allTranscripts];
+    
+    currentActiveTranscripts.forEach(currentText => {
+      // Check if this content is already in the history
+      const contentMatch = currentText.match(/^[^:]+:\s*(.+)$/);
+      const content = contentMatch ? contentMatch[1].trim() : currentText.trim();
+      
+      const isDuplicate = allTranscripts.some(historyText => {
+        const historyContentMatch = historyText.match(/^[^:]+:\s*(.+)$/);
+        const historyContent = historyContentMatch ? historyContentMatch[1].trim() : historyText.trim();
+        return content === historyContent;
       });
+      
+      if (!isDuplicate) {
+        finalTranscripts.push(currentText);
+      }
+    });
     
-    // Combine and remove duplicates
-    const combinedTranscripts = [...allTranscripts, ...currentActiveTranscripts];
-    const uniqueTranscripts = combinedTranscripts.filter((text, index, array) => 
-      array.indexOf(text) === index
-    );
-    
-    return uniqueTranscripts.join('\n\n');
+    return finalTranscripts.join('\n\n');
   }, [participants, currentTranscripts]);
 
-  // Update combined transcript whenever any participant's transcript changes
+  // Single effect to update transcript
   useEffect(() => {
     const combined = getCombinedTranscript();
     setTranscript(combined);
-  }, [participants, getCombinedTranscript]);
-
-  // Update transcript more frequently for real-time display
-  useEffect(() => {
-    const combined = getCombinedTranscript();
-    setTranscript(combined);
-  }, [currentTranscripts, getCombinedTranscript]);
+  }, [participants, currentTranscripts, getCombinedTranscript]);
 
   // Reset recognition instances when languages change
   useEffect(() => {
