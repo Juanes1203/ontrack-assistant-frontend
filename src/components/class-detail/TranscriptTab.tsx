@@ -11,6 +11,9 @@ import {
   Users,
   Edit
 } from 'lucide-react';
+import { PDFService } from '@/services/pdfService';
+import { ClassAnalysis } from '@/types/classAnalysis';
+import { useToast } from '@/hooks/use-toast';
 
 interface TranscriptTabProps {
   transcript: string;
@@ -19,6 +22,10 @@ interface TranscriptTabProps {
   isAnalyzing: boolean;
   generateAnalysis: () => void;
   saveChanges: () => void;
+  classAnalysis?: ClassAnalysis;
+  className?: string;
+  teacher?: string;
+  date?: string;
 }
 
 // Add custom element type for TypeScript
@@ -37,10 +44,54 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
   isRecording,
   isAnalyzing,
   generateAnalysis,
-  saveChanges
+  saveChanges,
+  classAnalysis,
+  className = 'Clase',
+  teacher = 'Profesor',
+  date = new Date().toLocaleDateString('es-ES')
 }) => {
+  const { toast } = useToast();
+
   const handleTranscriptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTranscript(e.target.value);
+  };
+
+  const handleExportPDF = async () => {
+    if (!classAnalysis) {
+      toast({
+        title: "Análisis requerido",
+        description: "Debes generar el análisis antes de exportar el PDF",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Generando PDF",
+        description: "Preparando el reporte completo...",
+      });
+
+      await PDFService.generateClassReport({
+        className,
+        teacher,
+        date,
+        transcript,
+        classAnalysis
+      });
+
+      toast({
+        title: "PDF generado",
+        description: "El reporte se ha descargado exitosamente",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo generar el PDF. Intenta nuevamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -69,9 +120,15 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
                 </>
               )}
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExportPDF}
+              disabled={!classAnalysis}
+              className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+            >
               <Download className="w-4 h-4 mr-2" />
-              Exportar
+              Exportar PDF
             </Button>
             <Button onClick={saveChanges} size="sm">
               <Save className="w-4 h-4 mr-2" />

@@ -188,6 +188,10 @@ const ClassDetail = () => {
               isAnalyzing={isAnalyzing}
               generateAnalysis={handleGenerateAnalysis}
               saveChanges={saveChanges}
+              classAnalysis={classAnalysis}
+              className={classData.name}
+              teacher={classData.teacher}
+              date={new Date(classData.createdAt).toLocaleDateString('es-ES')}
             />
           </TabsContent>
 
