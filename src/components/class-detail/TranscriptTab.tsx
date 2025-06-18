@@ -80,7 +80,7 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4 bg-white">
         <div className="space-y-4">
           {isRecording && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -102,8 +102,8 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
               value={transcript}
               onChange={handleTranscriptChange}
               placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. También puedes editar el texto manualmente. Usa el formato 'Nombre [HH:MM:SS]: Texto' para cada intervención."
-              className={`min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400 ${
-                isRecording ? 'border-blue-300 bg-blue-50/30' : ''
+              className={`min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400 bg-white ${
+                isRecording ? 'border-blue-300' : ''
               }`}
             />
             {transcript && (

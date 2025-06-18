@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -112,4 +111,143 @@
 
 .pulse-slow {
   animation: pulse-slow 2s ease-in-out infinite;
+}
+
+/* Mejoras de color para consistencia entre dispositivos */
+@layer utilities {
+  /* Colores neutros para reemplazar amarillos problemáticos */
+  .bg-neutral-50 {
+    background-color: #fafafa;
+  }
+  
+  .bg-neutral-100 {
+    background-color: #f5f5f5;
+  }
+  
+  .text-neutral-600 {
+    color: #525252;
+  }
+  
+  .text-neutral-700 {
+    color: #404040;
+  }
+  
+  /* Colores alternativos para mejor visibilidad */
+  .bg-amber-50 {
+    background-color: #f5f5f5 !important;
+  }
+  
+  .bg-amber-100 {
+    background-color: #e5e5e5 !important;
+  }
+  
+  .text-amber-600 {
+    color: #404040 !important;
+  }
+  
+  .text-amber-700 {
+    color: #262626 !important;
+  }
+  
+  /* Esquemas de color personalizados */
+  [data-color-scheme="high-contrast"] {
+    --background: 255 255 255;
+    --foreground: 0 0 0;
+    --card: 248 250 252;
+    --card-foreground: 0 0 0;
+    --muted: 241 245 249;
+    --muted-foreground: 51 65 85;
+  }
+  
+  [data-color-scheme="neutral"] {
+    --background: 250 250 250;
+    --foreground: 64 64 64;
+    --card: 255 255 255;
+    --card-foreground: 64 64 64;
+    --muted: 245 245 245;
+    --muted-foreground: 115 115 115;
+  }
+  
+  [data-color-scheme="warm"] {
+    --background: 255 251 235;
+    --foreground: 120 53 15;
+    --card: 255 255 255;
+    --card-foreground: 120 53 15;
+    --muted: 254 243 199;
+    --muted-foreground: 146 64 14;
+  }
+  
+  /* Mejoras para monitores externos */
+  @media (min-width: 1920px) {
+    .bg-yellow-50 {
+      background-color: #fff !important;
+    }
+    
+    .bg-yellow-100 {
+      background-color: #f5f5f5 !important;
+    }
+    
+    .text-yellow-600 {
+      color: #404040 !important;
+    }
+    
+    .text-yellow-700 {
+      color: #1e40af !important;
+    }
+  }
+  
+  /* Ajustes para diferentes perfiles de color */
+  @media (prefers-color-scheme: light) {
+    .bg-yellow-50 {
+      background-color: #fefce8;
+    }
+    
+    .bg-yellow-100 {
+      background-color: #fef9c3;
+    }
+  }
+  
+  /* Detección automática de problemas de color */
+  @media (prefers-contrast: high) {
+    .bg-yellow-50 {
+      background-color: #f5f5f5;
+    }
+    
+    .bg-yellow-100 {
+      background-color: #e5e5e5;
+    }
+    
+    .text-yellow-600 {
+      color: #404040;
+    }
+    
+    .text-yellow-700 {
+      color: #262626;
+    }
+  }
+
+  /* Forzar todos los wrappers, badges, chips, tabs y cajas a blanco o gris claro */
+  .bg-yellow-50, .bg-yellow-100, .bg-amber-50, .bg-amber-100 {
+    background-color: #fff !important;
+    border-color: #e5e7eb !important;
+  }
+
+  .border-yellow-50, .border-yellow-100, .border-amber-50, .border-amber-100 {
+    border-color: #e5e7eb !important;
+  }
+}
+
+/* Forzar cualquier fondo o borde amarillo a blanco puro en toda la app */
+[class*="yellow"], [class*="amber"], [style*="yellow"], [style*="amber"] {
+  background-color: #fff !important;
+  border-color: #fff !important;
+  box-shadow: none !important;
+}
+
+/* Remove outlines from form elements and force white background on focus */
+input[type="text"], input[type="password"], textarea, select {
+  outline: none !important;
+}
+:focus {
+  background-color: #fff !important;
 }

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GraduationCap } from 'lucide-react';
@@ -22,41 +21,68 @@ export const ProfessorTab: React.FC<ProfessorTabProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {classAnalysis.professorPerformance ? (
+        {classAnalysis.transcript ? (
           <div className="space-y-6">
             <div className="bg-purple-50 border-l-4 border-purple-400 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center">
                 🎓 Análisis del Desempeño Detectado en la Grabación
               </h3>
               <p className="text-gray-700 leading-relaxed text-base">
-                {classAnalysis.professorPerformance}
+                Basado en la transcripción de {classAnalysis.transcript.length} caracteres, 
+                se han identificado {classAnalysis.participacion_estudiantes.tipos_interaccion.length} tipos de interacciones 
+                y {classAnalysis.momentos_clave.length} momentos clave en la clase.
               </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-green-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-green-600 mb-2">
-                  {formatTime(classAnalysis.voiceAnalysis.professorSpeechTime)}
+                  {classAnalysis.participacion_estudiantes.distribucion_participacion.profesores.intervenciones}
                 </div>
-                <p className="text-green-700 font-medium text-sm">Tiempo de Instrucción</p>
+                <p className="text-green-700 font-medium text-sm">Intervenciones del Profesor</p>
               </div>
               <div className="bg-blue-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-blue-600 mb-2">
-                  {classAnalysis.contentAnalysis.topicsDiscussed.length}
+                  {classAnalysis.momentos_clave.length}
                 </div>
-                <p className="text-blue-700 font-medium text-sm">Temas Cubiertos</p>
+                <p className="text-blue-700 font-medium text-sm">Momentos Clave</p>
               </div>
-              <div className="bg-yellow-50 p-4 rounded-lg text-center">
-                <div className="text-2xl font-bold text-yellow-600 mb-2">
-                  {classAnalysis.contentAnalysis.examplesUsed.length}
+              <div className="bg-orange-50 p-4 rounded-lg text-center">
+                <div className="text-2xl font-bold text-orange-600 mb-2">
+                  {classAnalysis.teachingPortfolio.strengths.length}
                 </div>
-                <p className="text-yellow-700 font-medium text-sm">Ejemplos Utilizados</p>
+                <p className="text-orange-700 font-medium text-sm">Fortalezas Identificadas</p>
               </div>
               <div className="bg-red-50 p-4 rounded-lg text-center">
                 <div className="text-2xl font-bold text-red-600 mb-2">
-                  {classAnalysis.voiceAnalysis.totalSpeakers}
+                  {classAnalysis.areas_mejora.oportunidades.length}
                 </div>
-                <p className="text-red-700 font-medium text-sm">Voces Detectadas</p>
+                <p className="text-red-700 font-medium text-sm">Áreas de Mejora</p>
+              </div>
+            </div>
+
+            {/* Evaluación por Rúbricas */}
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Evaluación por Rúbricas</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="bg-white p-4 rounded-lg border">
+                  <h4 className="font-medium text-gray-700 mb-2">Dominio del Contenido</h4>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {classAnalysis.rubricEvaluation.domainKnowledge.toFixed(1)}
+                  </div>
+                </div>
+                <div className="bg-white p-4 rounded-lg border">
+                  <h4 className="font-medium text-gray-700 mb-2">Metodología</h4>
+                  <div className="text-2xl font-bold text-green-600">
+                    {classAnalysis.rubricEvaluation.teachingMethodology.toFixed(1)}
+                  </div>
+                </div>
+                <div className="bg-white p-4 rounded-lg border">
+                  <h4 className="font-medium text-gray-700 mb-2">Comunicación</h4>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {classAnalysis.rubricEvaluation.communicationSkills.toFixed(1)}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -39,7 +39,7 @@ export const PortfolioTab: React.FC<PortfolioTabProps> = ({ classAnalysis }) => 
     <Card className="border-2 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
-          <FolderOpen className="w-5 h-5 mr-2 text-amber-600" />
+          <FolderOpen className="w-5 h-5 mr-2 text-gray-700" />
           Portafolio Docente
         </CardTitle>
       </CardHeader>
