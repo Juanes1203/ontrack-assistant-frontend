@@ -54,6 +54,38 @@ export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           if (container && !container.querySelector('elevenlabs-convai')) {
             const widget = document.createElement('elevenlabs-convai');
             widget.setAttribute('agent-id', 'agent_01jxkjj751fsktj1ekm63k0pkd');
+            
+            // Add event listeners to prevent interference with main page
+            widget.addEventListener('click', (e) => {
+              e.stopPropagation();
+            });
+            
+            widget.addEventListener('mousedown', (e) => {
+              e.stopPropagation();
+            });
+            
+            widget.addEventListener('touchstart', (e) => {
+              e.stopPropagation();
+            });
+            
+            // Prevent any focus events from affecting the main page
+            widget.addEventListener('focus', (e) => {
+              e.stopPropagation();
+            });
+            
+            widget.addEventListener('blur', (e) => {
+              e.stopPropagation();
+            });
+            
+            // Prevent any input events from bubbling up
+            widget.addEventListener('input', (e) => {
+              e.stopPropagation();
+            });
+            
+            widget.addEventListener('change', (e) => {
+              e.stopPropagation();
+            });
+            
             container.appendChild(widget);
             widgetLoaded.current = true;
           }
@@ -100,7 +132,14 @@ export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       {isWidgetVisible && (
         <div 
           id="elevenlabs-widget-container" 
-          className="fixed bottom-4 right-4 w-[320px] h-[480px] z-50"
+          className="fixed bottom-4 left-4 w-[320px] h-[480px] z-50"
+          style={{
+            isolation: 'isolate',
+            contain: 'layout style paint',
+            willChange: 'transform',
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden'
+          }}
         />
       )}
     </ElevenLabsContext.Provider>

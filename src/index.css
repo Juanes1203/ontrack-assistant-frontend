@@ -94,6 +94,31 @@
   }
 }
 
+/* ElevenLabs Widget Isolation */
+#elevenlabs-widget-container {
+  isolation: isolate;
+  contain: layout style paint;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+#elevenlabs-widget-container * {
+  isolation: isolate;
+}
+
+/* Prevent widget from affecting main page layout */
+body {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Ensure main content doesn't get affected by widget interactions */
+.min-h-screen {
+  isolation: isolate;
+  contain: layout style;
+}
+
 /* Animaciones personalizadas */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
