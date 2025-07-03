@@ -218,46 +218,46 @@ const ClassDetail = () => {
 
           {activeTab === 'transcript' && (
             <div className="relative z-10">
-              <TranscriptTab
-                transcript={transcript}
-                setTranscript={setTranscript}
-                isRecording={isRecording}
-                isAnalyzing={isAnalyzing}
-                generateAnalysis={handleGenerateAnalysis}
-                saveChanges={saveChanges}
-                classAnalysis={classAnalysis}
-                className={classData.name}
-                teacher={classData.teacher}
-                date={new Date(classData.createdAt).toLocaleDateString('es-ES')}
-              />
+            <TranscriptTab
+              transcript={transcript}
+              setTranscript={setTranscript}
+              isRecording={isRecording}
+              isAnalyzing={isAnalyzing}
+              generateAnalysis={handleGenerateAnalysis}
+              saveChanges={saveChanges}
+              classAnalysis={classAnalysis}
+              className={classData.name}
+              teacher={classData.teacher}
+              date={new Date(classData.createdAt).toLocaleDateString('es-ES')}
+            />
             </div>
           )}
 
           {activeTab === 'resumen' && (
             <div className="relative z-10">
-              <SummaryTab
-                classAnalysis={classAnalysis}
-              />
+            <SummaryTab
+              classAnalysis={classAnalysis}
+            />
             </div>
           )}
 
           {activeTab === 'criterios' && (
             <div className="relative z-10">
-              <ECDFTab classAnalysis={classAnalysis} />
+            <ECDFTab classAnalysis={classAnalysis} />
             </div>
           )}
 
           {activeTab === 'momentos' && (
             <div className="relative z-10">
-              <MomentsTab classAnalysis={classAnalysis} />
+            <MomentsTab classAnalysis={classAnalysis} />
             </div>
           )}
 
           {activeTab === 'participacion' && (
             <div className="relative z-10">
-              <ParticipationTab
-                classAnalysis={classAnalysis}
-              />
+            <ParticipationTab
+              classAnalysis={classAnalysis}
+            />
             </div>
           )}
         </div>

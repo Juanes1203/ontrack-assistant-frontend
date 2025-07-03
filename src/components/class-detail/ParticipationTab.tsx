@@ -48,36 +48,36 @@ export const ParticipationTab: React.FC<ParticipationTabProps> = ({
             
             <h4 className="font-medium text-gray-700 mb-2">Tipos de Interacción</h4>
             {participacionData.tipos_interaccion && participacionData.tipos_interaccion.length > 0 ? (
-              <ul className="list-disc pl-5 space-y-1 mb-4">
+            <ul className="list-disc pl-5 space-y-1 mb-4">
                 {participacionData.tipos_interaccion.map((tipo, index) => (
-                  <li key={index} className="text-gray-600">{tipo}</li>
-                ))}
-              </ul>
+                <li key={index} className="text-gray-600">{tipo}</li>
+              ))}
+            </ul>
             ) : (
               <p className="text-gray-500 mb-4">No hay tipos de interacción registrados</p>
             )}
 
             <h4 className="font-medium text-gray-700 mb-2">Momentos Destacados</h4>
             {participacionData.momentos_destacados && participacionData.momentos_destacados.length > 0 ? (
-              <ul className="list-disc pl-5 space-y-1 mb-4">
+            <ul className="list-disc pl-5 space-y-1 mb-4">
                 {participacionData.momentos_destacados.map((momento, index) => (
-                  <li key={index} className="text-gray-600">{momento}</li>
-                ))}
-              </ul>
+                <li key={index} className="text-gray-600">{momento}</li>
+              ))}
+            </ul>
             ) : (
               <p className="text-gray-500 mb-4">No hay momentos destacados registrados</p>
             )}
 
             <h4 className="font-medium text-gray-700 mb-2">Distribución de Participación</h4>
             {participacionData.distribucion_participacion ? (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h5 className="font-medium text-gray-700 mb-2">Profesores</h5>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h5 className="font-medium text-gray-700 mb-2">Profesores</h5>
                   <p className="text-gray-600">Tiempo total: {participacionData.distribucion_participacion.profesores?.tiempo_total || 'No disponible'}</p>
                   <p className="text-gray-600">Intervenciones: {participacionData.distribucion_participacion.profesores?.intervenciones || 0}</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h5 className="font-medium text-gray-700 mb-2">Estudiantes</h5>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h5 className="font-medium text-gray-700 mb-2">Estudiantes</h5>
                   <p className="text-gray-600">Tiempo total: {participacionData.distribucion_participacion.estudiantes?.tiempo_total || 'No disponible'}</p>
                   <p className="text-gray-600">Intervenciones: {participacionData.distribucion_participacion.estudiantes?.intervenciones || 0}</p>
                 </div>

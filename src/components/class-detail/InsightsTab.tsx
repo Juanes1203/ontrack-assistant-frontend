@@ -117,56 +117,56 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({
 
           {/* Contenido analizado */}
           {classAnalysis.contentAnalysis && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Temas Discutidos</h3>
-                <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Temas Discutidos</h3>
+              <div className="space-y-2">
                   {classAnalysis.contentAnalysis.topicsDiscussed && classAnalysis.contentAnalysis.topicsDiscussed.length > 0 ? (
-                    classAnalysis.contentAnalysis.topicsDiscussed.map((topic, index) => (
-                      <Badge key={index} variant="secondary" className="mr-2 mb-2">
-                        {topic}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm">No se detectaron temas específicos</p>
-                  )}
-                </div>
-              </div>
-              
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Ejemplos Utilizados</h3>
-                <div className="space-y-2">
-                  {classAnalysis.contentAnalysis.examplesUsed && classAnalysis.contentAnalysis.examplesUsed.length > 0 ? (
-                    classAnalysis.contentAnalysis.examplesUsed.map((example, index) => (
-                      <Badge key={index} variant="outline" className="mr-2 mb-2">
-                        {example}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 text-sm">No se detectaron ejemplos específicos</p>
-                  )}
-                </div>
+                  classAnalysis.contentAnalysis.topicsDiscussed.map((topic, index) => (
+                    <Badge key={index} variant="secondary" className="mr-2 mb-2">
+                      {topic}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-sm">No se detectaron temas específicos</p>
+                )}
               </div>
             </div>
+            
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Ejemplos Utilizados</h3>
+              <div className="space-y-2">
+                  {classAnalysis.contentAnalysis.examplesUsed && classAnalysis.contentAnalysis.examplesUsed.length > 0 ? (
+                  classAnalysis.contentAnalysis.examplesUsed.map((example, index) => (
+                    <Badge key={index} variant="outline" className="mr-2 mb-2">
+                      {example}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-sm">No se detectaron ejemplos específicos</p>
+                )}
+              </div>
+            </div>
+          </div>
           )}
 
           {/* Palabras clave más frecuentes */}
           {classAnalysis.contentAnalysis && classAnalysis.contentAnalysis.keywordFrequency && (
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Conceptos Más Mencionados</h3>
-              <div className="space-y-2">
-                {Object.entries(classAnalysis.contentAnalysis.keywordFrequency)
-                  .sort(([,a], [,b]) => (b as number) - (a as number))
-                  .slice(0, 10)
-                  .map(([word, count], index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <span className="text-gray-700">{word}</span>
-                      <Badge variant="secondary">{count as number}</Badge>
-                    </div>
-                  ))
-                }
-              </div>
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Conceptos Más Mencionados</h3>
+            <div className="space-y-2">
+              {Object.entries(classAnalysis.contentAnalysis.keywordFrequency)
+                .sort(([,a], [,b]) => (b as number) - (a as number))
+                .slice(0, 10)
+                .map(([word, count], index) => (
+                  <div key={index} className="flex justify-between items-center">
+                    <span className="text-gray-700">{word}</span>
+                    <Badge variant="secondary">{count as number}</Badge>
+                  </div>
+                ))
+              }
             </div>
+          </div>
           )}
         </div>
       </CardContent>

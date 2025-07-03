@@ -125,7 +125,7 @@ const Index = () => {
             placeholder="Buscar clases por nombre o profesor..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 py-3 text-lg border-2 border-gray-200 focus:border-blue-400 rounded-lg"
+            className="bg-white pl-10 py-3 text-lg border-2 border-gray-200 focus:border-blue-400 rounded-lg"
           />
         </div>
 

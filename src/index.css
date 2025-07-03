@@ -90,7 +90,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-white text-foreground;
   }
 }
 
@@ -260,13 +260,53 @@ body {
   .border-yellow-50, .border-yellow-100, .border-amber-50, .border-amber-100 {
     border-color: #e5e7eb !important;
   }
+
+  /* Forzar bordes de cards y elementos con border-2 a gris */
+  .border-2, .border, [class*="border"] {
+    border-color: #e5e7eb !important;
+  }
+
+  /* Específicamente para cards */
+  .card, [class*="card"], .bg-card {
+    border-color: #e5e7eb !important;
+  }
+
+  /* Forzar bg-secondary a gris */
+  .bg-secondary, [class*="bg-secondary"] {
+    background-color: #f3f4f6 !important;
+  }
+
+  /* Forzar text-secondary-foreground a gris oscuro */
+  .text-secondary-foreground {
+    color: #374151 !important;
+  }
+
+  /* Forzar bg-primary a azul */
+  .bg-primary, [class*="bg-primary"] {
+    background-color: #3b82f6 !important;
+  }
+
+  /* Forzar text-primary-foreground a blanco */
+  .text-primary-foreground {
+    color: #ffffff !important;
+  }
+
+  /* Forzar hover de primary */
+  .hover\:bg-primary\/90:hover {
+    background-color: #2563eb !important;
+  }
 }
 
 /* Forzar cualquier fondo o borde amarillo a blanco puro en toda la app */
 [class*="yellow"], [class*="amber"], [style*="yellow"], [style*="amber"] {
   background-color: #fff !important;
-  border-color: #fff !important;
+  border-color: #e5e7eb !important;
   box-shadow: none !important;
+}
+
+/* Forzar todos los bordes a gris */
+.border, .border-2, .border-4, [class*="border"] {
+  border-color: #e5e7eb !important;
 }
 
 /* Remove outlines from form elements and force white background on focus */
