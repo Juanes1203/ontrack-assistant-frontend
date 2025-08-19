@@ -126,10 +126,6 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
               onClick={handleExportPDF}
               disabled={!classAnalysis}
               className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-              style={{
-                borderColor: '#bbf7d0',
-                backgroundColor: '#f0fdf4'
-              }}
             >
               <Download className="w-4 h-4 mr-2" />
               Exportar PDF
@@ -144,10 +140,7 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
       <CardContent className="space-y-4 bg-white">
         <div className="space-y-4">
           {isRecording && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3" style={{
-              borderColor: '#dbeafe',
-              backgroundColor: '#eff6ff'
-            }}>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-blue-700 text-sm flex items-center">
                 <Mic className="w-4 h-4 mr-2 animate-pulse" />
                 Transcripción en tiempo real activa. El texto aparecerá automáticamente mientras hablas.
@@ -169,16 +162,6 @@ export const TranscriptTab: React.FC<TranscriptTabProps> = ({
               className={`min-h-[400px] border-2 focus:border-blue-400 text-base leading-relaxed text-gray-600 font-medium placeholder:text-gray-400 bg-white ${
                 isRecording ? 'border-blue-300' : ''
               }`}
-              style={{
-                borderColor: isRecording ? '#93c5fd' : '#e5e7eb',
-                backgroundColor: '#ffffff'
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#3b82f6';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = isRecording ? '#93c5fd' : '#e5e7eb';
-              }}
             />
             {transcript && (
               <div className="absolute bottom-2 right-2 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-gray-200 shadow-sm">

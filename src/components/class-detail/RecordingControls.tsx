@@ -63,16 +63,6 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
                 value={newParticipantName}
                 onChange={(e) => setNewParticipantName(e.target.value)}
                 className="flex-1 bg-white border-blue-200 focus:border-blue-400"
-                style={{
-                  borderColor: '#e5e7eb',
-                  backgroundColor: '#ffffff'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#3b82f6';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
-                }}
                 onKeyPress={(e) => e.key === 'Enter' && handleAddParticipant('student')}
               />
               <div className="flex gap-2">

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ClassAnalysis } from '@/types/classAnalysis';
 import { useToast } from '@/hooks/use-toast';
 import { analyzeTranscript } from '@/services/straicoService';
-import { classService } from '@/services/classService';
 
 export const useAnalysis = () => {
   const { toast } = useToast();
@@ -141,7 +140,7 @@ export const useAnalysis = () => {
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const generateAnalysis = async (transcript: string, classId?: string) => {
+  const generateAnalysis = async (transcript: string) => {
     if (!transcript.trim()) {
       toast({
         title: "Error",
@@ -157,31 +156,11 @@ export const useAnalysis = () => {
       const analysis = await analyzeTranscript(transcript);
       console.log('Analysis completed successfully');
       setClassAnalysis(analysis);
-      
-      // Guardar automáticamente el análisis si se proporciona classId
-      if (classId) {
-        try {
-          await classService.updateAnalysisData(classId, analysis);
-          toast({
-            title: "Análisis Completado y Guardado",
-            description: "El análisis se ha generado y guardado correctamente en la base de datos.",
-            variant: "default"
-          });
-        } catch (saveError) {
-          console.error('Error saving analysis:', saveError);
-          toast({
-            title: "Análisis Generado",
-            description: "El análisis se generó pero no se pudo guardar automáticamente. Usa el botón 'Guardar' para guardarlo manualmente.",
-            variant: "destructive"
-          });
-        }
-      } else {
-        toast({
-          title: "Análisis Completado",
-          description: "El análisis de la clase ha sido generado exitosamente.",
-          variant: "default"
-        });
-      }
+      toast({
+        title: "Análisis Completado",
+        description: "El análisis de la clase ha sido generado exitosamente.",
+        variant: "default"
+      });
     } catch (error) {
       console.error('Error in generateAnalysis:', error);
       let errorMessage = "Hubo un error al generar el análisis.";
@@ -344,7 +323,6 @@ export const useAnalysis = () => {
     classAnalysis,
     isAnalyzing,
     generateAnalysis,
-    resetAnalysis,
-    setClassAnalysis
+    resetAnalysis
   };
 };
