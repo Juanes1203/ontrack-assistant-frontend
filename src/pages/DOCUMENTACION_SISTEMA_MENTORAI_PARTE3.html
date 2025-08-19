@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación Técnica - Sistema MentorAI (Parte 3)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            text-align: center;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #1e40af;
+            border-left: 4px solid #2563eb;
+            padding-left: 15px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #3730a3;
+            margin-top: 25px;
+        }
+        h4 {
+            color: #4c1d95;
+            margin-top: 20px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .warning {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #2563eb;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .checklist {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .checklist ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            margin: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .checklist li:before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: #2563eb;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Documentación Técnica Completa</h1>
+        <h1>Sistema MentorAI Virtual Teacher - Parte 3</h1>
+        
+        <div class="highlight">
+            <strong>📋 Esta es la Parte 3 (Final) de la documentación completa</strong><br>
+            Contiene: Despliegue, Seguridad, Mantenimiento y Solución de Problemas
+            <br><br>
+            <a href="DOCUMENTACION_SISTEMA_MENTORAI_PARTE2.html" style="display: inline-block; background-color: #6b7280; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">
+                ⬅️ Volver a la Parte 2
+            </a>
+            <a href="DOCUMENTACION_SISTEMA_MENTORAI_PARTE1.html" style="display: inline-block; background-color: #6b7280; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                ⬅️ Ir a la Parte 1
+            </a>
+        </div>
+
+        <section id="deployment">
+            <h2>9. 🚀 Despliegue y Configuración</h2>
+            
+            <h3>Requisitos del Sistema:</h3>
+            <ul>
+                <li><strong>Node.js:</strong> Versión 18 o superior</li>
+                <li><strong>MySQL:</strong> Versión 8.0 o superior</li>
+                <li><strong>Navegador:</strong> Chrome, Firefox, Safari (soporte Web Speech API)</li>
+                <li><strong>RAM:</strong> Mínimo 4GB recomendado</li>
+                <li><strong>Espacio:</strong> 1GB libre para dependencias</li>
+            </ul>
+
+            <h3>Instalación y Configuración:</h3>
+
+            <h4>1. Clonar Repositorio:</h4>
+            <div class="code-block">
+git clone https://github.com/tu-usuario/mentorai-virtual-teacher.git
+cd mentorai-virtual-teacher
+            </div>
+
+            <h4>2. Configurar Base de Datos:</h4>
+            <div class="code-block">
+# Instalar MySQL
+brew install mysql  # macOS
+sudo apt install mysql-server  # Ubuntu
+
+# Iniciar MySQL
+sudo systemctl start mysql
+
+# Crear base de datos
+mysql -u root -p
+CREATE DATABASE mentorai_db;
+            </div>
+
+            <h4>3. Configurar Backend:</h4>
+            <div class="code-block">
+cd backend
+npm install
+cp env.example .env
+# Editar .env con credenciales de BD y APIs
+npm run dev
+            </div>
+
+            <h4>4. Configurar Frontend:</h4>
+            <div class="code-block">
+cd ..
+npm install
+npm run dev
+            </div>
+
+            <h3>Variables de Entorno Requeridas:</h3>
+            <div class="code-block">
+# Backend (.env)
+DATABASE_HOST=localhost
+DATABASE_PORT=3306
+DATABASE_NAME=mentorai_db
+DATABASE_USER=root
+DATABASE_PASSWORD=tu_password
+STRAICO_API_KEY=tu_straico_key
+ELEVENLABS_API_KEY=tu_elevenlabs_key
+PORT=5001
+
+# Frontend (.env)
+VITE_API_BASE_URL=http://localhost:5001/api
+VITE_STRAICO_API_KEY=tu_straico_key
+VITE_ELEVENLABS_API_KEY=tu_elevenlabs_key
+            </div>
+
+            <h3>Scripts de Desarrollo:</h3>
+            <div class="code-block">
+# Backend
+npm run dev          # Desarrollo con nodemon
+npm run build        # Compilar TypeScript
+npm start           # Producción
+
+# Frontend
+npm run dev          # Desarrollo con Vite
+npm run build        # Build de producción
+npm run preview      # Preview de build
+            </div>
+
+            <h3>Despliegue en Producción:</h3>
+            
+            <div class="info">
+                <strong>💡 Nota:</strong> Para producción, se recomienda usar servicios como:
+                <ul>
+                    <li><strong>Backend:</strong> Heroku, Railway, DigitalOcean</li>
+                    <li><strong>Frontend:</strong> Vercel, Netlify, GitHub Pages</li>
+                    <li><strong>Base de Datos:</strong> PlanetScale, AWS RDS, Google Cloud SQL</li>
+                </ul>
+            </div>
+
+            <h4>Configuración de Producción:</h4>
+            <div class="code-block">
+# Variables de entorno de producción
+NODE_ENV=production
+DATABASE_URL=mysql://user:pass@host:port/database
+STRAICO_API_KEY=production_key
+ELEVENLABS_API_KEY=production_key
+CORS_ORIGIN=https://tu-dominio.com
+            </div>
+        </section>
+
+        <section id="security">
+            <h2>10. 🔒 Seguridad</h2>
+            
+            <h3>Medidas de Seguridad Implementadas:</h3>
+            
+            <div class="warning">
+                <strong>⚠️ Importante:</strong> Esta es una aplicación de desarrollo. Para producción, implementar medidas adicionales de seguridad.
+            </div>
+
+            <h4>1. Validación de Entrada:</h4>
+            <ul>
+                <li>Validación de tipos con TypeScript</li>
+                <li>Sanitización de datos en backend</li>
+                <li>Validación de esquemas de datos</li>
+            </ul>
+
+            <h4>2. Configuración CORS:</h4>
+            <div class="code-block">
+// Backend - Configuración CORS
+app.use(cors({
+  origin: 'http://localhost:8080',
+  credentials: true
+}));
+            </div>
+
+            <h4>3. Manejo de Errores:</h4>
+            <ul>
+                <li>Try-catch en todas las operaciones async</li>
+                <li>Logs de errores estructurados</li>
+                <li>Respuestas de error consistentes</li>
+            </ul>
+
+            <h4>4. Variables de Entorno:</h4>
+            <ul>
+                <li>API keys en variables de entorno</li>
+                <li>Credenciales de BD separadas</li>
+                <li>Archivos .env en .gitignore</li>
+            </ul>
+
+            <h3>Recomendaciones para Producción:</h3>
+            <div class="checklist">
+                <h4>🔐 Medidas de Seguridad Adicionales:</h4>
+                <ul>
+                    <li>Implementar autenticación JWT</li>
+                    <li>Usar HTTPS en producción</li>
+                    <li>Implementar rate limiting</li>
+                    <li>Configurar firewall</li>
+                    <li>Backups automáticos de BD</li>
+                    <li>Monitoreo de logs</li>
+                    <li>Validación de entrada más estricta</li>
+                    <li>Implementar CSRF protection</li>
+                    <li>Usar helmet.js para headers de seguridad</li>
+                    <li>Configurar Content Security Policy (CSP)</li>
+                </ul>
+            </div>
+
+            <h3>Configuración de Seguridad Avanzada:</h3>
+            <div class="code-block">
+// Instalar dependencias de seguridad
+npm install helmet express-rate-limit cors
+
+// Configuración en backend
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+
+app.use(helmet());
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100 // máximo 100 requests por ventana
+}));
+            </div>
+        </section>
+
+        <section id="maintenance">
+            <h2>11. 🛠️ Mantenimiento</h2>
+            
+            <h3>Monitoreo del Sistema:</h3>
+            
+            <h4>Logs del Backend:</h4>
+            <div class="code-block">
+# Ver logs en tiempo real
+cd backend
+npm run dev
+
+# Logs importantes:
+- Conexión a BD exitosa/fallida
+- Errores de API
+- Tiempo de respuesta de APIs externas
+- Uso de memoria y CPU
+            </div>
+
+            <h4>Logs del Frontend:</h4>
+            <div class="code-block">
+# Abrir DevTools del navegador
+F12 → Console
+
+# Logs importantes:
+- Errores de red
+- Errores de JavaScript
+- Performance de componentes
+- Uso de memoria
+            </div>
+
+            <h3>Tareas de Mantenimiento:</h3>
+            
+            <h4>Diarias:</h4>
+            <div class="checklist">
+                <ul>
+                    <li>Verificar que ambos servidores estén corriendo</li>
+                    <li>Revisar logs de errores</li>
+                    <li>Verificar conectividad con APIs externas</li>
+                    <li>Comprobar espacio en disco</li>
+                    <li>Verificar uso de memoria</li>
+                </ul>
+            </div>
+
+            <h4>Semanales:</h4>
+            <div class="checklist">
+                <ul>
+                    <li>Backup de base de datos</li>
+                    <li>Actualizar dependencias</li>
+                    <li>Revisar uso de espacio en disco</li>
+                    <li>Verificar logs de rendimiento</li>
+                    <li>Revisar métricas de uso</li>
+                </ul>
+            </div>
+
+            <h4>Mensuales:</h4>
+            <div class="checklist">
+                <ul>
+                    <li>Revisar logs de rendimiento</li>
+                    <li>Actualizar Node.js si es necesario</li>
+                    <li>Verificar seguridad de dependencias</li>
+                    <li>Revisar configuración de seguridad</li>
+                    <li>Actualizar documentación</li>
+                </ul>
+            </div>
+
+            <h3>Comandos Útiles:</h3>
+            <div class="code-block">
+# Verificar estado de servicios
+ps aux | grep node
+ps aux | grep mysql
+
+# Verificar puertos
+lsof -i :5001  # Backend
+lsof -i :8080  # Frontend
+lsof -i :3306  # MySQL
+
+# Limpiar cache
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
+
+# Backup de BD
+mysqldump -u root -p mentorai_db > backup_$(date +%Y%m%d).sql
+
+# Restaurar BD
+mysql -u root -p mentorai_db < backup_20241201.sql
+
+# Verificar uso de memoria
+free -h
+top
+
+# Verificar espacio en disco
+df -h
+du -sh *
+            </div>
+
+            <h3>Solución de Problemas Comunes:</h3>
+            
+            <div class="warning">
+                <strong>Error: "Cannot connect to database"</strong><br>
+                <strong>Solución:</strong> Verificar que MySQL esté corriendo y las credenciales sean correctas
+                <div class="code-block">
+# Verificar MySQL
+sudo systemctl status mysql
+sudo systemctl start mysql
+
+# Verificar credenciales
+mysql -u root -p
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>Error: "CORS policy"</strong><br>
+                <strong>Solución:</strong> Verificar configuración CORS en backend y URLs en frontend
+                <div class="code-block">
+# Verificar configuración CORS en backend
+app.use(cors({
+  origin: 'http://localhost:8080',
+  credentials: true
+}));
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>Error: "API key invalid"</strong><br>
+                <strong>Solución:</strong> Verificar variables de entorno y renovar API keys si es necesario
+                <div class="code-block">
+# Verificar variables de entorno
+echo $STRAICO_API_KEY
+echo $ELEVENLABS_API_KEY
+
+# Renovar API keys en los servicios correspondientes
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>Error: "Web Speech API not supported"</strong><br>
+                <strong>Solución:</strong> Usar navegador compatible (Chrome, Firefox, Safari)
+                <div class="code-block">
+# Verificar compatibilidad
+if ('webkitSpeechRecognition' in window) {
+  console.log('Web Speech API soportada');
+} else {
+  console.log('Web Speech API no soportada');
+}
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>Error: "Port already in use"</strong><br>
+                <strong>Solución:</strong> Cambiar puerto o terminar proceso que lo usa
+                <div class="code-block">
+# Verificar qué usa el puerto
+lsof -i :5001
+lsof -i :8080
+
+# Terminar proceso
+kill -9 [PID]
+                </div>
+            </div>
+
+            <h3>Monitoreo de Rendimiento:</h3>
+            
+            <h4>Métricas Importantes:</h4>
+            <table>
+                <tr>
+                    <th>Métrica</th>
+                    <th>Valor Normal</th>
+                    <th>Acción si Excede</th>
+                </tr>
+                <tr>
+                    <td>Uso de CPU</td>
+                    <td>< 80%</td>
+                    <td>Optimizar código, escalar recursos</td>
+                </tr>
+                <tr>
+                    <td>Uso de Memoria</td>
+                    <td>< 70%</td>
+                    <td>Revisar memory leaks, aumentar RAM</td>
+                </tr>
+                <tr>
+                    <td>Tiempo de Respuesta API</td>
+                    <td>< 2 segundos</td>
+                    <td>Optimizar consultas, cache</td>
+                </tr>
+                <tr>
+                    <td>Espacio en Disco</td>
+                    <td>< 80%</td>
+                    <td>Limpiar logs, aumentar espacio</td>
+                </tr>
+            </table>
+
+            <h3>Backup y Recuperación:</h3>
+            
+            <h4>Estrategia de Backup:</h4>
+            <div class="code-block">
+# Script de backup automático
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+mysqldump -u root -p mentorai_db > backup_$DATE.sql
+gzip backup_$DATE.sql
+
+# Mantener solo los últimos 7 backups
+ls -t backup_*.sql.gz | tail -n +8 | xargs rm -f
+            </div>
+
+            <h4>Procedimiento de Recuperación:</h4>
+            <div class="code-block">
+# Restaurar desde backup
+mysql -u root -p mentorai_db < backup_20241201_143022.sql
+
+# Verificar restauración
+mysql -u root -p -e "USE mentorai_db; SELECT COUNT(*) FROM classes;"
+            </div>
+        </section>
+
+        <section id="troubleshooting">
+            <h2>12. 🔧 Guía de Solución de Problemas</h2>
+            
+            <h3>Problemas Frecuentes:</h3>
+            
+            <h4>1. El análisis no se guarda en la base de datos</h4>
+            <div class="info">
+                <strong>Síntomas:</strong> El análisis se genera pero no persiste al recargar la página<br>
+                <strong>Causa:</strong> El frontend no está llamando al endpoint de guardado<br>
+                <strong>Solución:</strong> Verificar que la función saveChanges() esté implementada correctamente
+            </div>
+
+            <h4>2. Bordes amarillos en la interfaz</h4>
+            <div class="info">
+                <strong>Síntomas:</strong> Inputs y botones tienen bordes amarillos<br>
+                <strong>Causa:</strong> Conflictos entre clases CSS de Tailwind<br>
+                <strong>Solución:</strong> Cambiar ring-offset-background por ring-offset-white
+            </div>
+
+            <h4>3. Error de conexión a la base de datos</h4>
+            <div class="info">
+                <strong>Síntomas:</strong> Error "Cannot connect to database"<br>
+                <strong>Causa:</strong> MySQL no está corriendo o credenciales incorrectas<br>
+                <strong>Solución:</strong> Verificar estado de MySQL y variables de entorno
+            </div>
+
+            <h4>4. La transcripción no funciona</h4>
+            <div class="info">
+                <strong>Síntomas:</strong> No se transcribe el audio<br>
+                <strong>Causa:</strong> Web Speech API no soportada o permisos denegados<br>
+                <strong>Solución:</strong> Usar navegador compatible y permitir micrófono
+            </div>
+
+            <h3>Comandos de Diagnóstico:</h3>
+            <div class="code-block">
+# Verificar estado de servicios
+systemctl status mysql
+systemctl status nginx  # si usas nginx
+
+# Verificar logs
+tail -f /var/log/mysql/error.log
+tail -f backend/logs/app.log
+
+# Verificar conectividad
+curl -X GET http://localhost:5001/api/classes
+curl -X GET http://localhost:8080
+
+# Verificar variables de entorno
+env | grep -E "(DATABASE|API|NODE)"
+
+# Verificar puertos
+netstat -tulpn | grep -E "(5001|8080|3306)"
+            </div>
+
+            <h3>Logs de Debug:</h3>
+            <div class="code-block">
+# Backend - Habilitar logs detallados
+DEBUG=* npm run dev
+
+# Frontend - Habilitar logs de desarrollo
+npm run dev -- --debug
+
+# MySQL - Habilitar logs de consultas
+SET GLOBAL general_log = 'ON';
+SET GLOBAL log_output = 'TABLE';
+            </div>
+        </section>
+
+        <section id="conclusion">
+            <h2>13. 📋 Resumen y Conclusiones</h2>
+            
+            <div class="success">
+                <h3>✅ Sistema Completamente Funcional</h3>
+                <p>El sistema MentorAI Virtual Teacher está completamente implementado y funcional con todas las características principales:</p>
+                <ul>
+                    <li>✅ Grabación y transcripción de clases</li>
+                    <li>✅ Análisis automático con IA</li>
+                    <li>✅ Persistencia en base de datos</li>
+                    <li>✅ Interfaz moderna y responsive</li>
+                    <li>✅ Exportación de reportes PDF</li>
+                    <li>✅ Soporte multiidioma</li>
+                </ul>
+            </div>
+
+            <h3>Arquitectura Implementada:</h3>
+            <ul>
+                <li><strong>Frontend:</strong> React + TypeScript + Vite + Tailwind CSS</li>
+                <li><strong>Backend:</strong> Node.js + Express + TypeScript</li>
+                <li><strong>Base de Datos:</strong> MySQL con esquema optimizado</li>
+                <li><strong>APIs Externas:</strong> Straico (IA) + ElevenLabs (Voz)</li>
+                <li><strong>Herramientas:</strong> Git, ESLint, Nodemon</li>
+            </ul>
+
+            <h3>Próximos Pasos Recomendados:</h3>
+            <div class="checklist">
+                <ul>
+                    <li>Implementar autenticación de usuarios</li>
+                    <li>Agregar más criterios de análisis</li>
+                    <li>Implementar notificaciones en tiempo real</li>
+                    <li>Agregar dashboard de estadísticas</li>
+                    <li>Optimizar rendimiento para grandes volúmenes</li>
+                    <li>Implementar tests automatizados</li>
+                    <li>Configurar CI/CD pipeline</li>
+                    <li>Agregar documentación de API con Swagger</li>
+                </ul>
+            </div>
+
+            <h3>Recursos Adicionales:</h3>
+            <ul>
+                <li><strong>Documentación React:</strong> https://react.dev/</li>
+                <li><strong>Documentación Node.js:</strong> https://nodejs.org/docs/</li>
+                <li><strong>Documentación MySQL:</strong> https://dev.mysql.com/doc/</li>
+                <li><strong>Straico API:</strong> https://straico.com/docs</li>
+                <li><strong>ElevenLabs API:</strong> https://elevenlabs.io/docs</li>
+            </ul>
+        </section>
+
+        <div class="success">
+            <h3>🎉 Documentación Completa</h3>
+            <p>Esta documentación técnica cubre todos los aspectos del sistema MentorAI Virtual Teacher. Para convertir a Word o PDF:</p>
+            <ul>
+                <li><strong>Word:</strong> Copiar todo el contenido y pegarlo en Word</li>
+                <li><strong>PDF:</strong> Usar herramientas de conversión HTML a PDF</li>
+                <li><strong>Impresión:</strong> Imprimir desde el navegador como PDF</li>
+            </ul>
+        <div class="navigation">
+            <a href="DOCUMENTACION_SISTEMA_MENTORAI_PARTE1.html">Parte 1: Introducción</a>
+            <a href="DOCUMENTACION_SISTEMA_MENTORAI_PARTE2.html">Parte 2: Arquitectura</a>
+            <a href="DOCUMENTACION_SISTEMA_MENTORAI_PARTE3.html">Parte 3: Despliegue</a>
+            <a href="DOCUMENTACION_SISTEMA_MENTORAI_PARTE4.html">Parte 4: Pendientes</a>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="DOCUMENTACION_SISTEMA_MENTORAI_PARTE2.html" style="display: inline-block; background-color: #6b7280; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">
+                ⬅️ Anterior: Parte 2 - Arquitectura
+            </a>
+            <a href="DOCUMENTACION_SISTEMA_MENTORAI_PARTE4.html" style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                ➡️ Siguiente: Parte 4 - Pendientes
+            </a>
+        </div>
+
+        <footer style="text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
+            <p><strong>MentorAI Virtual Teacher</strong> - Documentación Técnica Completa</p>
+            <p>Versión: 1.0.0 | Julio 2025 | Parte 3 de 4</p>
+        </footer>
+    </div>
+</body>
+</html> 

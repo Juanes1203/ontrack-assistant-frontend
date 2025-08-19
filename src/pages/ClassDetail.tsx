@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,10 +9,12 @@ import {
   FileText, 
   BookOpen,
   ClipboardList,
-  Clock
+  Clock,
+  Mic
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useClass } from '@/contexts/ClassContext';
+import { classService } from '@/services/classService';
 
 import { RecordingControls } from '@/components/class-detail/RecordingControls';
 import { TranscriptTab } from '@/components/class-detail/TranscriptTab';
@@ -23,6 +25,8 @@ import { MomentsTab } from '@/components/class-detail/MomentsTab';
 import { useRecording } from '@/components/class-detail/useRecording';
 import { useAnalysis } from '@/components/class-detail/useAnalysis';
 import { MultiLanguageSelector } from '@/components/class-detail/MultiLanguageSelector';
+import { WhisperXUploader } from '@/components/class-detail/WhisperXUploader';
+import { WhisperXTest } from '@/components/class-detail/WhisperXTest';
 
 const ClassDetail = () => {
   const { classId } = useParams();
@@ -30,7 +34,7 @@ const ClassDetail = () => {
   const { toast } = useToast();
   const { getClassById } = useClass();
   const [selectedLanguages, setSelectedLanguages] = useState(['en-US', 'es-ES']);
-  const [activeTab, setActiveTab] = useState('transcript');
+  const [activeTab, setActiveTab] = useState('whisperx');
   
   const classData = getClassById(classId || '');
   
@@ -45,12 +49,35 @@ const ClassDetail = () => {
     setTranscript
   } = useRecording(selectedLanguages);
 
+  const [analysisInitialized, setAnalysisInitialized] = useState(false);
   const {
     classAnalysis,
     isAnalyzing,
     generateAnalysis,
-    resetAnalysis
+    resetAnalysis,
+    setClassAnalysis
   } = useAnalysis();
+
+  useEffect(() => {
+    if (
+      classData &&
+      classData.analysis_data &&
+      !analysisInitialized
+    ) {
+      try {
+        const parsed = typeof classData.analysis_data === 'string'
+          ? JSON.parse(classData.analysis_data)
+          : classData.analysis_data;
+        setClassAnalysis(parsed);
+        if (parsed.transcript) {
+          setTranscript(parsed.transcript);
+        }
+        setAnalysisInitialized(true);
+      } catch (e) {
+        // Si falla el parseo, no pasa nada
+      }
+    }
+  }, [classData, analysisInitialized, setClassAnalysis, setTranscript]);
 
   if (!classData) {
     return (
@@ -67,8 +94,18 @@ const ClassDetail = () => {
     );
   }
 
-  const handleGenerateAnalysis = () => {
-    generateAnalysis(transcript);
+  const handleGenerateAnalysis = async () => {
+    try {
+      // Generar el análisis y guardarlo automáticamente
+      await generateAnalysis(transcript, classId);
+    } catch (error) {
+      console.error('Error generating analysis:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo generar el análisis. Intenta nuevamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleResetRecording = () => {
@@ -102,12 +139,36 @@ const ClassDetail = () => {
     });
   };
 
-  const saveChanges = () => {
-    toast({
-      title: "Cambios guardados",
-      description: "Los cambios se han guardado correctamente",
-    });
+  const saveChanges = async () => {
+    if (!classId || !classAnalysis) {
+      toast({
+        title: "Error",
+        description: "No hay análisis para guardar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await classService.updateAnalysisData(classId, classAnalysis);
+      toast({
+        title: "Cambios guardados",
+        description: "El análisis se ha guardado correctamente en la base de datos.",
+      });
+    } catch (error) {
+      console.error('Error saving analysis:', error);
+      toast({
+        title: "Error al guardar",
+        description: "No se pudo guardar el análisis. Intenta nuevamente.",
+        variant: "destructive",
+      });
+    }
   };
+
+  // Determinar el transcript a mostrar: si hay análisis, usar ese; si no, usar el transcript del estado
+  const transcriptToShow = classAnalysis && classAnalysis.transcript && classAnalysis.transcript.length > 0
+    ? classAnalysis.transcript
+    : transcript;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -131,7 +192,7 @@ const ClassDetail = () => {
                 <Users className="w-4 h-4 mr-1" />
                 {classData.teacher}
               </span>
-              <span>{new Date(classData.createdAt).toLocaleDateString()}</span>
+              <span>{classData.created_at ? new Date(classData.created_at).toLocaleDateString() : ''}</span>
               <Badge variant="secondary">Clase</Badge>
             </div>
           </div>
@@ -158,7 +219,18 @@ const ClassDetail = () => {
 
         {/* Main Tabs */}
         <div className="space-y-6 relative z-40">
-          <div className="grid w-full grid-cols-5 h-12 gap-1 bg-gray-100 p-1 rounded-lg">
+          <div className="grid w-full grid-cols-7 h-12 gap-1 bg-gray-100 p-1 rounded-lg">
+            <button 
+              onClick={() => setActiveTab('whisperx')}
+              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
+                activeTab === 'whisperx' 
+                  ? 'bg-orange-100 text-orange-700' 
+                  : 'text-orange-500 hover:text-orange-600 hover:bg-orange-50'
+              }`}
+            >
+              <Mic className="w-4 h-4 mr-1" />
+              WhisperX
+            </button>
             <button 
               onClick={() => setActiveTab('transcript')}
               className={`flex items-center justify-center text-xs rounded-md transition-colors ${
@@ -214,12 +286,39 @@ const ClassDetail = () => {
               <Users className="w-4 h-4 mr-1" />
               Participación
             </button>
+            <button 
+              onClick={() => setActiveTab('whisperx-test')}
+              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
+                activeTab === 'whisperx-test' 
+                  ? 'bg-red-100 text-red-700' 
+                  : 'text-red-500 hover:text-red-600 hover:bg-red-50'
+              }`}
+            >
+              <Mic className="w-4 h-4 mr-1" />
+              Test
+            </button>
           </div>
+
+          {activeTab === 'whisperx' && (
+            <div className="relative z-10">
+              <WhisperXUploader
+                onTranscriptionComplete={(transcript, speakers, participation) => {
+                  console.log('WhisperX transcription completed:', { transcript, speakers, participation });
+                  setTranscript(transcript);
+                  toast({
+                    title: "Transcripción completada",
+                    description: `Se identificaron ${speakers.length} hablantes`,
+                  });
+                }}
+                className="w-full"
+              />
+            </div>
+          )}
 
           {activeTab === 'transcript' && (
             <div className="relative z-10">
             <TranscriptTab
-              transcript={transcript}
+              transcript={transcriptToShow}
               setTranscript={setTranscript}
               isRecording={isRecording}
               isAnalyzing={isAnalyzing}
@@ -228,7 +327,7 @@ const ClassDetail = () => {
               classAnalysis={classAnalysis}
               className={classData.name}
               teacher={classData.teacher}
-              date={new Date(classData.createdAt).toLocaleDateString('es-ES')}
+              date={classData.created_at ? new Date(classData.created_at).toLocaleDateString('es-ES') : ''}
             />
             </div>
           )}
@@ -258,6 +357,12 @@ const ClassDetail = () => {
             <ParticipationTab
               classAnalysis={classAnalysis}
             />
+            </div>
+          )}
+
+          {activeTab === 'whisperx-test' && (
+            <div className="relative z-10">
+              <WhisperXTest />
             </div>
           )}
         </div>
