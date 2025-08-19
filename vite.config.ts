@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   const config = {
-    base: '/mentorai-virtual-teacher/',
+    base: '/OnTrack_Assistant/',
     plugins: [react()],
     resolve: {
       alias: {

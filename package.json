@@ -1,5 +1,5 @@
 {
-  "name": "mentorai-virtual-teacher",
+  "name": "ontrack-assistant",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist --repo https://github.com/Juanes1203/mentorai-virtual-teacher.git"
+    "deploy": "gh-pages -d dist --repo https://github.com/Juanes1203/OnTrack_Assistant.git"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
