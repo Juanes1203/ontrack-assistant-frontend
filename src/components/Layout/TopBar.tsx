@@ -7,17 +7,12 @@ export const TopBar: React.FC = () => {
     <div className="bg-white px-6 py-4 rounded-tl-[3rem]">
       <div className="flex items-center justify-between">
         {/* Search Bar */}
-        <div className="flex-1 max-w-md">
+        <div className="flex-1 max-w-md ml-8">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
-              placeholder="Search Classes"
-              className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
-              style={{ 
-                '--tw-ring-color': '#27bd2f',
-                '--tw-border-opacity': '1',
-                'border-color': 'rgb(39 189 47 / var(--tw-border-opacity))'
-              } as React.CSSProperties}
+              placeholder="Buscar Clases"
+              className="pl-10 bg-gray-100 border-gray-300 focus:bg-white focus:border-gray-400 placeholder:text-gray-700"
             />
           </div>
         </div>
@@ -31,10 +26,13 @@ export const TopBar: React.FC = () => {
 
           {/* User Profile */}
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-gray-600" />
+            <div className="w-8 h-8 rounded-full overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face" 
+                alt="User Profile"
+                className="w-full h-full object-cover"
+              />
             </div>
-            <span className="text-gray-700 font-medium">John Doe</span>
           </div>
         </div>
       </div>

@@ -14,13 +14,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <LeftSidebar />
         
         {/* Main Content Area - White with smooth rounded transition */}
-        <div className="flex-1 flex flex-col bg-white rounded-l-[3rem] shadow-2xl">
+        <div className="flex-1 flex flex-col bg-white rounded-l-[3rem] shadow-2xl overflow-hidden">
           {/* Top Bar */}
           <TopBar />
           
           {/* Main Content */}
           <main className="flex-1 overflow-y-auto p-6">
-            {children}
+            <div className="max-w-full">
+              {children}
+            </div>
           </main>
         </div>
       </div>

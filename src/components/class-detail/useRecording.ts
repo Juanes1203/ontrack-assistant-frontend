@@ -143,6 +143,11 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
 
   // Start recording for a specific participant
   const startRecording = useCallback((participantId: string) => {
+    console.log(`Starting recording for participant: ${participantId}`);
+    
+    // Update isRecording state immediately
+    setIsRecording(true);
+    
     setParticipants(prev => prev.map(p => {
       if (p.id === participantId) {
         return { ...p, isRecording: true };
@@ -167,40 +172,69 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
         Object.values(recognitionInstancesForParticipant).forEach(recognition => {
           recognition.start();
         });
-        setIsRecording(true);
+        console.log(`Recognition started successfully for ${participantId}`);
       } catch (error) {
         console.error('Error starting recognition:', error);
+        // If there's an error, revert the state
+        setIsRecording(false);
+        setParticipants(prev => prev.map(p => {
+          if (p.id === participantId) {
+            return { ...p, isRecording: false };
+          }
+          return p;
+        }));
       }
+    } else {
+      console.error('No recognition instances available for participant:', participantId);
+      // If no recognition instances, revert the state
+      setIsRecording(false);
+      setParticipants(prev => prev.map(p => {
+        if (p.id === participantId) {
+          return { ...p, isRecording: false };
+        }
+        return p;
+      }));
     }
   }, [initializeRecognition, recognitionInstances]);
 
   // Stop recording for a specific participant
   const stopRecording = useCallback((participantId: string) => {
+    console.log(`Stopping recording for participant: ${participantId}`);
+    
     const currentTranscript = currentTranscripts[participantId];
     
-    setParticipants(prev => prev.map(p => {
-      if (p.id === participantId) {
-        // Only add to history if the transcript is different from the last one
-        const lastHistoryItem = p.transcriptHistory[p.transcriptHistory.length - 1];
-        const shouldAddToHistory = currentTranscript && 
-          currentTranscript.text.trim() !== '' && 
-          (!lastHistoryItem || lastHistoryItem.text !== currentTranscript.text);
-        
-        const newHistory = shouldAddToHistory 
-          ? [...p.transcriptHistory, {
-              text: currentTranscript.text,
-              timestamp: currentTranscript.timestamp
-            }]
-          : p.transcriptHistory;
-        
-        return { 
-          ...p, 
-          isRecording: false,
-          transcriptHistory: newHistory
-        };
-      }
-      return p;
-    }));
+    setParticipants(prev => {
+      const updatedParticipants = prev.map(p => {
+        if (p.id === participantId) {
+          // Only add to history if the transcript is different from the last one
+          const lastHistoryItem = p.transcriptHistory[p.transcriptHistory.length - 1];
+          const shouldAddToHistory = currentTranscript && 
+            currentTranscript.text.trim() !== '' && 
+            (!lastHistoryItem || lastHistoryItem.text !== currentTranscript.text);
+          
+          const newHistory = shouldAddToHistory 
+            ? [...p.transcriptHistory, {
+                text: currentTranscript.text,
+                timestamp: currentTranscript.timestamp
+              }]
+            : p.transcriptHistory;
+          
+          return { 
+            ...p, 
+            isRecording: false,
+            transcriptHistory: newHistory
+          };
+        }
+        return p;
+      });
+
+      // Check if any participant is still recording using the updated participants
+      const anyRecording = updatedParticipants.some(p => p.isRecording);
+      console.log(`Updated participants state. Any still recording: ${anyRecording}`);
+      setIsRecording(anyRecording);
+
+      return updatedParticipants;
+    });
 
     // Clear the current transcript for this participant
     setCurrentTranscripts(prev => {
@@ -216,15 +250,12 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
         Object.values(recognitionInstancesForParticipant).forEach(recognition => {
           recognition.stop();
         });
+        console.log(`Recognition stopped successfully for ${participantId}`);
       } catch (error) {
         console.error('Error stopping recognition:', error);
       }
     }
-
-    // Check if any participant is still recording
-    const anyRecording = participants.some(p => p.id !== participantId && p.isRecording);
-    setIsRecording(anyRecording);
-  }, [participants, recognitionInstances, currentTranscripts]);
+  }, [recognitionInstances, currentTranscripts]);
 
   // Get combined transcript from all participants
   const getCombinedTranscript = useCallback(() => {
@@ -273,6 +304,12 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
     const combined = getCombinedTranscript();
     setTranscript(combined);
   }, [participants, currentTranscripts, getCombinedTranscript]);
+
+  // Keep isRecording in sync with participants state
+  useEffect(() => {
+    const anyRecording = participants.some(p => p.isRecording);
+    setIsRecording(anyRecording);
+  }, [participants]);
 
   // Reset recognition instances when languages change
   useEffect(() => {

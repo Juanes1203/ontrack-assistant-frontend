@@ -4,8 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { ClassProvider } from "@/contexts/ClassContext";
-import Index from "./pages/Index";
+import Home from "./pages/Home";
+import Classes from "./pages/Classes";
 import ClassDetail from "./pages/ClassDetail";
+import Analytics from "./pages/Analytics";
+import Documents from "./pages/Documents";
 import NotFound from "./pages/NotFound";
 import { ElevenLabsProvider } from './contexts/ElevenLabsContext';
 
@@ -20,8 +23,11 @@ const App = () => (
           <Sonner />
           <HashRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/classes" element={<Classes />} />
               <Route path="/class/:classId" element={<ClassDetail />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/documents" element={<Documents />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

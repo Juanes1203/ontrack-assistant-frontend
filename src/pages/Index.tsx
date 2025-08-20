@@ -10,10 +10,10 @@ const Index = () => {
         {/* Page Title */}
         <div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Class Management
+            Dashboard
           </h1>
           <p className="text-gray-600">
-            Manage your classes, schedules, and student information
+            Welcome to OnTrack Assistant. Manage your classes and get started with your day.
           </p>
         </div>
 

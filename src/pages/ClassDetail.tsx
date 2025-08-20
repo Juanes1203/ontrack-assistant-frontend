@@ -1,28 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { flushSync } from 'react-dom';
 import { 
   ArrowLeft, 
   Users, 
   FileText, 
   BookOpen,
   ClipboardList,
-  Clock
+  Clock,
+  Mic,
+  MicOff,
+  Plus,
+  Eye,
+  UserPlus,
+  GraduationCap,
+  User,
+  MapPin,
+  Bell,
+  Home,
+  MessageSquare,
+  FileText as FileTextIcon
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useClass } from '@/contexts/ClassContext';
+import { MainLayout } from '@/components/Layout';
 
-import { RecordingControls } from '@/components/class-detail/RecordingControls';
-import { TranscriptTab } from '@/components/class-detail/TranscriptTab';
-import { SummaryTab } from '@/components/class-detail/SummaryTab';
-import { ECDFTab } from '@/components/class-detail/ECDFTab';
-import { ParticipationTab } from '@/components/class-detail/ParticipationTab';
-import { MomentsTab } from '@/components/class-detail/MomentsTab';
 import { useRecording } from '@/components/class-detail/useRecording';
-import { useAnalysis } from '@/components/class-detail/useAnalysis';
-import { MultiLanguageSelector } from '@/components/class-detail/MultiLanguageSelector';
 
 const ClassDetail = () => {
   const { classId } = useParams();
@@ -30,7 +39,11 @@ const ClassDetail = () => {
   const { toast } = useToast();
   const { getClassById } = useClass();
   const [selectedLanguages, setSelectedLanguages] = useState(['en-US', 'es-ES']);
-  const [activeTab, setActiveTab] = useState('transcript');
+  const [recordingMode, setRecordingMode] = useState<'group' | 'individual'>('group');
+  const [isRecordingLocal, setIsRecordingLocal] = useState(false); // Simple boolean state
+  const [forceRender, setForceRender] = useState(0); // Force component re-render
+  const [recordingTime, setRecordingTime] = useState(0); // Recording time in seconds
+  const [recordingInterval, setRecordingInterval] = useState<NodeJS.Timeout | null>(null);
   
   const classData = getClassById(classId || '');
   
@@ -45,224 +58,406 @@ const ClassDetail = () => {
     setTranscript
   } = useRecording(selectedLanguages);
 
-  const {
-    classAnalysis,
-    isAnalyzing,
-    generateAnalysis,
-    resetAnalysis
-  } = useAnalysis();
+  // Initialize default participants when component mounts
+  useEffect(() => {
+    if (participants.length === 0) {
+      addParticipant('Juan Carlos Suarez', 'teacher');
+      addParticipant('Cristina Paez', 'student');
+      addParticipant('Ana Maria Cruz', 'student');
+      addParticipant('Laura Silva', 'student');
+    }
+  }, [participants.length, addParticipant]);
+
+  // Start/stop recording timer
+  useEffect(() => {
+    if (isRecordingLocal) {
+      // Start timer
+      const interval = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+      setRecordingInterval(interval);
+    } else {
+      // Stop timer
+      if (recordingInterval) {
+        clearInterval(recordingInterval);
+        setRecordingInterval(null);
+      }
+      setRecordingTime(0); // Reset to 0 when stopping
+    }
+
+    // Cleanup
+    return () => {
+      if (recordingInterval) {
+        clearInterval(recordingInterval);
+      }
+    };
+  }, [isRecordingLocal]);
+
+  // Format recording time as MM:SS
+  const formatRecordingTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  // Sample participants data for display
+  const sampleParticipants = [
+    { id: '1', name: 'Juan Carlos Suarez', role: 'Teacher', isRecording: participants.find(p => p.name === 'Juan Carlos Suarez')?.isRecording || false, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' },
+    { id: '2', name: 'Cristina Paez', role: 'Student', isRecording: participants.find(p => p.name === 'Cristina Paez')?.isRecording || false, avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face' },
+    { id: '3', name: 'Ana Maria Cruz', role: 'Student', isRecording: participants.find(p => p.name === 'Ana Maria Cruz')?.isRecording || false, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face' },
+    { id: '4', name: 'Laura Silva', role: 'Student', isRecording: participants.find(p => p.name === 'Laura Silva')?.isRecording || false, avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&crop=face' }
+  ];
 
   if (!classData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Clase no encontrada</h1>
-          <p className="text-gray-600 mb-6">La clase que buscas no existe o ha sido eliminada.</p>
-          <Button onClick={() => navigate('/')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Volver al inicio
-          </Button>
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Clase no encontrada</h1>
+            <p className="text-gray-600 mb-6">La clase que buscas no existe o ha sido eliminada.</p>
+            <Button onClick={() => navigate('/')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver al inicio
+            </Button>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
-  const handleGenerateAnalysis = () => {
-    generateAnalysis(transcript);
-  };
-
-  const handleResetRecording = () => {
-    setTranscript('');
-    resetAnalysis();
-  };
-
-  const handleLanguageChange = (newLanguages: string[]) => {
-    setSelectedLanguages(newLanguages);
-    const languageNames = newLanguages.map(lang => {
-      const langMap: { [key: string]: string } = {
-        'en-US': 'English (US)',
-        'en-GB': 'English (UK)',
-        'es-ES': 'Español (España)',
-        'es-MX': 'Español (México)',
-        'fr-FR': 'Français',
-        'de-DE': 'Deutsch',
-        'it-IT': 'Italiano',
-        'pt-BR': 'Português (Brasil)',
-        'ja-JP': '日本語',
-        'ko-KR': '한국어',
-        'zh-CN': '中文 (简体)',
-        'zh-TW': '中文 (繁體)'
-      };
-      return langMap[lang] || lang;
-    }).join(', ');
+  const handleStartRecording = () => {
+    console.log('Starting recording for all participants...');
+    console.log('Before setIsRecordingLocal(true), isRecordingLocal:', isRecordingLocal);
+    
+    // Update local state immediately
+    setIsRecordingLocal(true);
+    setForceRender(prev => prev + 1); // Force re-render
+    
+    console.log('After setIsRecordingLocal(true), isRecordingLocal:', true);
+    
+    // Start recording for all participants
+    participants.forEach(participant => {
+      startRecording(participant.id);
+    });
     
     toast({
-      title: "Idiomas actualizados",
-      description: `Reconocimiento configurado para: ${languageNames}`,
+      title: "Grabación iniciada",
+      description: "La grabación de voz ha comenzado para todos los participantes",
     });
   };
 
-  const saveChanges = () => {
+  const handleStopRecording = () => {
+    console.log('Stopping recording for all participants...');
+    console.log('Before setIsRecordingLocal(false), isRecordingLocal:', isRecordingLocal);
+    
+    // Update local state immediately
+    setIsRecordingLocal(false);
+    setForceRender(prev => prev + 1); // Force re-render
+    
+    console.log('After setIsRecordingLocal(false), isRecordingLocal:', false);
+    
+    // Stop recording for all participants
+    participants.forEach(participant => {
+      stopRecording(participant.id);
+    });
+    
     toast({
-      title: "Cambios guardados",
-      description: "Los cambios se han guardado correctamente",
+      title: "Grabación detenida",
+      description: "La grabación de voz se ha detenido",
     });
   };
+
+  const handleIndividualRecording = (participantId: string) => {
+    const participant = participants.find(p => p.id === participantId);
+    if (participant) {
+      if (participant.isRecording) {
+        stopRecording(participantId);
+        toast({
+          title: "Grabación detenida",
+          description: `Se detuvo la grabación de ${participant.name}`,
+        });
+      } else {
+        startRecording(participantId);
+        toast({
+          title: "Grabación iniciada",
+          description: `Se inició la grabación de ${participant.name}`,
+        });
+      }
+    }
+  };
+
+  // Get recording statistics
+  const connectedCount = participants.length;
+  const recordingCount = participants.filter(p => p.isRecording).length;
+  const recordingTimeDisplay = formatRecordingTime(recordingTime);
+
+  // Debug logging for button state
+  console.log('Rendering button with isRecordingLocal:', isRecordingLocal);
+  console.log('Force render count:', forceRender);
+
+  // Debug logging
+  console.log('Current state:', { isRecording, participants: participants.map(p => ({ name: p.name, isRecording: p.isRecording })) });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <MainLayout>
+      <div className="space-y-6 max-w-full">
         {/* Header */}
-        <div className="flex items-center mb-8 relative z-40">
-          <Button 
-            variant="outline" 
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 lg:mb-8">
+          <Button
+            variant="outline"
             onClick={() => navigate('/')}
-            className="mr-4 border-2 hover:bg-gray-50"
+            className="mr-0 sm:mr-4 border-2 hover:bg-gray-50 w-full sm:w-auto"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver
           </Button>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {classData.name}
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
+              Grabando Clase
             </h1>
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              <span className="flex items-center">
-                <Users className="w-4 h-4 mr-1" />
-                {classData.teacher}
-              </span>
-              <span>{new Date(classData.createdAt).toLocaleDateString()}</span>
-              <Badge variant="secondary">Clase</Badge>
-            </div>
           </div>
         </div>
 
-        {/* Recording Controls */}
-        <div className="mb-6 relative z-40">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Controles de Grabación</h2>
-            <MultiLanguageSelector 
-              selectedLanguages={selectedLanguages} 
-              onLanguagesChange={handleLanguageChange} 
-            />
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          {/* Left Column - Voice Recording & Transcription */}
+          <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+            {/* Voice Recording Section */}
+            <div className="bg-white rounded-lg p-4 lg:p-6" style={{ border: '2px solid #27bd2f' }}>
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+                <div className="flex items-center space-x-3">
+                  <Mic className="w-6 h-6 text-green-600" />
+                  <h2 className="text-xl font-semibold text-gray-800">Grabación de Voz</h2>
+                </div>
+                <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                  <Button
+                    key={`recording-button-${isRecordingLocal ? 'recording' : 'stopped'}`}
+                    onClick={isRecordingLocal ? handleStopRecording : handleStartRecording}
+                    className={`${
+                      isRecordingLocal
+                        ? 'bg-red-600 hover:bg-red-700 shadow-lg scale-105'
+                        : 'bg-green-600 hover:bg-green-700'
+                    } text-white px-4 lg:px-6 py-2 lg:py-3 text-sm lg:text-base transition-all duration-200 font-semibold w-full sm:w-auto`}
+                  >
+                    {isRecordingLocal ? (
+                      <>
+                        <MicOff className="w-4 h-4 lg:w-5 lg:h-5 mr-2 animate-pulse" />
+                        Detener Grabación
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
+                        Iniciar Grabación
+                      </>
+                    )}
+                  </Button>
+
+                  {/* Status indicator */}
+                  <div className={`flex items-center px-3 lg:px-4 py-2 rounded-lg ${
+                    isRecordingLocal
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-green-100 text-green-700'
+                  }`} style={{ border: '2px solid #27bd2f' }}>
+                    <div className={`w-3 h-3 rounded-full mr-2 ${
+                      isRecordingLocal ? 'bg-red-500 animate-pulse' : 'bg-green-500'
+                    }`}></div>
+                    <span className="text-sm font-medium">
+                      {isRecordingLocal ? 'Grabando...' : 'Listo'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-gray-600 mb-4 lg:mb-6 text-sm lg:text-base">
+                Graba y gestiona audio de profesores y estudiantes
+              </p>
+
+              {/* Language Selection */}
+              <div className="mb-4 lg:mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Idioma</label>
+                <p className="text-sm text-gray-500 mb-2">Elige el idioma</p>
+                <Select value={selectedLanguages[0]} onValueChange={(value) => setSelectedLanguages([value])}>
+                  <SelectTrigger className="w-full" style={{ border: '2px solid #27bd2f' }}>
+                    <SelectValue placeholder="Seleccionar idioma" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en-US">English (US)</SelectItem>
+                    <SelectItem value="es-ES">Español (España)</SelectItem>
+                    <SelectItem value="fr-FR">Français</SelectItem>
+                    <SelectItem value="de-DE">Deutsch</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Recording Mode */}
+              <div className="mb-4 lg:mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Modo de grabación</label>
+                <p className="text-sm text-gray-500 mb-3">Elige cómo capturar audio de los participantes</p>
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
+                  <div className="flex items-center space-x-3">
+                    <Switch
+                      checked={recordingMode === 'group'}
+                      onCheckedChange={(checked) => setRecordingMode(checked ? 'group' : 'individual')}
+                      className="data-[state=checked]:bg-green-600"
+                    />
+                    <span className={`text-sm font-medium ${recordingMode === 'group' ? 'text-green-600' : 'text-gray-500'}`}>
+                      Grupo
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Switch
+                      checked={recordingMode === 'individual'}
+                      onCheckedChange={(checked) => setRecordingMode(checked ? 'individual' : 'group')}
+                      className="data-[state=checked]:bg-green-600"
+                    />
+                    <span className={`text-sm font-medium ${recordingMode === 'individual' ? 'text-green-600' : 'text-gray-500'}`}>
+                      Individual
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Indicators */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
+                <div className="bg-white rounded-lg p-3 lg:p-4 text-center" style={{ border: '2px solid #27bd2f' }}>
+                  <Users className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-2" />
+                  <div className="text-sm text-gray-600">Conectados</div>
+                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{connectedCount}</div>
+                </div>
+                <div className="bg-white rounded-lg p-3 lg:p-4 text-center" style={{ border: '2px solid #27bd2f' }}>
+                  <Mic className="w-5 h-5 lg:w-6 lg:h-6 text-red-600 mx-auto mb-2" />
+                  <div className="text-sm text-gray-600">Grabando</div>
+                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{recordingCount}</div>
+                </div>
+                <div className="bg-white rounded-lg p-3 lg:p-4 text-center" style={{ border: '2px solid #27bd2f' }}>
+                  <Clock className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600 mx-auto mb-2" />
+                  <div className="text-sm text-gray-600">Tiempo de grabación</div>
+                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{recordingTimeDisplay}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Class Transcription Section */}
+            <div className="bg-white rounded-lg p-4 lg:p-6" style={{ border: '2px solid #27bd2f' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-4">
+                <Eye className="w-6 h-6 text-green-600" />
+                <h2 className="text-xl font-semibold text-gray-800">Transcripción de Clase</h2>
+                {isRecordingLocal && (
+                  <Badge variant="destructive" className="ml-0 sm:ml-2">
+                    <Mic className="w-3 h-3 mr-1 animate-pulse" />
+                    Grabando
+                  </Badge>
+                )}
+              </div>
+
+              <Textarea
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. También puedes editar el texto manualmente."
+                className="min-h-[200px] text-base leading-relaxed text-gray-600 placeholder:text-gray-400 bg-white"
+                style={{ border: '2px solid #27bd2f' }}
+                readOnly={isRecordingLocal}
+              />
+
+              {isRecordingLocal && (
+                <div className="mt-3 text-sm text-green-600 flex items-center">
+                  <Mic className="w-4 h-4 mr-2 animate-pulse" />
+                  Grabando en tiempo real... Habla ahora y verás la transcripción aparecer automáticamente.
+                </div>
+              )}
+            </div>
           </div>
-          <RecordingControls
-            isRecording={isRecording}
-            participants={participants}
-            startRecording={startRecording}
-            stopRecording={stopRecording}
-            addParticipant={addParticipant}
-            removeParticipant={removeParticipant}
-          />
-        </div>
 
-        {/* Main Tabs */}
-        <div className="space-y-6 relative z-40">
-          <div className="grid w-full grid-cols-5 h-12 gap-1 bg-gray-100 p-1 rounded-lg">
-            <button 
-              onClick={() => setActiveTab('transcript')}
-              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
-                activeTab === 'transcript' 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : 'text-blue-500 hover:text-blue-600 hover:bg-blue-50'
-              }`}
-            >
-              <FileText className="w-4 h-4 mr-1" />
-              Transcripción
-            </button>
-            <button 
-              onClick={() => setActiveTab('resumen')}
-              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
-                activeTab === 'resumen' 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'text-green-500 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <BookOpen className="w-4 h-4 mr-1" />
-              Resumen
-            </button>
-            <button 
-              onClick={() => setActiveTab('criterios')}
-              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
-                activeTab === 'criterios' 
-                  ? 'bg-purple-100 text-purple-700' 
-                  : 'text-purple-500 hover:text-purple-600 hover:bg-purple-50'
-              }`}
-            >
-              <ClipboardList className="w-4 h-4 mr-1" />
-              Criterios ECDF
-            </button>
-            <button 
-              onClick={() => setActiveTab('momentos')}
-              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
-                activeTab === 'momentos' 
-                  ? 'bg-indigo-100 text-indigo-700' 
-                  : 'text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50'
-              }`}
-            >
-              <Clock className="w-4 h-4 mr-1" />
-              Momentos Clave
-            </button>
-            <button 
-              onClick={() => setActiveTab('participacion')}
-              className={`flex items-center justify-center text-xs rounded-md transition-colors ${
-                activeTab === 'participacion' 
-                  ? 'bg-pink-100 text-pink-700' 
-                  : 'text-pink-500 hover:text-pink-600 hover:bg-pink-50'
-              }`}
-            >
-              <Users className="w-4 h-4 mr-1" />
-              Participación
-            </button>
+          {/* Right Column - Class Participants */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg p-4 lg:p-6 shadow-sm" style={{ border: '2px solid #27bd2f' }}>
+              {/* Header */}
+              <div className="flex items-center space-x-3 mb-4">
+                <Users className="w-6 h-6 text-green-600" />
+                <h2 className="text-xl font-semibold text-gray-800">Participantes de la Clase</h2>
+              </div>
+
+              <p className="text-gray-600 mb-4 text-sm lg:text-base">
+                Graba y gestiona audio de profesores y estudiantes
+              </p>
+
+              <Button className="w-full bg-green-600 hover:bg-green-700 text-white mb-4 lg:mb-6 py-2 lg:py-3">
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar Participante
+              </Button>
+
+              {/* Summary */}
+              <div className="grid grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg" style={{ border: '2px solid #27bd2f' }}>
+                <div className="text-center">
+                  <Users className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-1" />
+                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{participants.length}</div>
+                  <div className="text-xs text-gray-600">Total</div>
+                </div>
+                <div className="text-center">
+                  <GraduationCap className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-1" />
+                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{participants.filter(p => p.type === 'teacher').length}</div>
+                  <div className="text-xs text-gray-600">Profesores</div>
+                </div>
+                <div className="text-center">
+                  <Users className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-1" />
+                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{participants.filter(p => p.type === 'student').length}</div>
+                  <div className="text-xs text-gray-600">Estudiantes</div>
+                </div>
+              </div>
+
+              {/* All Participants List */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Todos los participantes</h3>
+                <div className="space-y-3">
+                  {participants.map((participant) => (
+                    <div key={participant.id} className="flex items-center space-x-3 p-3 bg-white rounded-lg" style={{ border: '2px solid #27bd2f' }}>
+                      <img
+                        src={sampleParticipants.find(p => p.name === participant.name)?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'}
+                        alt={participant.name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-800">{participant.name}</div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge
+                            variant={participant.type === 'teacher' ? 'destructive' : 'secondary'}
+                            className="text-xs px-2 py-1"
+                          >
+                            {participant.type === 'teacher' ? 'Profesor' : 'Estudiante'}
+                          </Badge>
+                          {participant.isRecording && (
+                            <Badge variant="destructive" className="text-xs px-2 py-1">
+                              Grabando
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleIndividualRecording(participant.id)}
+                        className={`${
+                          participant.isRecording
+                            ? 'text-red-600 hover:bg-red-50'
+                            : 'text-green-600 hover:bg-green-50'
+                        }`}
+                        style={{ border: '2px solid #27bd2f' }}
+                      >
+                        {participant.isRecording ? (
+                          <MicOff className="w-3 h-3" />
+                        ) : (
+                          <Mic className="w-3 h-3" />
+                        )}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-
-          {activeTab === 'transcript' && (
-            <div className="relative z-10">
-            <TranscriptTab
-              transcript={transcript}
-              setTranscript={setTranscript}
-              isRecording={isRecording}
-              isAnalyzing={isAnalyzing}
-              generateAnalysis={handleGenerateAnalysis}
-              saveChanges={saveChanges}
-              classAnalysis={classAnalysis}
-              className={classData.name}
-              teacher={classData.teacher}
-              date={new Date(classData.createdAt).toLocaleDateString('es-ES')}
-            />
-            </div>
-          )}
-
-          {activeTab === 'resumen' && (
-            <div className="relative z-10">
-            <SummaryTab
-              classAnalysis={classAnalysis}
-            />
-            </div>
-          )}
-
-          {activeTab === 'criterios' && (
-            <div className="relative z-10">
-            <ECDFTab classAnalysis={classAnalysis} />
-            </div>
-          )}
-
-          {activeTab === 'momentos' && (
-            <div className="relative z-10">
-            <MomentsTab classAnalysis={classAnalysis} />
-            </div>
-          )}
-
-          {activeTab === 'participacion' && (
-            <div className="relative z-10">
-            <ParticipationTab
-              classAnalysis={classAnalysis}
-            />
-            </div>
-          )}
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

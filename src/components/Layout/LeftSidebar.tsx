@@ -1,14 +1,39 @@
 import React from 'react';
-import { Home, GraduationCap, MessageSquare, FileText, Users } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Home, GraduationCap, MessageSquare, FileText, Users, BarChart3 } from 'lucide-react';
 
 export const LeftSidebar: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const navigationItems = [
-    { icon: Home, label: 'Home', href: '/' },
-    { icon: GraduationCap, label: 'Classes', href: '/classes', active: true },
+    { icon: Home, label: 'Inicio', href: '/' },
+    { icon: GraduationCap, label: 'Clases', href: '/classes' },
+    { icon: BarChart3, label: 'Análisis', href: '/analytics' },
     { icon: MessageSquare, label: 'Feedback', href: '/feedback' },
-    { icon: FileText, label: 'Documents', href: '/documents' },
-    { icon: Users, label: 'Students', href: '/students' },
+    { icon: FileText, label: 'Documentos', href: '/documents' },
+    { icon: Users, label: 'Estudiantes', href: '/students' },
   ];
+
+  const handleNavigation = (href: string) => {
+    navigate(href);
+  };
+
+  const isActive = (href: string) => {
+    if (href === '/') {
+      return location.pathname === '/';
+    }
+    if (href === '/classes') {
+      return location.pathname === '/classes';
+    }
+    if (href === '/analytics') {
+      return location.pathname === '/analytics';
+    }
+    if (href === '/documents') {
+      return location.pathname === '/documents';
+    }
+    return location.pathname.startsWith(href);
+  };
 
   return (
     <div className="w-64 text-white flex flex-col" style={{ backgroundColor: '#27bd2f' }}>
@@ -29,19 +54,20 @@ export const LeftSidebar: React.FC = () => {
         <ul className="space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
+            const active = isActive(item.href);
             return (
               <li key={item.label}>
-                <a
-                  href={item.href}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
-                    item.active
+                <button
+                  onClick={() => handleNavigation(item.href)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
+                    active
                       ? 'text-white bg-white/20'
                       : 'text-white/80 hover:text-white hover:bg-white/10'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
-                </a>
+                </button>
               </li>
             );
           })}

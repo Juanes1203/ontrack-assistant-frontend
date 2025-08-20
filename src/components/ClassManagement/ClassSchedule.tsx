@@ -12,27 +12,27 @@ export const ClassSchedule: React.FC = () => {
   const sampleClasses = [
     {
       id: '1',
-      name: 'Calculus Advanced',
-      location: 'Lab 205',
+      name: 'Cálculo Avanzado',
+      location: 'Laboratorio 205',
       students: 28,
       time: '09:00 AM',
-      status: 'today'
+      status: 'orange'
     },
     {
       id: '2',
-      name: 'Chemistry Tutorial',
-      location: 'Lab 205',
+      name: 'Tutorial de Química',
+      location: 'Laboratorio 205',
       students: 28,
       time: '09:00 AM',
-      status: 'today'
+      status: 'orange'
     },
     {
       id: '3',
-      name: 'Calculus Integral',
-      location: 'Lab 205',
+      name: 'Cálculo Integral',
+      location: 'Laboratorio 205',
       students: 28,
       time: '09:00 AM',
-      status: 'today'
+      status: 'orange'
     }
   ];
 
@@ -40,48 +40,50 @@ export const ClassSchedule: React.FC = () => {
     navigate(`/class/${classId}`);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStartClassButtonStyle = (status: string) => {
     switch (status) {
-      case 'today':
-        return 'bg-pink-100 text-pink-700';
-      case 'upcoming':
-        return 'bg-orange-100 text-orange-700';
+      case 'orange':
+        return 'bg-[#ff592f] text-white hover:bg-orange-600';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-500 text-white hover:bg-gray-600';
     }
   };
 
   return (
-    <div className="bg-white rounded-lg border border-green-200 p-6">
-      <div className="space-y-6">
+    <div 
+      className="bg-white rounded-lg p-4 lg:p-6 max-w-full"
+      style={{ border: '1px solid #10b981' }}
+    >
+      <div className="space-y-4 lg:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <Calendar className="w-6 h-6 text-gray-600" />
-            <h2 className="text-2xl font-bold text-gray-800">Class Schedule</h2>
+            <Calendar className="w-6 h-6 text-green-600" />
+            <h2 className="text-xl lg:text-2xl font-bold text-gray-800">Horario de Clases</h2>
           </div>
-          <Button className="bg-green-600 hover:bg-green-700 text-white">
+          <Button className="bg-green-600 hover:bg-green-700 text-white rounded-lg w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
-            New Class
+            Nueva Clase
           </Button>
         </div>
 
         {/* Class Cards */}
-        <div className="grid gap-4">
+        <div className="grid gap-3 lg:gap-4">
           {sampleClasses.map((cls) => (
             <div
               key={cls.id}
-              className="bg-gray-50 rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+              className="bg-white rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
+              style={{ border: '1px solid #10b981' }}
               onClick={() => handleClassClick(cls.id)}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 {/* Class Info */}
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">
+                  <h3 className="text-lg lg:text-xl font-semibold text-gray-800 mb-2 lg:mb-3">
                     {cls.name}
                   </h3>
                   
-                  <div className="flex items-center space-x-6 text-gray-600">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6 text-gray-600">
                     <div className="flex items-center space-x-2">
                       <MapPin className="w-4 h-4" />
                       <span>{cls.location}</span>
@@ -95,27 +97,28 @@ export const ClassSchedule: React.FC = () => {
                 </div>
 
                 {/* Time and Actions */}
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                   <div className="text-right">
-                    <div className="text-sm text-gray-500">Today</div>
+                    <div className="text-sm text-gray-500">Hoy</div>
                     <div className="font-semibold text-gray-800">{cls.time}</div>
                   </div>
                   
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
                     <Button
                       variant="outline"
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                      className="text-gray-700 hover:bg-green-50 bg-white hover:border-green-300 w-full sm:w-auto"
+                      style={{ border: '1px solid #10b981' }}
                     >
-                      Edit
+                      Editar
                     </Button>
                     <Button
-                      className={`${
-                        cls.id === '3' 
-                          ? 'bg-orange-500 hover:bg-orange-600' 
-                          : 'bg-pink-500 hover:bg-pink-600'
-                      } text-white`}
+                      className={`${getStartClassButtonStyle(cls.status)} rounded-lg w-full sm:w-auto`}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the card click
+                        handleClassClick(cls.id);
+                      }}
                     >
-                      Start Class
+                      Iniciar Clase
                     </Button>
                   </div>
                 </div>
