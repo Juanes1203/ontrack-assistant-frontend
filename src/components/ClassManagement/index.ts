@@ -1,1 +1,0 @@
-export { ClassSchedule } from './ClassSchedule';
