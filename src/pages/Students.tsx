@@ -12,9 +12,9 @@ import { useStudent } from '@/contexts/StudentContext';
 const Students = () => {
   const navigate = useNavigate();
   const { students } = useStudent();
-  const [searchTerm, setSearchTerm] => useState('');
-  const [filterGrade, setFilterGrade] => useState('all');
-  const [filterStatus, setFilterStatus] => useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterGrade, setFilterGrade] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   const summaryData = [
     {
