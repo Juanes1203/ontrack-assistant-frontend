@@ -4,10 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Calendar, MapPin, Users, Clock, BookOpen, User, CalendarDays } from 'lucide-react';
 import { useClass } from '@/contexts/ClassContext';
+import { useStudent } from '@/contexts/StudentContext';
 import { useToast } from '@/hooks/use-toast';
+import { AddStudentsModal } from './AddStudentsModal';
 
 interface CreateClassModalProps {
   isOpen: boolean;
@@ -16,6 +20,7 @@ interface CreateClassModalProps {
 
 export const CreateClassModal: React.FC<CreateClassModalProps> = ({ isOpen, onClose }) => {
   const { addClass } = useClass();
+  const { students } = useStudent();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -39,6 +44,8 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({ isOpen, onCl
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAddStudentsModalOpen, setIsAddStudentsModalOpen] = useState(false);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     if (field.includes('.')) {
@@ -56,6 +63,10 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({ isOpen, onCl
         [field]: value
       }));
     }
+  };
+
+  const handleAddStudents = (studentIds: string[]) => {
+    setSelectedStudentIds(studentIds);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -487,6 +498,68 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({ isOpen, onCl
             </div>
           </div>
 
+          {/* Students Selection */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800 flex items-center space-x-2">
+              <Users className="w-5 h-5 text-blue-600" />
+              <span>Estudiantes de la Clase</span>
+            </h3>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Estudiantes seleccionados</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsAddStudentsModalOpen(true)}
+                  className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {selectedStudentIds.length === 0 ? 'Añadir Estudiantes' : 'Gestionar Estudiantes'}
+                </Button>
+              </div>
+              
+              {selectedStudentIds.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span>{selectedStudentIds.length} estudiante{selectedStudentIds.length !== 1 ? 's' : ''} seleccionado{selectedStudentIds.length !== 1 ? 's' : ''}</span>
+                    <span className="text-blue-600 font-medium">
+                      {selectedStudentIds.length}/{formData.maxStudents || '∞'}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                    {selectedStudentIds.map(studentId => {
+                      const student = students.find(s => s.id === studentId);
+                      return student ? (
+                        <div key={studentId} className="flex items-center space-x-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                          <Avatar className="w-6 h-6">
+                            <AvatarImage src={student.avatar} alt={student.fullName} />
+                            <AvatarFallback className="text-xs bg-blue-200 text-blue-800">
+                              {student.firstName.charAt(0)}{student.lastName.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm font-medium text-gray-800 truncate">
+                            {student.fullName}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {student.grade}
+                          </Badge>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-6 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                  <Users className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <p className="text-sm">No hay estudiantes seleccionados</p>
+                  <p className="text-xs text-gray-400">Haz clic en "Añadir Estudiantes" para comenzar</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           <DialogFooter className="flex flex-col sm:flex-row gap-3">
             <Button
               type="button"
@@ -516,6 +589,16 @@ export const CreateClassModal: React.FC<CreateClassModalProps> = ({ isOpen, onCl
             </Button>
           </DialogFooter>
         </form>
+
+        {/* Add Students Modal */}
+        <AddStudentsModal
+          isOpen={isAddStudentsModalOpen}
+          onClose={() => setIsAddStudentsModalOpen(false)}
+          onAddStudents={handleAddStudents}
+          existingStudentIds={selectedStudentIds}
+          subject={formData.subject}
+          maxStudents={parseInt(formData.maxStudents) || undefined}
+        />
       </DialogContent>
     </Dialog>
   );

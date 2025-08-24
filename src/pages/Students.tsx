@@ -7,17 +7,19 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
+import { useStudent } from '@/contexts/StudentContext';
 
 const Students = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterGrade, setFilterGrade] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const { students } = useStudent();
+  const [searchTerm, setSearchTerm] => useState('');
+  const [filterGrade, setFilterGrade] => useState('all');
+  const [filterStatus, setFilterStatus] => useState('all');
 
   const summaryData = [
     {
       title: 'Total de Estudiantes',
-      value: '95',
+      value: students.length.toString(),
       icon: Users,
       iconColor: 'text-blue-600',
       bgColor: 'bg-white',
@@ -25,7 +27,7 @@ const Students = () => {
     },
     {
       title: 'Estudiantes Activos',
-      value: '87',
+      value: students.filter(s => s.attendance >= 80).length.toString(),
       icon: GraduationCap,
       iconColor: 'text-green-600',
       bgColor: 'bg-white',
@@ -33,7 +35,11 @@ const Students = () => {
     },
     {
       title: 'Nuevos este Mes',
-      value: '12',
+      value: students.filter(s => {
+        const monthAgo = new Date();
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        return s.createdAt > monthAgo;
+      }).length.toString(),
       icon: Users,
       iconColor: 'text-purple-600',
       bgColor: 'bg-purple-50',
@@ -41,7 +47,7 @@ const Students = () => {
     },
     {
       title: 'Promedio de Asistencia',
-      value: '92%',
+      value: `${Math.round(students.reduce((acc, s) => acc + s.attendance, 0) / students.length)}%`,
       icon: GraduationCap,
       iconColor: 'text-orange-600',
       bgColor: 'bg-orange-50',
@@ -49,80 +55,20 @@ const Students = () => {
     }
   ];
 
-  const studentsData = [
-    {
-      id: '1',
-      name: 'María González',
-      email: 'maria.gonzalez@email.com',
-      phone: '+57 300 123 4567',
-      grade: '11°',
-      status: 'active',
-      attendance: 95,
-      classes: ['Matemáticas Avanzadas', 'Física'],
-      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-      location: 'Bogotá, Colombia'
-    },
-    {
-      id: '2',
-      name: 'Carlos Rodríguez',
-      email: 'carlos.rodriguez@email.com',
-      phone: '+57 310 987 6543',
-      grade: '10°',
-      status: 'active',
-      attendance: 88,
-      classes: ['Química Básica', 'Matemáticas Avanzadas'],
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      location: 'Medellín, Colombia'
-    },
-    {
-      id: '3',
-      name: 'Ana Martínez',
-      email: 'ana.martinez@email.com',
-      phone: '+57 315 456 7890',
-      grade: '11°',
-      status: 'inactive',
-      attendance: 72,
-      classes: ['Laboratorio de Física'],
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-      location: 'Cali, Colombia'
-    },
-    {
-      id: '4',
-      name: 'Luis Herrera',
-      email: 'luis.herrera@email.com',
-      phone: '+57 320 111 2222',
-      grade: '10°',
-      status: 'active',
-      attendance: 91,
-      classes: ['Química Básica', 'Matemáticas Avanzadas', 'Laboratorio de Física'],
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      location: 'Barranquilla, Colombia'
-    },
-    {
-      id: '5',
-      name: 'Sofia Jiménez',
-      email: 'sofia.jimenez@email.com',
-      phone: '+57 318 333 4444',
-      grade: '11°',
-      status: 'active',
-      attendance: 89,
-      classes: ['Matemáticas Avanzadas'],
-      image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
-      location: 'Cartagena, Colombia'
-    },
-    {
-      id: '6',
-      name: 'Diego Silva',
-      email: 'diego.silva@email.com',
-      phone: '+57 314 555 6666',
-      grade: '10°',
-      status: 'active',
-      attendance: 94,
-      classes: ['Química Básica', 'Laboratorio de Física'],
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-      location: 'Pereira, Colombia'
-    }
-  ];
+  // Transform context students to match the expected format
+  const studentsData = students.map(student => ({
+    id: student.id,
+    name: student.fullName,
+    email: student.email,
+    phone: '+57 300 123 4567', // Placeholder phone
+    grade: student.grade,
+    status: student.attendance >= 80 ? 'active' : 'inactive',
+    attendance: student.attendance,
+    classes: student.subjects,
+    image: student.avatar,
+    location: 'Colombia' // Placeholder location
+  }));
+
 
   const filteredStudents = studentsData.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

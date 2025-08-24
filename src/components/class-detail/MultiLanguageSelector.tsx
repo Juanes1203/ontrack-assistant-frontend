@@ -46,8 +46,8 @@ export const MultiLanguageSelector: React.FC<MultiLanguageSelectorProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center space-x-2">
-        <Globe className="w-4 h-4 text-gray-600" />
-        <span className="text-sm font-medium text-gray-700">Idiomas de Reconocimiento</span>
+        <Globe className="w-5 h-5 text-blue-600" />
+        <span className="text-base font-semibold text-gray-800">Idiomas de Reconocimiento</span>
       </div>
       
       {/* Selected Languages */}
@@ -58,16 +58,16 @@ export const MultiLanguageSelector: React.FC<MultiLanguageSelectorProps> = ({
             <Badge 
               key={langCode} 
               variant="secondary" 
-              className="flex items-center space-x-1 px-3 py-1"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-800 border-2 border-blue-200 hover:bg-blue-200 transition-colors duration-200"
             >
-              <span>{langInfo?.flag}</span>
-              <span>{langInfo?.name}</span>
+              <span className="text-lg">{langInfo?.flag}</span>
+              <span className="font-medium">{langInfo?.name}</span>
               {selectedLanguages.length > 1 && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => removeLanguage(langCode)}
-                  className="h-4 w-4 p-0 ml-1 hover:bg-gray-200"
+                  className="h-5 w-5 p-0 ml-2 hover:bg-blue-300 hover:text-blue-900 rounded-full transition-all duration-200"
                 >
                   <X className="w-3 h-3" />
                 </Button>
@@ -78,9 +78,9 @@ export const MultiLanguageSelector: React.FC<MultiLanguageSelectorProps> = ({
       </div>
 
       {/* Available Languages */}
-      <div className="border rounded-lg p-3 bg-gray-50">
-        <p className="text-xs text-gray-600 mb-2">Agregar idioma:</p>
-        <div className="flex flex-wrap gap-1">
+      <div className="border-2 border-gray-300 rounded-lg p-4 bg-white shadow-sm">
+        <p className="text-sm font-medium text-gray-800 mb-3">Agregar idioma:</p>
+        <div className="flex flex-wrap gap-2">
           {availableLanguages
             .filter(lang => !selectedLanguages.includes(lang.code))
             .map(lang => (
@@ -89,17 +89,17 @@ export const MultiLanguageSelector: React.FC<MultiLanguageSelectorProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => addLanguage(lang.code)}
-                className="h-7 px-2 text-xs"
+                className="h-8 px-3 text-sm border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-800 hover:text-blue-700 transition-all duration-200"
               >
-                <span className="mr-1">{lang.flag}</span>
+                <span className="mr-2">{lang.flag}</span>
                 {lang.name}
               </Button>
             ))}
         </div>
       </div>
 
-      <p className="text-xs text-gray-500">
-        El reconocimiento de voz funcionará simultáneamente en todos los idiomas seleccionados.
+      <p className="text-sm text-gray-700 bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <span className="font-medium text-blue-800">ℹ️ Información:</span> El reconocimiento de voz funcionará simultáneamente en todos los idiomas seleccionados.
       </p>
     </div>
   );

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { ClassProvider } from "@/contexts/ClassContext";
+import { StudentProvider } from "@/contexts/StudentContext";
 import Home from "./pages/Home";
 import Classes from "./pages/Classes";
 import ClassDetail from "./pages/ClassDetail";
@@ -21,24 +22,26 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ClassProvider>
-        <ElevenLabsProvider>
-          <Toaster />
-          <Sonner />
-          <HashRouter>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/classes" element={<Classes />} />
-              <Route path="/class/:classId" element={<ClassDetail />} />
-              <Route path="/class/:classId/analysis" element={<ClassAnalysis />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/documents" element={<Documents />} />
-              <Route path="/students" element={<Students />} />
-              <Route path="/feedback" element={<Feedback />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </HashRouter>
-        </ElevenLabsProvider>
+        <StudentProvider>
+          <ElevenLabsProvider>
+            <Toaster />
+            <Sonner />
+            <HashRouter>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/classes" element={<Classes />} />
+                <Route path="/class/:classId" element={<ClassDetail />} />
+                <Route path="/class/:classId/analysis" element={<ClassAnalysis />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/documents" element={<Documents />} />
+                <Route path="/students" element={<Students />} />
+                <Route path="/feedback" element={<Feedback />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </HashRouter>
+          </ElevenLabsProvider>
+        </StudentProvider>
       </ClassProvider>
     </TooltipProvider>
   </QueryClientProvider>
