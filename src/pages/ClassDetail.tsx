@@ -55,7 +55,10 @@ const ClassDetail = () => {
     addParticipant,
     removeParticipant,
     transcript,
-    setTranscript
+    setTranscript,
+    classAnalysis,
+    isAnalyzing,
+    triggerAnalysis
   } = useRecording(selectedLanguages);
 
   // Initialize default participants when component mounts
@@ -103,7 +106,7 @@ const ClassDetail = () => {
   // Sample participants data for display
   const sampleParticipants = [
     { id: '1', name: 'Juan Carlos Suarez', role: 'Teacher', isRecording: participants.find(p => p.name === 'Juan Carlos Suarez')?.isRecording || false, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face' },
-    { id: '2', name: 'Cristina Paez', role: 'Student', isRecording: participants.find(p => p.name === 'Cristina Paez')?.isRecording || false, avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face' },
+    { id: '2', name: 'Cristina Paez', role: 'Student', isRecording: participants.find(p => p.name === 'Cristina Paez')?.isRecording || false, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=40&h=40&fit=crop&crop=face' },
     { id: '3', name: 'Ana Maria Cruz', role: 'Student', isRecording: participants.find(p => p.name === 'Ana Maria Cruz')?.isRecording || false, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face' },
     { id: '4', name: 'Laura Silva', role: 'Student', isRecording: participants.find(p => p.name === 'Laura Silva')?.isRecording || false, avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&crop=face' }
   ];
@@ -289,9 +292,67 @@ const ClassDetail = () => {
                 </Select>
               </div>
 
+              {/* AI Analysis Section */}
+              <div className="mb-4 lg:mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen className="w-5 h-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-800">Análisis AI</h3>
+                  </div>
+                  {classAnalysis && (
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+                      ✓ Completado
+                    </Badge>
+                  )}
+                </div>
+                
+                <p className="text-sm text-gray-600 mb-4">
+                  El análisis AI se ejecuta automáticamente al detener la grabación, o puedes ejecutarlo manualmente.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={triggerAnalysis}
+                    disabled={isAnalyzing || transcript.trim() === ''}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Analizando...
+                      </>
+                    ) : (
+                      <>
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        Ejecutar Análisis AI
+                      </>
+                    )}
+                  </Button>
+
+                  {classAnalysis && (
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate(`/class/${classId}/analysis`)}
+                      className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Ver Análisis Completo
+                    </Button>
+                  )}
+                </div>
+
+                {isAnalyzing && (
+                  <div className="mt-3 p-3 bg-blue-100 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      🤖 El AI está analizando la transcripción de la clase. Esto puede tomar unos momentos...
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {/* Recording Mode */}
               <div className="mb-4 lg:mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Modo de grabación</label>
+                <label className="text-sm font-medium text-gray-700 mb-2">Modo de grabación</label>
                 <p className="text-sm text-gray-500 mb-3">Elige cómo capturar audio de los participantes</p>
                 <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
                   <div className="flex items-center space-x-3">

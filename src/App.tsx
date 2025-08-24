@@ -7,8 +7,11 @@ import { ClassProvider } from "@/contexts/ClassContext";
 import Home from "./pages/Home";
 import Classes from "./pages/Classes";
 import ClassDetail from "./pages/ClassDetail";
+import ClassAnalysis from "./pages/ClassAnalysis";
 import Analytics from "./pages/Analytics";
 import Documents from "./pages/Documents";
+import Students from "./pages/Students";
+import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
 import { ElevenLabsProvider } from './contexts/ElevenLabsContext';
 
@@ -26,8 +29,11 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/classes" element={<Classes />} />
               <Route path="/class/:classId" element={<ClassDetail />} />
+              <Route path="/class/:classId/analysis" element={<ClassAnalysis />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/documents" element={<Documents />} />
+              <Route path="/students" element={<Students />} />
+              <Route path="/feedback" element={<Feedback />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

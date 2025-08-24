@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { analyzeTranscript } from '@/services/straicoService';
+import { ClassAnalysis } from '@/types/classAnalysis';
 
 declare global {
   interface Window {
@@ -32,6 +34,9 @@ interface UseRecordingReturn {
   addParticipant: (name: string, type: 'teacher' | 'student') => void;
   removeParticipant: (id: string) => void;
   getCombinedTranscript: () => string;
+  classAnalysis: ClassAnalysis | null;
+  isAnalyzing: boolean;
+  triggerAnalysis: () => Promise<void>;
 }
 
 export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecordingReturn => {
@@ -42,6 +47,8 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
   const [transcript, setTranscript] = useState('');
   const [recognitionInstances, setRecognitionInstances] = useState<{ [key: string]: { [lang: string]: any } }>({});
   const [currentTranscripts, setCurrentTranscripts] = useState<{ [key: string]: { text: string; timestamp: number; language: string } }>({});
+  const [classAnalysis, setClassAnalysis] = useState<ClassAnalysis | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const addParticipant = useCallback((name: string, type: 'teacher' | 'student') => {
     const newParticipant: Participant = {
@@ -197,8 +204,50 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
     }
   }, [initializeRecognition, recognitionInstances]);
 
+  // Get combined transcript from all participants
+  const getCombinedTranscript = useCallback(() => {
+    // Get all completed transcripts from history
+    const allTranscripts = participants
+      .map(p => p.transcriptHistory)
+      .flat()
+      .filter(t => t.text.trim() !== '')
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .map(t => t.text); // Use the text as is, since it already has the correct format
+    
+    // Add current active transcripts (only for participants still recording)
+    const currentActiveTranscripts = Object.entries(currentTranscripts)
+      .filter(([participantId, transcript]) => {
+        const participant = participants.find(p => p.id === participantId);
+        return participant?.isRecording && transcript.text.trim() !== '';
+      })
+      .map(([, transcript]) => transcript)
+      .sort((a, b) => a.timestamp - b.timestamp)
+      .map(t => t.text);
+    
+    // Only include current transcripts if they're not already in history
+    const finalTranscripts = [...allTranscripts];
+    
+    currentActiveTranscripts.forEach(currentText => {
+      // Check if this content is already in the history
+      const contentMatch = currentText.match(/^[^:]+:\s*(.+)$/);
+      const content = contentMatch ? contentMatch[1].trim() : currentText.trim();
+      
+      const isDuplicate = allTranscripts.some(historyText => {
+        const historyContentMatch = historyText.match(/^[^:]+:\s*(.+)$/);
+        const historyContent = historyContentMatch ? historyContentMatch[1].trim() : historyText.trim();
+        return content === historyContent;
+      });
+      
+      if (!isDuplicate) {
+        finalTranscripts.push(currentText);
+      }
+    });
+    
+    return finalTranscripts.join('\n\n');
+  }, [participants, currentTranscripts]);
+
   // Stop recording for a specific participant
-  const stopRecording = useCallback((participantId: string) => {
+  const stopRecording = useCallback(async (participantId: string) => {
     console.log(`Stopping recording for participant: ${participantId}`);
     
     const currentTranscript = currentTranscripts[participantId];
@@ -255,49 +304,33 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
         console.error('Error stopping recognition:', error);
       }
     }
-  }, [recognitionInstances, currentTranscripts]);
 
-  // Get combined transcript from all participants
-  const getCombinedTranscript = useCallback(() => {
-    // Get all completed transcripts from history
-    const allTranscripts = participants
-      .map(p => p.transcriptHistory)
-      .flat()
-      .filter(t => t.text.trim() !== '')
-      .sort((a, b) => a.timestamp - b.timestamp)
-      .map(t => t.text); // Use the text as is, since it already has the correct format
-    
-    // Add current active transcripts (only for participants still recording)
-    const currentActiveTranscripts = Object.entries(currentTranscripts)
-      .filter(([participantId, transcript]) => {
-        const participant = participants.find(p => p.id === participantId);
-        return participant?.isRecording && transcript.text.trim() !== '';
-      })
-      .map(([, transcript]) => transcript)
-      .sort((a, b) => a.timestamp - b.timestamp)
-      .map(t => t.text);
-    
-    // Only include current transcripts if they're not already in history
-    const finalTranscripts = [...allTranscripts];
-    
-    currentActiveTranscripts.forEach(currentText => {
-      // Check if this content is already in the history
-      const contentMatch = currentText.match(/^[^:]+:\s*(.+)$/);
-      const content = contentMatch ? contentMatch[1].trim() : currentText.trim();
-      
-      const isDuplicate = allTranscripts.some(historyText => {
-        const historyContentMatch = historyText.match(/^[^:]+:\s*(.+)$/);
-        const historyContent = historyContentMatch ? historyContentMatch[1].trim() : historyText.trim();
-        return content === historyContent;
-      });
-      
-      if (!isDuplicate) {
-        finalTranscripts.push(currentText);
+    // Auto-trigger analysis when recording stops if we have transcript content
+    const combinedTranscript = getCombinedTranscript();
+    if (combinedTranscript.trim() !== '' && !isRecording) {
+      console.log('Auto-triggering analysis after recording stopped');
+      try {
+        setIsAnalyzing(true);
+        const analysis = await analyzeTranscript(combinedTranscript);
+        setClassAnalysis(analysis);
+        toast({
+          title: 'Análisis Automático Completado',
+          description: `Se completó el análisis de la clase: ${analysis.resumen.tema}`,
+        });
+      } catch (error) {
+        console.error('Error in auto-analysis:', error);
+        toast({
+          title: 'Error en Análisis Automático',
+          description: 'No se pudo completar el análisis automático de la clase.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsAnalyzing(false);
       }
-    });
-    
-    return finalTranscripts.join('\n\n');
-  }, [participants, currentTranscripts]);
+    }
+  }, [recognitionInstances, currentTranscripts, getCombinedTranscript, isRecording, toast]);
+
+  // Stop recording for a specific participant
 
   // Single effect to update transcript
   useEffect(() => {
@@ -345,6 +378,28 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
     participants,
     addParticipant,
     removeParticipant,
-    getCombinedTranscript
+    getCombinedTranscript,
+    classAnalysis,
+    isAnalyzing,
+    triggerAnalysis: async () => {
+      setIsAnalyzing(true);
+      try {
+        const analysis = await analyzeTranscript(transcript);
+        setClassAnalysis(analysis);
+                 toast({
+           title: 'Analysis Complete',
+           description: `Class analysis completed. ${analysis.resumen.tema}`,
+         });
+      } catch (error) {
+        console.error('Error analyzing transcript:', error);
+        toast({
+          title: 'Analysis Failed',
+          description: 'Failed to perform class analysis.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }
   };
 };
