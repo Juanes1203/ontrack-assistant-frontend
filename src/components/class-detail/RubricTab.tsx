@@ -32,7 +32,7 @@ export const RubricTab: React.FC<RubricTabProps> = ({ classAnalysis }) => {
   };
 
   return (
-    <Card className="border-2 shadow-lg">
+    <Card className="border border-gray-200 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
           <ClipboardList className="w-5 h-5 mr-2 text-blue-600" />

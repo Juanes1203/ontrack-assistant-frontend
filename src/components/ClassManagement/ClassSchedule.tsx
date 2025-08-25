@@ -61,8 +61,7 @@ export const ClassSchedule: React.FC = () => {
 
   return (
     <div 
-      className="bg-white rounded-lg p-4 lg:p-6 max-w-full"
-      style={{ border: '1px solid #10b981' }}
+      className="bg-white rounded-lg p-4 lg:p-6 max-w-full border border-gray-200"
     >
       <div className="space-y-4 lg:space-y-6">
         {/* Header */}
@@ -116,8 +115,7 @@ export const ClassSchedule: React.FC = () => {
             return (
               <div
                 key={cls.id}
-                className="bg-white rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer"
-                style={{ border: '1px solid #10b981' }}
+                className="bg-white rounded-lg p-4 lg:p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer border border-gray-200"
                 onClick={() => handleClassClick(cls.id)}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -175,8 +173,7 @@ export const ClassSchedule: React.FC = () => {
                     <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
                       <Button
                         variant="outline"
-                        className="text-gray-700 hover:bg-green-50 bg-white hover:border-green-300 w-full sm:w-auto"
-                        style={{ border: '1px solid #10b981' }}
+                        className="text-gray-700 hover:bg-green-50 bg-white hover:border-green-300 w-full sm:w-auto border border-gray-300"
                       >
                         Editar
                       </Button>

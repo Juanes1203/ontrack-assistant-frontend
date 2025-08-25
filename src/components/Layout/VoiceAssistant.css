@@ -24,7 +24,7 @@ elevenlabs-convai {
   height: 320px !important;
   background-color: rgb(249 250 251) !important;
   border-radius: 8px !important;
-  border: 2px dashed rgb(209 213 219) !important;
+  border: 1px solid rgb(229 231 235) !important;
 }
 
 /* Asegurar que el widget se mantenga dentro del contenedor */

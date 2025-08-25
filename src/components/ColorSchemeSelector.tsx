@@ -83,7 +83,7 @@ export const ColorSchemeSelector: React.FC<ColorSchemeSelectorProps> = ({
                 variant={selectedScheme === scheme.id ? "default" : "outline"}
                 className={`h-auto p-4 flex flex-col items-start gap-3 ${
                   selectedScheme === scheme.id 
-                    ? 'border-2 border-blue-500 bg-blue-50' 
+                    ? 'border border-blue-500 bg-blue-50' 
                     : 'hover:bg-gray-50'
                 }`}
                 onClick={() => handleSchemeChange(scheme.id)}

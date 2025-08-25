@@ -13,30 +13,30 @@ export const Feedback360Tab: React.FC<Feedback360TabProps> = ({ classAnalysis })
       title: 'Autoevaluación Docente',
       items: classAnalysis.feedback360.selfEvaluation,
       icon: '👨‍🏫',
-      color: 'border-blue-400 bg-blue-50'
+      color: 'border-gray-300 bg-gray-50'
     },
     {
       title: 'Perspectiva Estudiantil',
       items: classAnalysis.feedback360.studentPerspective,
       icon: '🎓',
-      color: 'border-green-400 bg-green-50'
+      color: 'border-gray-300 bg-gray-50'
     },
     {
       title: 'Observación de Pares',
       items: classAnalysis.feedback360.peerObservations,
       icon: '👥',
-      color: 'border-purple-400 bg-purple-50'
+      color: 'border-gray-300 bg-gray-50'
     },
     {
       title: 'Áreas de Mejora Identificadas',
       items: classAnalysis.feedback360.improvementAreas,
       icon: '🎯',
-      color: 'border-orange-400 bg-orange-50'
+      color: 'border-gray-300 bg-gray-50'
     }
   ];
 
   return (
-    <Card className="border-2 shadow-lg">
+    <Card className="border border-gray-200 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
           <Users className="w-5 h-5 mr-2 text-pink-600" />

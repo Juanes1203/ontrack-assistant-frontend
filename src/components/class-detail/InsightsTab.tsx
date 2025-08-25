@@ -22,7 +22,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({
 
   if (!classAnalysis) {
     return (
-      <Card className="border-2 shadow-lg">
+      <Card className="border border-gray-200 shadow-lg">
         <CardContent className="p-6">
           <div className="text-center text-gray-500">
             No hay datos de análisis disponibles. Genera el análisis para ver los insights.
@@ -33,7 +33,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({
   }
 
   return (
-    <Card className="border-2 shadow-lg">
+    <Card className="border border-gray-200 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
           <TrendingUp className="w-5 h-5 mr-2 text-green-600" />

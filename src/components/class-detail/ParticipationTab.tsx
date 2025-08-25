@@ -36,7 +36,7 @@ export const ParticipationTab: React.FC<ParticipationTabProps> = ({
   }
 
   return (
-    <Card className="border-2 shadow-lg">
+    <Card className="border border-gray-200 shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl">Análisis de Participación</CardTitle>
       </CardHeader>

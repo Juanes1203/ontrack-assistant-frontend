@@ -10,7 +10,7 @@ interface SwotTabProps {
 
 export const SwotTab: React.FC<SwotTabProps> = ({ classAnalysis }) => {
   return (
-    <Card className="border-2 shadow-lg">
+    <Card className="border border-gray-200 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
           <Target className="w-5 h-5 mr-2 text-orange-600" />

@@ -209,7 +209,7 @@ const ClassDetail = () => {
           <Button
             variant="outline"
             onClick={() => navigate('/')}
-            className="mr-0 sm:mr-4 border-2 hover:bg-gray-50 w-full sm:w-auto"
+            className="mr-0 sm:mr-4 border border-gray-300 hover:bg-gray-50 w-full sm:w-auto"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver
@@ -226,7 +226,7 @@ const ClassDetail = () => {
           {/* Left Column - Voice Recording & Transcription */}
           <div className="lg:col-span-2 space-y-4 lg:space-y-6">
             {/* Voice Recording Section */}
-            <div className="bg-white rounded-lg p-4 lg:p-6" style={{ border: '2px solid #27bd2f' }}>
+            <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
                 <div className="flex items-center space-x-3">
                   <Mic className="w-6 h-6 text-green-600" />
@@ -256,11 +256,11 @@ const ClassDetail = () => {
                   </Button>
 
                   {/* Status indicator */}
-                  <div className={`flex items-center px-3 lg:px-4 py-2 rounded-lg ${
+                  <div className={`flex items-center px-3 lg:px-4 py-2 rounded-lg border border-gray-300 ${
                     isRecordingLocal
                       ? 'bg-red-100 text-red-700'
                       : 'bg-green-100 text-green-700'
-                  }`} style={{ border: '2px solid #27bd2f' }}>
+                  }`}>
                     <div className={`w-3 h-3 rounded-full mr-2 ${
                       isRecordingLocal ? 'bg-red-500 animate-pulse' : 'bg-green-500'
                     }`}></div>
@@ -280,7 +280,7 @@ const ClassDetail = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Idioma</label>
                 <p className="text-sm text-gray-500 mb-2">Elige el idioma</p>
                 <Select value={selectedLanguages[0]} onValueChange={(value) => setSelectedLanguages([value])}>
-                  <SelectTrigger className="w-full" style={{ border: '2px solid #27bd2f' }}>
+                  <SelectTrigger className="w-full border border-gray-300">
                     <SelectValue placeholder="Seleccionar idioma" />
                   </SelectTrigger>
                   <SelectContent>
@@ -380,17 +380,17 @@ const ClassDetail = () => {
 
               {/* Status Indicators */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
-                <div className="bg-white rounded-lg p-3 lg:p-4 text-center" style={{ border: '2px solid #27bd2f' }}>
+                <div className="bg-white rounded-lg p-3 lg:p-4 text-center border border-gray-200">
                   <Users className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-2" />
                   <div className="text-sm text-gray-600">Conectados</div>
                   <div className="text-xl lg:text-2xl font-bold text-gray-800">{connectedCount}</div>
                 </div>
-                <div className="bg-white rounded-lg p-3 lg:p-4 text-center" style={{ border: '2px solid #27bd2f' }}>
+                <div className="bg-white rounded-lg p-3 lg:p-4 text-center border border-gray-200">
                   <Mic className="w-5 h-5 lg:w-6 lg:h-6 text-red-600 mx-auto mb-2" />
                   <div className="text-sm text-gray-600">Grabando</div>
                   <div className="text-xl lg:text-2xl font-bold text-gray-800">{recordingCount}</div>
                 </div>
-                <div className="bg-white rounded-lg p-3 lg:p-4 text-center" style={{ border: '2px solid #27bd2f' }}>
+                <div className="bg-white rounded-lg p-3 lg:p-4 text-center border border-gray-200">
                   <Clock className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600 mx-auto mb-2" />
                   <div className="text-sm text-gray-600">Tiempo de grabación</div>
                   <div className="text-xl lg:text-2xl font-bold text-gray-800">{recordingTimeDisplay}</div>
@@ -399,7 +399,7 @@ const ClassDetail = () => {
             </div>
 
             {/* Class Transcription Section */}
-            <div className="bg-white rounded-lg p-4 lg:p-6" style={{ border: '2px solid #27bd2f' }}>
+            <div className="bg-white rounded-lg p-4 lg:p-6 border border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-4">
                 <Eye className="w-6 h-6 text-green-600" />
                 <h2 className="text-xl font-semibold text-gray-800">Transcripción de Clase</h2>
@@ -415,8 +415,7 @@ const ClassDetail = () => {
                 value={transcript}
                 onChange={(e) => setTranscript(e.target.value)}
                 placeholder="La transcripción aparecerá aquí en tiempo real mientras grabas. También puedes editar el texto manualmente."
-                className="min-h-[200px] text-base leading-relaxed text-gray-600 placeholder:text-gray-400 bg-white"
-                style={{ border: '2px solid #27bd2f' }}
+                className="min-h-[200px] text-base leading-relaxed text-gray-600 placeholder:text-gray-400 bg-white border border-gray-300"
                 readOnly={isRecordingLocal}
               />
 
@@ -431,7 +430,7 @@ const ClassDetail = () => {
 
           {/* Right Column - Class Participants */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg p-4 lg:p-6 shadow-sm" style={{ border: '2px solid #27bd2f' }}>
+            <div className="bg-white rounded-lg p-4 lg:p-6 shadow-sm border border-gray-200">
               {/* Header */}
               <div className="flex items-center space-x-3 mb-4">
                 <Users className="w-6 h-6 text-green-600" />
@@ -448,7 +447,7 @@ const ClassDetail = () => {
               </Button>
 
               {/* Summary */}
-              <div className="grid grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg" style={{ border: '2px solid #27bd2f' }}>
+              <div className="grid grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg border border-gray-200">
                 <div className="text-center">
                   <Users className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-1" />
                   <div className="text-xl lg:text-2xl font-bold text-gray-800">{participants.length}</div>
@@ -471,7 +470,7 @@ const ClassDetail = () => {
                 <h3 className="text-sm font-medium text-gray-700 mb-3">Todos los participantes</h3>
                 <div className="space-y-3">
                   {participants.map((participant) => (
-                    <div key={participant.id} className="flex items-center space-x-3 p-3 bg-white rounded-lg" style={{ border: '2px solid #27bd2f' }}>
+                    <div key={participant.id} className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
                       <img
                         src={sampleParticipants.find(p => p.name === participant.name)?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'}
                         alt={participant.name}
@@ -501,8 +500,7 @@ const ClassDetail = () => {
                           participant.isRecording
                             ? 'text-red-600 hover:bg-red-50'
                             : 'text-green-600 hover:bg-green-50'
-                        }`}
-                        style={{ border: '2px solid #27bd2f' }}
+                        } border border-gray-300`}
                       >
                         {participant.isRecording ? (
                           <MicOff className="w-3 h-3" />

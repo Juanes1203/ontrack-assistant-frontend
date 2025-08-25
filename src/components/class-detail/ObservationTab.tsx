@@ -12,27 +12,27 @@ export const ObservationTab: React.FC<ObservationTabProps> = ({ classAnalysis })
     {
       title: 'Planificación y Preparación',
       items: classAnalysis.structuredObservation.planningAndPreparation,
-      color: 'border-blue-400 bg-blue-50'
+      color: 'border-gray-300 bg-gray-50'
     },
     {
       title: 'Desarrollo Instruccional',
       items: classAnalysis.structuredObservation.instructionalDelivery,
-      color: 'border-green-400 bg-green-50'
+      color: 'border-gray-300 bg-gray-50'
     },
     {
       title: 'Ambiente del Aula',
       items: classAnalysis.structuredObservation.classroomEnvironment,
-      color: 'border-purple-400 bg-purple-50'
+      color: 'border-gray-300 bg-gray-50'
     },
     {
       title: 'Responsabilidades Profesionales',
       items: classAnalysis.structuredObservation.professionalResponsibilities,
-      color: 'border-orange-400 bg-orange-50'
+      color: 'border-gray-300 bg-gray-50'
     }
   ];
 
   return (
-    <Card className="border-2 shadow-lg">
+    <Card className="border border-gray-200 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
           <Eye className="w-5 h-5 mr-2 text-purple-600" />

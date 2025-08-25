@@ -152,7 +152,7 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({ classAnalysis }) => {
   };
 
   return (
-    <Card className="border-2 shadow-lg">
+    <Card className="border border-gray-200 shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center">
           <FileText className="w-5 h-5 mr-2 text-teal-600" />

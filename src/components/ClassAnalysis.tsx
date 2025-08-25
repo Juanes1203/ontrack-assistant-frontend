@@ -44,7 +44,7 @@ export const ClassAnalysis: React.FC<ClassAnalysisProps> = ({
           <h2 className="text-xl font-semibold mb-4">Referencias del Material</h2>
           <div className="space-y-4">
             {references.map((reference, index) => (
-              <div key={index} className="border-l-4 border-blue-500 pl-4">
+              <div key={index} className="border-l-4 border-gray-300 pl-4">
                 <p className="text-sm text-gray-600 mb-1">Página {reference.page}</p>
                 <p className="text-gray-700">{reference.page_content}</p>
               </div>

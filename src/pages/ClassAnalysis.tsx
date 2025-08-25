@@ -173,15 +173,15 @@ const ClassAnalysis = () => {
   const getNivelColor = (nivel: string) => {
     switch (nivel) {
       case 'AVANZADO':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-100 text-green-800 border-gray-300';
       case 'SATISFACTORIO':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-blue-100 text-blue-800 border-gray-300';
       case 'MÍNIMO':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-yellow-100 text-yellow-800 border-gray-300';
       case 'INFERIOR':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 text-red-800 border-gray-300';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -210,7 +210,7 @@ const ClassAnalysis = () => {
           <Button
             variant="outline"
             onClick={() => navigate(`/class/${classId}`)}
-            className="mr-0 sm:mr-4 border-2 hover:bg-gray-50 w-full sm:w-auto"
+            className="mr-0 sm:mr-4 border border-gray-300 hover:bg-gray-50 w-full sm:w-auto"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver a la Clase
@@ -272,7 +272,7 @@ const ClassAnalysis = () => {
             <CardContent>
               <div className="flex items-center space-x-2">
                 <Star className="w-4 h-4 text-yellow-600" />
-                <Badge className="bg-green-100 text-green-800 border-green-200">
+                <Badge className="bg-gray-100 text-gray-800 border-gray-300">
                   AVANZADO
                 </Badge>
               </div>
@@ -301,7 +301,7 @@ const ClassAnalysis = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {Object.entries(mockAnalysis.criterios_evaluacion.contexto_practica).map(([key, value]) => (
-                    <div key={key} className="border-l-4 border-blue-200 pl-4">
+                    <div key={key} className="border-l-4 border-gray-300 pl-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium text-gray-800 capitalize">
                           {key.replace(/_/g, ' ')}
@@ -349,7 +349,7 @@ const ClassAnalysis = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {Object.entries(mockAnalysis.criterios_evaluacion.reflexion_planeacion).map(([key, value]) => (
-                    <div key={key} className="border-l-4 border-green-200 pl-4">
+                    <div key={key} className="border-l-4 border-gray-300 pl-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium text-gray-800 capitalize">
                           {key.replace(/_/g, ' ')}
@@ -397,7 +397,7 @@ const ClassAnalysis = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {Object.entries(mockAnalysis.criterios_evaluacion.praxis_pedagogica).map(([key, value]) => (
-                    <div key={key} className="border-l-4 border-purple-200 pl-4">
+                    <div key={key} className="border-l-4 border-gray-300 pl-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium text-gray-800 capitalize">
                           {key.replace(/_/g, ' ')}
@@ -445,7 +445,7 @@ const ClassAnalysis = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {Object.entries(mockAnalysis.criterios_evaluacion.ambiente_aula).map(([key, value]) => (
-                    <div key={key} className="border-l-4 border-orange-200 pl-4">
+                    <div key={key} className="border-l-4 border-gray-300 pl-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium text-gray-800 capitalize">
                           {key.replace(/_/g, ' ')}
@@ -499,13 +499,13 @@ const ClassAnalysis = () => {
               <CardContent>
                 <div className="space-y-4">
                   {mockAnalysis.momentos_clave.map((momento, index) => (
-                    <div key={index} className="border-l-4 border-blue-200 pl-4 py-3">
+                    <div key={index} className="border-l-4 border-gray-300 pl-4 py-3">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <Badge variant="outline" className="text-blue-700 border-blue-300">
+                          <Badge variant="outline" className="text-gray-700 border-gray-300">
                             {momento.tiempo}
                           </Badge>
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                          <Badge className="bg-gray-100 text-gray-800 border-gray-300">
                             {momento.tipo}
                           </Badge>
                         </div>
@@ -535,7 +535,7 @@ const ClassAnalysis = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-700">Nivel General:</span>
-                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                      <Badge className="bg-gray-100 text-gray-800 border-gray-300">
                         {mockAnalysis.participacion_estudiantes.nivel_participacion}
                       </Badge>
                     </div>
@@ -575,7 +575,7 @@ const ClassAnalysis = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="border-l-4 border-purple-200 pl-4">
+                    <div className="border-l-4 border-gray-300 pl-4">
                       <h4 className="font-medium text-gray-800 mb-2">Profesores</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between">
@@ -593,7 +593,7 @@ const ClassAnalysis = () => {
                       </div>
                     </div>
 
-                    <div className="border-l-4 border-green-200 pl-4">
+                    <div className="border-l-4 border-gray-300 pl-4">
                       <h4 className="font-medium text-gray-800 mb-2">Estudiantes</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between">

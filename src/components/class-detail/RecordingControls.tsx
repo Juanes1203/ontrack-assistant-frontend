@@ -49,7 +49,7 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
   return (
     <div className="space-y-6">
       {/* Add Participant Section */}
-      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-100">
+      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-gray-200">
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-blue-900 mb-2 flex items-center">
@@ -93,8 +93,8 @@ export const RecordingControls: React.FC<RecordingControlsProps> = ({
             key={participant.id}
             className={`p-4 transition-all duration-200 ${
               participant.isRecording 
-                ? 'bg-red-50 border-red-200 shadow-lg ring-2 ring-red-200' 
-                : 'bg-white hover:shadow-md'
+                ? 'bg-red-50 border-red-200 shadow-lg ring-1 ring-red-200' 
+                : 'bg-white hover:shadow-md border border-gray-200'
             }`}
           >
             <div className="flex items-center justify-between mb-3">
