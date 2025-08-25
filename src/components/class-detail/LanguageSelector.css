@@ -1,0 +1,90 @@
+/* Estilos personalizados para forzar la visibilidad del texto en el selector de idiomas */
+
+/* Forzar texto visible en SelectItem */
+[data-radix-select-item] {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+[data-radix-select-item]:hover {
+  background-color: #eff6ff !important; /* bg-blue-50 */
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Forzar texto visible en hover para todos los elementos hijos */
+[data-radix-select-item]:hover * {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+[data-radix-select-item]:focus {
+  background-color: #dbeafe !important; /* bg-blue-100 */
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Forzar texto visible en focus para todos los elementos hijos */
+[data-radix-select-item]:focus * {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+[data-radix-select-item][data-state="checked"] {
+  background-color: #dbeafe !important; /* bg-blue-100 */
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Forzar texto visible en checked para todos los elementos hijos */
+[data-radix-select-item][data-state="checked"] * {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Forzar texto visible en el texto del item */
+[data-radix-select-item] span {
+  color: inherit !important;
+}
+
+/* Forzar texto visible en todos los estados de hover y focus */
+[data-radix-select-item]:hover span,
+[data-radix-select-item]:focus span,
+[data-radix-select-item][data-highlighted] span {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Forzar texto visible en el estado checked */
+[data-radix-select-item][data-state="checked"] span {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Forzar texto visible en el estado disabled */
+[data-radix-select-item][data-disabled] span {
+  color: #6b7280 !important; /* text-gray-500 */
+}
+
+/* Forzar texto visible en el estado highlighted (cuando se navega con teclado) */
+[data-radix-select-item][data-highlighted] {
+  background-color: #eff6ff !important; /* bg-blue-50 */
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Asegurar que el texto sea visible en el contenido del dropdown */
+[data-radix-select-content] * {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Forzar texto visible en el item text de Radix */
+[data-radix-select-item-text] {
+  color: inherit !important;
+}
+
+/* Forzar texto visible en el trigger */
+[data-radix-select-trigger] span {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Forzar texto visible en el contenido del dropdown */
+[data-radix-select-content] {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important; /* border-gray-200 */
+}
+
+/* Forzar texto visible en el viewport */
+[data-radix-select-viewport] {
+  background-color: white !important;
+}

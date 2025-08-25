@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, GraduationCap, MessageSquare, FileText, Users, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
-import logoSuperior from '../../assets/LogoSuperior.png';
+import logoSuperior from '../../assets/LogoSuperiorR.png';
 import logoInferior from '../../assets/LogoInferior.png';
 
 interface LeftSidebarProps {
@@ -53,10 +53,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
       className={`relative text-white flex flex-col transition-all duration-300 ease-in-out ${
         isCollapsed ? 'w-16' : 'w-64'
       }`} 
-      style={{ backgroundColor: '#27bd2f' }}
+      style={{ backgroundColor: '#27bd2f', border: 'none', outline: 'none' }}
     >
-      {/* Subtle edge indicator - non-intrusive */}
-      <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-white/10"></div>
+
       
       {/* Toggle Button - Elegant and non-intrusive */}
       <button
@@ -78,9 +77,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
       </button>
 
       {/* Logo Section */}
-      <div className={`p-6 transition-all duration-300 ${isCollapsed ? 'px-2' : ''}`}>
+      <div className={`pt-1 pb-4 transition-all duration-300 ${isCollapsed ? 'px-2' : 'px-6'}`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'}`}>
-          <div className="w-48 h-48 flex items-center justify-center flex-shrink-0">
+          <div className={`${isCollapsed ? 'w-12 h-12' : 'w-48 h-48'} flex items-center justify-center flex-shrink-0 transition-all duration-300`}>
             <img 
               src={logoSuperior} 
               alt="Logo Superior" 
@@ -92,8 +91,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
       </div>
 
       {/* Navigation Menu */}
-      <nav className={`flex-1 transition-all duration-300 ${isCollapsed ? 'px-2' : 'p-4'}`}>
-        <ul className="space-y-2">
+      <nav className={`flex-1 transition-all duration-300 ${isCollapsed ? 'px-2 pt-4' : 'p-4 pt-4'}`}>
+        <ul className="space-y-4">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
@@ -105,16 +104,16 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
                     isCollapsed 
                       ? 'justify-center px-2 py-3' 
                       : 'space-x-3 px-4 py-3'
-                  } ${
+                  }                   ${
                     active
-                      ? 'text-white bg-white/20 shadow-sm'
+                      ? 'text-white bg-white/20'
                       : 'text-white/80 hover:text-white hover:bg-white/10'
                   }`}
                   title={isCollapsed ? item.label : undefined}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   {!isCollapsed && (
-                    <span className="font-medium whitespace-nowrap overflow-hidden">
+                    <span className="text-lg font-semibold whitespace-nowrap overflow-hidden">
                       {item.label}
                     </span>
                   )}
@@ -134,7 +133,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
       </nav>
 
       {/* Bottom Section */}
-      <div className={`p-6 transition-all duration-300 ${isCollapsed ? 'px-2' : ''}`}>
+      <div className={`pt-4 pb-4 transition-all duration-300 ${isCollapsed ? 'px-2' : 'px-6'}`}>
         <div className={`text-center ${isCollapsed ? 'space-y-2' : ''}`}>
           {!isCollapsed && (
             <>
@@ -142,14 +141,14 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
                 <img 
                   src={logoInferior} 
                   alt="Logo Inferior" 
-                  className="h-8 mx-auto object-contain"
+                  className="h-6 mx-auto object-contain"
                 />
               </div>
               <p className="text-white/80 text-sm">Your Learning Partner</p>
             </>
           )}
           {isCollapsed && (
-            <div className="w-8 h-8 flex items-center justify-center shadow-sm">
+            <div className="w-6 h-6 flex items-center justify-center">
               <img 
                 src={logoInferior} 
                 alt="Logo Inferior" 
