@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = React.useState('');
 
   const summaryData = [
     {
@@ -86,6 +87,13 @@ const Home = () => {
     navigate('/classes');
   };
 
+  // Filtrar clases basado en el término de búsqueda
+  const filteredClasses = classData.filter(cls => 
+    cls.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cls.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cls.room.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <MainLayout>
       <div className="space-y-6 max-w-full">
@@ -106,8 +114,19 @@ const Home = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 placeholder="Buscar clases..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 w-full bg-white border-gray-300 focus:border-green-400 focus:ring-green-400"
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Limpiar búsqueda"
+                >
+                  ✕
+                </button>
+              )}
             </div>
             
             {/* Analytics Button */}
@@ -161,13 +180,16 @@ const Home = () => {
 
         {/* Class Cards */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 lg:mb-6">Clases Recientes</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 lg:mb-6">
+            {searchTerm ? `Resultados de búsqueda para "${searchTerm}"` : 'Clases Recientes'}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-            {classData.map((cls) => (
-              <div
-                key={cls.id}
-                className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
-              >
+            {filteredClasses.length > 0 ? (
+              filteredClasses.map((cls) => (
+                <div
+                  key={cls.id}
+                  className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
+                >
                 {/* Class Image */}
                 <div className="relative h-40 lg:h-48 bg-gray-200">
                   <img
@@ -222,7 +244,21 @@ const Home = () => {
                   </Button>
                 </div>
               </div>
-            ))}
+            ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <div className="text-gray-500">
+                  <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron clases</h3>
+                  <p className="text-gray-500">
+                    {searchTerm 
+                      ? `No hay clases que coincidan con "${searchTerm}"`
+                      : 'No hay clases disponibles en este momento'
+                    }
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
