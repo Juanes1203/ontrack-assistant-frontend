@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, GraduationCap, MessageSquare, FileText, Users, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
+import logoSuperior from '../../assets/LogoSuperior.png';
+import logoInferior from '../../assets/LogoInferior.png';
 
 interface LeftSidebarProps {
   isCollapsed: boolean;
@@ -78,14 +80,14 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
       {/* Logo Section */}
       <div className={`p-6 transition-all duration-300 ${isCollapsed ? 'px-2' : ''}`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'}`}>
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
-            <span className="font-bold text-xl" style={{ color: '#27bd2f' }}>OT</span>
+          <div className="w-48 h-48 flex items-center justify-center flex-shrink-0">
+            <img 
+              src={logoSuperior} 
+              alt="Logo Superior" 
+              className="w-full h-full object-contain"
+            />
           </div>
-          {!isCollapsed && (
-            <div className="overflow-hidden">
-              <h1 className="text-xl font-bold whitespace-nowrap">OT Assistant</h1>
-            </div>
-          )}
+
         </div>
       </div>
 
@@ -136,13 +138,23 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
         <div className={`text-center ${isCollapsed ? 'space-y-2' : ''}`}>
           {!isCollapsed && (
             <>
-              <h3 className="font-bold text-lg mb-1">OnTrack</h3>
+              <div className="mb-2">
+                <img 
+                  src={logoInferior} 
+                  alt="Logo Inferior" 
+                  className="h-8 mx-auto object-contain"
+                />
+              </div>
               <p className="text-white/80 text-sm">Your Learning Partner</p>
             </>
           )}
           {isCollapsed && (
-            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center shadow-sm">
-              <span className="font-bold text-sm" style={{ color: '#27bd2f' }}>OT</span>
+            <div className="w-8 h-8 flex items-center justify-center shadow-sm">
+              <img 
+                src={logoInferior} 
+                alt="Logo Inferior" 
+                className="w-full h-full object-contain"
+              />
             </div>
           )}
         </div>

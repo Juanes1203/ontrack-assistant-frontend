@@ -23,7 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const Analytics = () => {
-  const [weeklyInsightsExpanded, setWeeklyInsightsExpanded] = useState(false);
+  const [weeklyInsightsExpanded, setWeeklyInsightsExpanded] = useState(true);
 
   const teachingMetrics = [
     {
