@@ -316,3 +316,156 @@ input[type="text"], input[type="password"], textarea, select {
 :focus {
   background-color: #fff !important;
 }
+
+/* Estilos globales para forzar visibilidad del texto en dropdowns */
+@layer base {
+  /* Forzar texto visible en todos los SelectItem de Radix UI */
+  [data-radix-select-item] {
+    color: #111827 !important;
+    background-color: transparent !important;
+  }
+
+  [data-radix-select-item]:hover {
+    background-color: #eff6ff !important;
+    color: #1e40af !important;
+  }
+
+  [data-radix-select-item]:focus {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+  }
+
+  [data-radix-select-item][data-state="checked"] {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+  }
+
+  [data-radix-select-item][data-highlighted] {
+    background-color: #eff6ff !important;
+    color: #1e40af !important;
+  }
+
+  /* Forzar texto visible en todos los elementos hijos */
+  [data-radix-select-item] * {
+    color: inherit !important;
+  }
+
+  [data-radix-select-item]:hover * {
+    color: #1e40af !important;
+  }
+
+  [data-radix-select-item]:focus * {
+    color: #1e40af !important;
+  }
+
+  [data-radix-select-item][data-state="checked"] * {
+    color: #1e40af !important;
+  }
+
+  [data-radix-select-item][data-highlighted] * {
+    color: #1e40af !important;
+  }
+
+  /* Forzar texto visible en el item text */
+  [data-radix-select-item-text] {
+    color: inherit !important;
+  }
+
+  /* Forzar texto visible en el contenido del dropdown */
+  [data-radix-select-content] {
+    background-color: white !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  [data-radix-select-content] * {
+    color: #111827 !important;
+  }
+
+  /* Forzar texto visible en el viewport */
+  [data-radix-select-viewport] {
+    background-color: white !important;
+  }
+
+  /* Estilos específicos para el trigger */
+  [data-radix-select-trigger] {
+    background-color: white !important;
+    border: 1px solid #d1d5db !important;
+  }
+
+  [data-radix-select-trigger] span {
+    color: #111827 !important;
+  }
+
+  /* Estilos para el indicador de check */
+  [data-radix-select-item-indicator] {
+    color: #1e40af !important;
+  }
+
+  /* Estilos para el icono del trigger */
+  [data-radix-select-icon] {
+    color: #6b7280 !important;
+  }
+
+  /* Estilos para el scroll button */
+  [data-radix-select-scroll-up-button],
+  [data-radix-select-scroll-down-button] {
+    background-color: white !important;
+    color: #6b7280 !important;
+  }
+
+  /* Estilos para el separador */
+  [data-radix-select-separator] {
+    background-color: #e5e7eb !important;
+  }
+
+  /* Estilos para el label */
+  [data-radix-select-label] {
+    color: #111827 !important;
+    font-weight: 600 !important;
+  }
+
+  /* Estilos para el group */
+  [data-radix-select-group] {
+    background-color: transparent !important;
+  }
+
+  /* Estilos para el group label */
+  [data-radix-select-group-label] {
+    color: #6b7280 !important;
+    font-weight: 500 !important;
+  }
+
+  /* Estilos para DropdownMenu */
+  [data-radix-dropdown-menu-item] {
+    color: #111827 !important;
+    background-color: transparent !important;
+  }
+
+  [data-radix-dropdown-menu-item]:hover {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+  }
+
+  [data-radix-dropdown-menu-item]:focus {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+  }
+
+  [data-radix-dropdown-menu-item][data-highlighted] {
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
+  }
+
+  [data-radix-dropdown-menu-item] * {
+    color: inherit !important;
+  }
+
+  [data-radix-dropdown-menu-content] {
+    background-color: white !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  [data-radix-dropdown-menu-content] * {
+    color: #111827 !important;
+  }
+}

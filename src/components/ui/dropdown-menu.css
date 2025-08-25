@@ -1,0 +1,141 @@
+/* Estilos globales para resolver el problema de texto invisible en todos los DropdownMenu */
+
+/* Forzar texto visible en todos los DropdownMenuItem */
+[data-radix-dropdown-menu-item] {
+  color: #111827 !important; /* text-gray-900 */
+  background-color: transparent !important;
+}
+
+[data-radix-dropdown-menu-item]:hover {
+  background-color: #f3f4f6 !important; /* bg-gray-100 */
+  color: #111827 !important; /* text-gray-900 */
+}
+
+[data-radix-dropdown-menu-item]:focus {
+  background-color: #e5e7eb !important; /* bg-gray-200 */
+  color: #111827 !important; /* text-gray-900 */
+}
+
+[data-radix-dropdown-menu-item][data-highlighted] {
+  background-color: #f3f4f6 !important; /* bg-gray-100 */
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Forzar texto visible en todos los elementos hijos */
+[data-radix-dropdown-menu-item] * {
+  color: inherit !important;
+}
+
+[data-radix-dropdown-menu-item]:hover * {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+[data-radix-dropdown-menu-item]:focus * {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+[data-radix-dropdown-menu-item][data-highlighted] * {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Forzar texto visible en el contenido del dropdown */
+[data-radix-dropdown-menu-content] {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important; /* border-gray-200 */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-radix-dropdown-menu-content] * {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Forzar texto visible en el viewport */
+[data-radix-dropdown-menu-viewport] {
+  background-color: white !important;
+}
+
+/* Estilos específicos para el trigger */
+[data-radix-dropdown-menu-trigger] {
+  background-color: transparent !important;
+}
+
+[data-radix-dropdown-menu-trigger] span {
+  color: inherit !important;
+}
+
+/* Estilos para el separador */
+[data-radix-dropdown-menu-separator] {
+  background-color: #e5e7eb !important; /* bg-gray-200 */
+}
+
+/* Estilos para el label */
+[data-radix-dropdown-menu-label] {
+  color: #6b7280 !important; /* text-gray-500 */
+  font-weight: 500 !important;
+}
+
+/* Estilos para el group */
+[data-radix-dropdown-menu-group] {
+  background-color: transparent !important;
+}
+
+/* Estilos para el group label */
+[data-radix-dropdown-menu-group-label] {
+  color: #6b7280 !important; /* text-gray-500 */
+  font-weight: 500 !important;
+}
+
+/* Estilos para el sub trigger */
+[data-radix-dropdown-menu-sub-trigger] {
+  color: #111827 !important; /* text-gray-900 */
+  background-color: transparent !important;
+}
+
+[data-radix-dropdown-menu-sub-trigger]:hover {
+  background-color: #f3f4f6 !important; /* bg-gray-100 */
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Estilos para el sub content */
+[data-radix-dropdown-menu-sub-content] {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important; /* border-gray-200 */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Estilos para el radio group */
+[data-radix-dropdown-menu-radio-group] {
+  background-color: transparent !important;
+}
+
+/* Estilos para el radio item */
+[data-radix-dropdown-menu-radio-item] {
+  color: #111827 !important; /* text-gray-900 */
+  background-color: transparent !important;
+}
+
+[data-radix-dropdown-menu-radio-item]:hover {
+  background-color: #f3f4f6 !important; /* bg-gray-100 */
+  color: #111827 !important; /* text-gray-900 */
+}
+
+[data-radix-dropdown-menu-radio-item][data-state="checked"] {
+  background-color: #dbeafe !important; /* bg-blue-100 */
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Estilos para el checkbox item */
+[data-radix-dropdown-menu-checkbox-item] {
+  color: #111827 !important; /* text-gray-900 */
+  background-color: transparent !important;
+}
+
+[data-radix-dropdown-menu-checkbox-item]:hover {
+  background-color: #f3f4f6 !important; /* bg-gray-100 */
+  color: #111827 !important; /* text-gray-900 */
+}
+
+[data-radix-dropdown-menu-checkbox-item][data-state="checked"] {
+  background-color: #dbeafe !important; /* bg-blue-100 */
+  color: #1e40af !important; /* text-blue-900 */
+}

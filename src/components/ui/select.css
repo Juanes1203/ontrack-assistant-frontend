@@ -1,0 +1,132 @@
+/* Estilos globales para resolver el problema de texto invisible en todos los dropdowns Select */
+
+/* Forzar texto visible en todos los SelectItem */
+[data-radix-select-item] {
+  color: #111827 !important; /* text-gray-900 */
+  background-color: transparent !important;
+}
+
+[data-radix-select-item]:hover {
+  background-color: #eff6ff !important; /* bg-blue-50 */
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+[data-radix-select-item]:focus {
+  background-color: #dbeafe !important; /* bg-blue-100 */
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+[data-radix-select-item][data-state="checked"] {
+  background-color: #dbeafe !important; /* bg-blue-100 */
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+[data-radix-select-item][data-highlighted] {
+  background-color: #eff6ff !important; /* bg-blue-50 */
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Forzar texto visible en todos los elementos hijos */
+[data-radix-select-item] * {
+  color: inherit !important;
+}
+
+[data-radix-select-item]:hover * {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+[data-radix-select-item]:focus * {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+[data-radix-select-item][data-state="checked"] * {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+[data-radix-select-item][data-highlighted] * {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Forzar texto visible en el item text */
+[data-radix-select-item-text] {
+  color: inherit !important;
+}
+
+/* Forzar texto visible en el contenido del dropdown */
+[data-radix-select-content] {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important; /* border-gray-200 */
+}
+
+[data-radix-select-content] * {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Forzar texto visible en el viewport */
+[data-radix-select-viewport] {
+  background-color: white !important;
+}
+
+/* Estilos específicos para el trigger */
+[data-radix-select-trigger] {
+  background-color: white !important;
+  border: 1px solid #d1d5db !important; /* border-gray-300 */
+}
+
+[data-radix-select-trigger] span {
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Override de cualquier estilo que pueda estar ocultando el texto */
+.radix-select-item,
+[data-radix-select-item],
+[data-radix-select-item-text] {
+  color: #111827 !important;
+  background-color: transparent !important;
+}
+
+.radix-select-item:hover,
+[data-radix-select-item]:hover,
+[data-radix-select-item-text]:hover {
+  color: #1e40af !important;
+  background-color: #eff6ff !important;
+}
+
+/* Estilos para el indicador de check */
+[data-radix-select-item-indicator] {
+  color: #1e40af !important; /* text-blue-900 */
+}
+
+/* Estilos para el icono del trigger */
+[data-radix-select-icon] {
+  color: #6b7280 !important; /* text-gray-500 */
+}
+
+/* Estilos para el scroll button */
+[data-radix-select-scroll-up-button],
+[data-radix-select-scroll-down-button] {
+  background-color: white !important;
+  color: #6b7280 !important; /* text-gray-500 */
+}
+
+/* Estilos para el separador */
+[data-radix-select-separator] {
+  background-color: #e5e7eb !important; /* bg-gray-200 */
+}
+
+/* Estilos para el label */
+[data-radix-select-label] {
+  color: #111827 !important; /* text-gray-900 */
+  font-weight: 600 !important;
+}
+
+/* Estilos para el group */
+[data-radix-select-group] {
+  background-color: transparent !important;
+}
+
+/* Estilos para el group label */
+[data-radix-select-group-label] {
+  color: #6b7280 !important; /* text-gray-500 */
+  font-weight: 500 !important;
+}

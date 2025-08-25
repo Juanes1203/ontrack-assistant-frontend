@@ -43,16 +43,25 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             )}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="bg-white border-gray-200 shadow-lg">
+        <SelectContent className="bg-white border-gray-200 shadow-lg radix-select-content">
           {languages.map((lang) => (
             <SelectItem 
               key={lang.code} 
               value={lang.code}
-              className="!text-gray-900 hover:!bg-blue-50 hover:!text-blue-900 focus:!bg-blue-100 focus:!text-blue-900 data-[state=checked]:!bg-blue-100 data-[state=checked]:!text-blue-900 [&>span]:!text-gray-900 [&>span]:hover:!text-blue-900 [&>span]:focus:!text-blue-900 [&>span]:data-[state=checked]:!text-blue-900"
+              className="radix-select-item !text-gray-900 hover:!bg-blue-50 hover:!text-blue-900 focus:!bg-blue-100 focus:!text-blue-900 data-[state=checked]:!bg-blue-100 data-[state=checked]:!text-blue-900 [&>span]:!text-gray-900 [&>span]:hover:!text-blue-900 [&>span]:focus:!text-blue-900 [&>span]:data-[state=checked]:!text-blue-900"
+              style={{
+                color: '#111827',
+                backgroundColor: 'transparent'
+              }}
             >
               <div className="flex items-center space-x-2">
                 <span className="text-lg">{lang.flag}</span>
-                <span className="font-medium !text-gray-900">{lang.name}</span>
+                <span 
+                  className="font-medium" 
+                  style={{ color: '#111827' }}
+                >
+                  {lang.name}
+                </span>
               </div>
             </SelectItem>
           ))}

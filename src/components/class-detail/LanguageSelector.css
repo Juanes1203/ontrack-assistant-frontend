@@ -73,6 +73,43 @@
   color: inherit !important;
 }
 
+/* Estilos más específicos para forzar visibilidad */
+.radix-select-item {
+  color: #111827 !important;
+}
+
+.radix-select-item:hover {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+}
+
+.radix-select-item:focus {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+.radix-select-item[data-state="checked"] {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+/* Forzar texto visible en todos los elementos del dropdown */
+.radix-select-content * {
+  color: #111827 !important;
+}
+
+.radix-select-content .radix-select-item:hover * {
+  color: #1e40af !important;
+}
+
+.radix-select-content .radix-select-item:focus * {
+  color: #1e40af !important;
+}
+
+.radix-select-content .radix-select-item[data-state="checked"] * {
+  color: #1e40af !important;
+}
+
 /* Forzar texto visible en el trigger */
 [data-radix-select-trigger] span {
   color: #111827 !important; /* text-gray-900 */
@@ -87,4 +124,61 @@
 /* Forzar texto visible en el viewport */
 [data-radix-select-viewport] {
   background-color: white !important;
+}
+
+/* Estilos globales más agresivos para forzar visibilidad */
+*[data-radix-select-item] {
+  color: #111827 !important;
+}
+
+*[data-radix-select-item]:hover {
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+}
+
+*[data-radix-select-item]:focus {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+*[data-radix-select-item][data-state="checked"] {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+/* Forzar todos los elementos hijos */
+*[data-radix-select-item] * {
+  color: inherit !important;
+}
+
+*[data-radix-select-item]:hover * {
+  color: #1e40af !important;
+}
+
+*[data-radix-select-item]:focus * {
+  color: #1e40af !important;
+}
+
+*[data-radix-select-item][data-state="checked"] * {
+  color: #1e40af !important;
+}
+
+/* Estilos específicos para el texto del item */
+*[data-radix-select-item-text] {
+  color: inherit !important;
+}
+
+/* Override de cualquier estilo que pueda estar ocultando el texto */
+.radix-select-item,
+[data-radix-select-item],
+[data-radix-select-item-text] {
+  color: #111827 !important;
+  background-color: transparent !important;
+}
+
+.radix-select-item:hover,
+[data-radix-select-item]:hover,
+[data-radix-select-item-text]:hover {
+  color: #1e40af !important;
+  background-color: #eff6ff !important;
 }
