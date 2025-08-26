@@ -29,7 +29,9 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useClass } from '@/contexts/ClassContext';
+import { useStudent } from '@/contexts/StudentContext';
 import { MainLayout } from '@/components/Layout';
+import { AddStudentsModal } from '@/components/ClassManagement/AddStudentsModal';
 
 import { useRecording } from '@/components/class-detail/useRecording';
 
@@ -37,13 +39,15 @@ const ClassDetail = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { getClassById } = useClass();
+  const { getClassById, addStudentsToClass, removeStudentFromClass } = useClass();
+  const { students, getStudentById } = useStudent();
   const [selectedLanguages, setSelectedLanguages] = useState(['en-US', 'es-ES']);
   const [recordingMode, setRecordingMode] = useState<'group' | 'individual'>('group');
   const [isRecordingLocal, setIsRecordingLocal] = useState(false); // Simple boolean state
   const [forceRender, setForceRender] = useState(0); // Force component re-render
   const [recordingTime, setRecordingTime] = useState(0); // Recording time in seconds
   const [recordingInterval, setRecordingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [isAddStudentsModalOpen, setIsAddStudentsModalOpen] = useState(false);
   
   const classData = getClassById(classId || '');
   
@@ -71,6 +75,13 @@ const ClassDetail = () => {
     }
   }, [participants.length, addParticipant]);
 
+  // Initialize transcript from class data if available
+  useEffect(() => {
+    if (classData?.transcript && !transcript) {
+      setTranscript(classData.transcript);
+    }
+  }, [classData?.transcript, transcript, setTranscript]);
+
   // Start/stop recording timer
   useEffect(() => {
     if (isRecordingLocal) {
@@ -82,7 +93,7 @@ const ClassDetail = () => {
     } else {
       // Stop timer
       if (recordingInterval) {
-        clearInterval(recordingInterval);
+        clearInterval(interval);
         setRecordingInterval(null);
       }
       setRecordingTime(0); // Reset to 0 when stopping
@@ -91,7 +102,7 @@ const ClassDetail = () => {
     // Cleanup
     return () => {
       if (recordingInterval) {
-        clearInterval(recordingInterval);
+        clearInterval(interval);
       }
     };
   }, [isRecordingLocal]);
@@ -102,6 +113,9 @@ const ClassDetail = () => {
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+
+  // Get students data for the class
+  const classStudents = classData?.students?.map(id => getStudentById(id)).filter(Boolean) || [];
 
   // Sample participants data for display
   const sampleParticipants = [
@@ -189,6 +203,26 @@ const ClassDetail = () => {
     }
   };
 
+  const handleAddStudents = (studentIds: string[]) => {
+    if (classId) {
+      addStudentsToClass(classId, studentIds);
+      toast({
+        title: "Estudiantes agregados",
+        description: `${studentIds.length} estudiante(s) han sido agregado(s) a la clase`,
+      });
+    }
+  };
+
+  const handleRemoveStudent = (studentId: string) => {
+    if (classId) {
+      removeStudentFromClass(classId, studentId);
+      toast({
+        title: "Estudiante removido",
+        description: "El estudiante ha sido removido de la clase",
+      });
+    }
+  };
+
   // Get recording statistics
   const connectedCount = participants.length;
   const recordingCount = participants.filter(p => p.isRecording).length;
@@ -216,8 +250,9 @@ const ClassDetail = () => {
           </Button>
           <div className="flex-1">
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
-              Grabando Clase
+              {classData.name}
             </h1>
+            <p className="text-gray-600">{classData.subject} • {classData.location}</p>
           </div>
         </div>
 
@@ -299,7 +334,7 @@ const ClassDetail = () => {
                     <BookOpen className="w-5 h-5 text-blue-600" />
                     <h3 className="text-lg font-semibold text-gray-800">Análisis AI</h3>
                   </div>
-                  {classAnalysis && (
+                  {(classAnalysis || classData.hasAnalysis) && (
                     <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
                       ✓ Completado
                     </Badge>
@@ -329,7 +364,7 @@ const ClassDetail = () => {
                     )}
                   </Button>
 
-                  {classAnalysis && (
+                  {(classAnalysis || classData.hasAnalysis) && (
                     <Button
                       variant="outline"
                       onClick={() => navigate(`/class/${classId}/analysis`)}
@@ -438,84 +473,102 @@ const ClassDetail = () => {
               </div>
 
               <p className="text-gray-600 mb-4 text-sm lg:text-base">
-                Graba y gestiona audio de profesores y estudiantes
+                Gestiona los estudiantes inscritos en esta clase
               </p>
 
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white mb-4 lg:mb-6 py-2 lg:py-3">
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-700 text-white mb-4 lg:mb-6 py-2 lg:py-3"
+                onClick={() => setIsAddStudentsModalOpen(true)}
+              >
                 <Plus className="w-4 h-4 mr-2" />
-                Agregar Participante
+                Agregar Estudiantes
               </Button>
 
               {/* Summary */}
               <div className="grid grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6 p-3 lg:p-4 bg-white rounded-lg border border-gray-200">
                 <div className="text-center">
                   <Users className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-1" />
-                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{participants.length}</div>
+                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{classStudents.length}</div>
                   <div className="text-xs text-gray-600">Total</div>
                 </div>
                 <div className="text-center">
                   <GraduationCap className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-1" />
-                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{participants.filter(p => p.type === 'teacher').length}</div>
+                  <div className="text-xl lg:text-2xl font-bold text-gray-800">1</div>
                   <div className="text-xs text-gray-600">Profesores</div>
                 </div>
                 <div className="text-center">
                   <Users className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-1" />
-                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{participants.filter(p => p.type === 'student').length}</div>
+                  <div className="text-xl lg:text-2xl font-bold text-gray-800">{classStudents.length}</div>
                   <div className="text-xs text-gray-600">Estudiantes</div>
                 </div>
               </div>
 
-              {/* All Participants List */}
+              {/* Class Students List */}
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Todos los participantes</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Estudiantes inscritos</h3>
                 <div className="space-y-3">
-                  {participants.map((participant) => (
-                    <div key={participant.id} className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
-                      <img
-                        src={sampleParticipants.find(p => p.name === participant.name)?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'}
-                        alt={participant.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-800">{participant.name}</div>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Badge
-                            variant={participant.type === 'teacher' ? 'destructive' : 'secondary'}
-                            className="text-xs px-2 py-1"
-                          >
-                            {participant.type === 'teacher' ? 'Profesor' : 'Estudiante'}
-                          </Badge>
-                          {participant.isRecording && (
-                            <Badge variant="destructive" className="text-xs px-2 py-1">
-                              Grabando
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleIndividualRecording(participant.id)}
-                        className={`${
-                          participant.isRecording
-                            ? 'text-red-600 hover:bg-red-50'
-                            : 'text-green-600 hover:bg-green-50'
-                        } border border-gray-300`}
-                      >
-                        {participant.isRecording ? (
-                          <MicOff className="w-3 h-3" />
-                        ) : (
-                          <Mic className="w-3 h-3" />
-                        )}
-                      </Button>
+                  {classStudents.length === 0 ? (
+                    <div className="text-center py-6 text-gray-500">
+                      <Users className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">No hay estudiantes inscritos en esta clase</p>
                     </div>
-                  ))}
+                  ) : (
+                    classStudents.map((student) => (
+                      <div key={student.id} className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
+                        <img
+                          src={student.avatar}
+                          alt={student.fullName}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-800">{student.fullName}</div>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Badge variant="secondary" className="text-xs px-2 py-1">
+                              {student.grade}
+                            </Badge>
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs ${
+                                student.performance === 'excellent' ? 'bg-green-100 text-green-800 border-green-200' :
+                                student.performance === 'good' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                                student.performance === 'average' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                                'bg-red-100 text-red-800 border-red-200'
+                              }`}
+                            >
+                              {student.performance === 'excellent' ? 'Excelente' :
+                               student.performance === 'good' ? 'Bueno' :
+                               student.performance === 'average' ? 'Promedio' :
+                               'Necesita Mejorar'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRemoveStudent(student.id)}
+                          className="text-red-600 hover:bg-red-50 border border-gray-300"
+                        >
+                          <UserPlus className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Add Students Modal */}
+      <AddStudentsModal 
+        isOpen={isAddStudentsModalOpen}
+        onClose={() => setIsAddStudentsModalOpen(false)}
+        onAddStudents={handleAddStudents}
+        existingStudentIds={classData.students || []}
+        subject={classData.subject}
+        maxStudents={classData.maxStudents}
+      />
     </MainLayout>
   );
 };
