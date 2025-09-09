@@ -34,6 +34,7 @@ import { MainLayout } from '@/components/Layout';
 import { AddStudentsModal } from '@/components/ClassManagement/AddStudentsModal';
 
 import { useRecording } from '@/components/class-detail/useRecording';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const ClassDetail = () => {
   const { classId } = useParams();
@@ -93,7 +94,7 @@ const ClassDetail = () => {
     } else {
       // Stop timer
       if (recordingInterval) {
-        clearInterval(interval);
+        clearInterval(recordingInterval);
         setRecordingInterval(null);
       }
       setRecordingTime(0); // Reset to 0 when stopping
@@ -102,7 +103,7 @@ const ClassDetail = () => {
     // Cleanup
     return () => {
       if (recordingInterval) {
-        clearInterval(interval);
+        clearInterval(recordingInterval);
       }
     };
   }, [isRecordingLocal]);
@@ -237,7 +238,8 @@ const ClassDetail = () => {
 
   return (
     <MainLayout>
-      <div className="space-y-6 max-w-full">
+      <ErrorBoundary>
+        <div className="space-y-6 max-w-full">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 lg:mb-8">
           <Button
@@ -569,6 +571,7 @@ const ClassDetail = () => {
         subject={classData.subject}
         maxStudents={classData.maxStudents}
       />
+      </ErrorBoundary>
     </MainLayout>
   );
 };

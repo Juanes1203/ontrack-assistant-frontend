@@ -248,86 +248,108 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
 
   // Stop recording for a specific participant
   const stopRecording = useCallback(async (participantId: string) => {
-    console.log(`Stopping recording for participant: ${participantId}`);
-    
-    const currentTranscript = currentTranscripts[participantId];
-    
-    setParticipants(prev => {
-      const updatedParticipants = prev.map(p => {
-        if (p.id === participantId) {
-          // Only add to history if the transcript is different from the last one
-          const lastHistoryItem = p.transcriptHistory[p.transcriptHistory.length - 1];
-          const shouldAddToHistory = currentTranscript && 
-            currentTranscript.text.trim() !== '' && 
-            (!lastHistoryItem || lastHistoryItem.text !== currentTranscript.text);
-          
-          const newHistory = shouldAddToHistory 
-            ? [...p.transcriptHistory, {
-                text: currentTranscript.text,
-                timestamp: currentTranscript.timestamp
-              }]
-            : p.transcriptHistory;
-          
-          return { 
-            ...p, 
-            isRecording: false,
-            transcriptHistory: newHistory
-          };
-        }
-        return p;
+    try {
+      console.log(`Stopping recording for participant: ${participantId}`);
+      
+      const currentTranscript = currentTranscripts[participantId];
+      
+      setParticipants(prev => {
+        const updatedParticipants = prev.map(p => {
+          if (p.id === participantId) {
+            // Only add to history if the transcript is different from the last one
+            const lastHistoryItem = p.transcriptHistory[p.transcriptHistory.length - 1];
+            const shouldAddToHistory = currentTranscript && 
+              currentTranscript.text.trim() !== '' && 
+              (!lastHistoryItem || lastHistoryItem.text !== currentTranscript.text);
+            
+            const newHistory = shouldAddToHistory 
+              ? [...p.transcriptHistory, {
+                  text: currentTranscript.text,
+                  timestamp: currentTranscript.timestamp
+                }]
+              : p.transcriptHistory;
+            
+            return { 
+              ...p, 
+              isRecording: false,
+              transcriptHistory: newHistory
+            };
+          }
+          return p;
+        });
+
+        // Check if any participant is still recording using the updated participants
+        const anyRecording = updatedParticipants.some(p => p.isRecording);
+        console.log(`Updated participants state. Any still recording: ${anyRecording}`);
+        setIsRecording(anyRecording);
+
+        return updatedParticipants;
       });
 
-      // Check if any participant is still recording using the updated participants
-      const anyRecording = updatedParticipants.some(p => p.isRecording);
-      console.log(`Updated participants state. Any still recording: ${anyRecording}`);
-      setIsRecording(anyRecording);
+      // Clear the current transcript for this participant
+      setCurrentTranscripts(prev => {
+        const newTranscripts = { ...prev };
+        delete newTranscripts[participantId];
+        return newTranscripts;
+      });
 
-      return updatedParticipants;
-    });
-
-    // Clear the current transcript for this participant
-    setCurrentTranscripts(prev => {
-      const newTranscripts = { ...prev };
-      delete newTranscripts[participantId];
-      return newTranscripts;
-    });
-
-    const recognitionInstancesForParticipant = recognitionInstances[participantId];
-    if (recognitionInstancesForParticipant) {
-      try {
-        // Stop all language instances
-        Object.values(recognitionInstancesForParticipant).forEach(recognition => {
-          recognition.stop();
-        });
-        console.log(`Recognition stopped successfully for ${participantId}`);
-      } catch (error) {
-        console.error('Error stopping recognition:', error);
+      const recognitionInstancesForParticipant = recognitionInstances[participantId];
+      if (recognitionInstancesForParticipant) {
+        try {
+          // Stop all language instances
+          Object.values(recognitionInstancesForParticipant).forEach(recognition => {
+            recognition.stop();
+          });
+          console.log(`Recognition stopped successfully for ${participantId}`);
+        } catch (error) {
+          console.error('Error stopping recognition:', error);
+        }
       }
+    } catch (error) {
+      console.error('Error in stopRecording function:', error);
+      // Ensure we still update the UI state even if there's an error
+      setParticipants(prev => prev.map(p => 
+        p.id === participantId ? { ...p, isRecording: false } : p
+      ));
+      setIsRecording(false);
     }
 
     // Auto-trigger analysis when recording stops if we have transcript content
-    const combinedTranscript = getCombinedTranscript();
-    if (combinedTranscript.trim() !== '' && !isRecording) {
-      console.log('Auto-triggering analysis after recording stopped');
+    // Use setTimeout to prevent blocking the UI update
+    setTimeout(async () => {
       try {
-        setIsAnalyzing(true);
-        const analysis = await analyzeTranscript(combinedTranscript);
-        setClassAnalysis(analysis);
-        toast({
-          title: 'Análisis Automático Completado',
-          description: `Se completó el análisis de la clase: ${analysis.resumen.tema}`,
-        });
+        const combinedTranscript = getCombinedTranscript();
+        if (combinedTranscript.trim() !== '' && !isRecording) {
+          console.log('Auto-triggering analysis after recording stopped');
+          setIsAnalyzing(true);
+          
+          try {
+            const analysis = await analyzeTranscript(combinedTranscript);
+            setClassAnalysis(analysis);
+            toast({
+              title: 'Análisis Automático Completado',
+              description: `Se completó el análisis de la clase: ${analysis.resumen?.tema || 'Análisis completado'}`,
+            });
+          } catch (analysisError) {
+            console.error('Error in auto-analysis:', analysisError);
+            toast({
+              title: 'Error en Análisis Automático',
+              description: 'No se pudo completar el análisis automático de la clase. Puedes intentarlo manualmente.',
+              variant: 'destructive',
+            });
+          }
+        }
       } catch (error) {
-        console.error('Error in auto-analysis:', error);
+        console.error('Error in auto-analysis timeout:', error);
         toast({
           title: 'Error en Análisis Automático',
-          description: 'No se pudo completar el análisis automático de la clase.',
+          description: 'Ocurrió un error inesperado durante el análisis automático.',
           variant: 'destructive',
         });
       } finally {
         setIsAnalyzing(false);
       }
-    }
+    }, 100); // Small delay to ensure UI updates first
   }, [recognitionInstances, currentTranscripts, getCombinedTranscript, isRecording, toast]);
 
   // Stop recording for a specific participant

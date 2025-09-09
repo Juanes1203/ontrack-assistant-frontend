@@ -36,6 +36,8 @@ const ClassAnalysis = () => {
   const { classId } = useParams();
   const navigate = useNavigate();
   const { getClassById } = useClass();
+  
+  console.log('🎯 ClassAnalysis component loaded with classId:', classId);
   const { getStudentById } = useStudent();
   
   const classData = getClassById(classId || '');

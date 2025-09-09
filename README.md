@@ -1,103 +1,84 @@
-# MentorAI Virtual Teacher
+# OnTrack Assistant - Frontend
 
-Aplicación web para análisis de clases y materiales educativos usando IA.
+Una aplicación web moderna para el análisis de clases educativas con inteligencia artificial.
 
-## Características
+## 🚀 Características
 
-- Análisis de clases en tiempo real
-- Integración con RAG para procesamiento de materiales educativos
-- Interfaz moderna y responsiva
-- Despliegue automático en GitHub Pages
+- **Grabación de Clases**: Graba clases en tiempo real con transcripción automática
+- **Análisis con IA**: Análisis inteligente de contenido usando Straico API
+- **Gestión de Estudiantes**: Administra estudiantes y clases
+- **Dashboard Analytics**: Métricas y reportes detallados
+- **Asistente de Voz**: Integración con ElevenLabs para asistencia por voz
+- **Autenticación**: Sistema de login con roles (Profesor/Admin)
 
-## Tecnologías
+## 🛠️ Tecnologías
 
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- Straico API
+- **React 18** con TypeScript
+- **Vite** para build y desarrollo
+- **Tailwind CSS** para estilos
+- **Shadcn/ui** para componentes
+- **React Router DOM** para navegación
+- **Axios** para peticiones HTTP
+- **ElevenLabs** para asistente de voz
 
-## Desarrollo
+## 📦 Instalación
 
 ```bash
 # Instalar dependencias
 npm install
 
+# Configurar variables de entorno
+cp env.example .env.local
+
+# Editar .env.local con tus configuraciones
+VITE_API_BASE_URL=http://localhost:3001/api
+VITE_ELEVENLABS_AGENT_ID=tu_agent_id
+```
+
+## 🚀 Desarrollo
+
+```bash
 # Iniciar servidor de desarrollo
 npm run dev
 
-# Construir para producción
+# Build para producción
 npm run build
+
+# Preview del build
+npm run preview
 ```
 
-## Despliegue
+## 🔧 Configuración
 
-La aplicación se despliega automáticamente en GitHub Pages cuando se hace push a la rama main.
+### Variables de Entorno
 
-# MentorAI Virtual Teacher 
+- `VITE_API_BASE_URL`: URL del backend API
+- `VITE_ELEVENLABS_AGENT_ID`: ID del agente de ElevenLabs
 
-*Asistente virtual educativo con inteligencia artificial para aprendizaje personalizado*
+### ElevenLabs Setup
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![GitHub last commit](https://img.shields.io/github/last-commit/Juanes1203/mentorai-virtual-teacher)
-![Vite](https://img.shields.io/badge/Vite-4.4.5-646CFF?logo=vite)
-![React](https://img.shields.io/badge/React-18.2-61DAFB?logo=react)
-[![Open in GitHub Codespaces](https://img.shields.io/badge/Open%20in-GitHub%20Codespaces-blue?logo=github)](https://codespaces.new/Juanes1203/mentorai-virtual-teacher)
+Ver [ELEVENLABS_SETUP.md](./ELEVENLABS_SETUP.md) para configuración detallada.
 
-## 🌟 Descripción
+## 📁 Estructura del Proyecto
 
-MentorAI es un tutor virtual que utiliza tecnologías modernas para ofrecer:
-- 🎯 Experiencias de aprendizaje interactivas
-- 🔄 Adaptación a diferentes estilos de aprendizaje
-- ⚡ Retroalimentación en tiempo real
-- 📱 Interfaz accesible y responsive
-- 🌐 Soporte multi-idioma
-- 📊 Panel de progreso estudiantil
+```
+src/
+├── components/          # Componentes reutilizables
+│   ├── Auth/           # Componentes de autenticación
+│   ├── Layout/         # Layout principal
+│   └── ui/             # Componentes UI base
+├── contexts/           # Contextos de React
+├── hooks/              # Hooks personalizados
+├── pages/              # Páginas de la aplicación
+├── services/           # Servicios API
+├── types/              # Tipos TypeScript
+└── utils/              # Utilidades
+```
 
-## 🛠 Stack Tecnológico
+## 🔗 Backend
 
-### Frontend
-| Tecnología       | Uso                          | Versión |
-|------------------|------------------------------|---------|
-| React           | Biblioteca principal         | 18.2    |
-| TypeScript      | Tipado estático              | 5.0+    |
-| Vite            | Entorno de desarrollo        | 4.4+    |
-| shadcn-ui       | Componentes UI               | Nuevo   |
-| Tailwind CSS    | Utilidades CSS               | 3.3+    |
+Este frontend se conecta con el backend de OnTrack. Ver el repositorio del backend para más detalles.
 
-### Backend (Opcional/Futuro)
-| Tecnología       | Uso                          |
-|------------------|------------------------------|
-| Node.js         | Entorno de ejecución        |
-| Firebase        | Autenticación y base de datos|
-| OpenAI API      | Modelos de lenguaje         |
+## 📝 Licencia
 
-## ✨ Características
-
-<div align="center">
-
-| 🚀 Rendimiento | 🎨 Diseño | 🔧 Funcionalidad |
-|---------------|----------|------------------|
-| Carga ultrarrápida | Interface limpia | Tutoría personalizada |
-| Optimizado para producción | Totalmente responsive | Retroalimentación AI |
-| Build con Vite | Accesibilidad WCAG | Actualizaciones en vivo |
-| PWA Ready     | Dark/Light Mode | Gamificación |
-
-</div>
-
-## 🚀 Primeros Pasos
-
-### Requisitos
-- Node.js v18+
-- npm v9+ o pnpm
-
-```bash
-# 1. Clonar repositorio
-git clone https://github.com/Juanes1203/mentorai-virtual-teacher.git
-cd mentorai-virtual-teacher
-
-# 2. Instalar dependencias
-npm install
-
-# 3. Iniciar servidor de desarrollo
-npm run dev
+MIT License

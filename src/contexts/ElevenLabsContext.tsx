@@ -18,15 +18,29 @@ export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (scriptLoaded.current) return;
 
       try {
-        // Cargar el script
+        // Verificar si el script ya existe
+        if (document.getElementById('elevenlabs-convai-script')) {
+          scriptLoaded.current = true;
+          widgetLoaded.current = true;
+          return;
+        }
+
+        // Cargar el script oficial de ElevenLabs
         const script = document.createElement('script');
         script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
         script.async = true;
+        script.type = 'text/javascript';
         script.id = 'elevenlabs-convai-script';
 
         await new Promise((resolve, reject) => {
-          script.onload = resolve;
-          script.onerror = reject;
+          script.onload = () => {
+            console.log('✅ ElevenLabs script loaded in context');
+            resolve(true);
+          };
+          script.onerror = (error) => {
+            console.error('❌ Error loading ElevenLabs script in context:', error);
+            reject(error);
+          };
           document.body.appendChild(script);
         });
 
@@ -37,6 +51,7 @@ export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           await new Promise(resolve => {
             const observer = new MutationObserver((mutations, obs) => {
               if (customElements.get('elevenlabs-convai')) {
+                console.log('✅ ElevenLabs custom element registered in context');
                 obs.disconnect();
                 resolve(true);
               }
@@ -45,12 +60,18 @@ export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               childList: true,
               subtree: true
             });
+            
+            // Timeout después de 10 segundos
+            setTimeout(() => {
+              observer.disconnect();
+              resolve(false);
+            }, 10000);
           });
         }
 
         widgetLoaded.current = true;
       } catch (error) {
-        console.error('Error loading ElevenLabs widget:', error);
+        console.error('❌ Error loading ElevenLabs widget in context:', error);
       }
     };
 

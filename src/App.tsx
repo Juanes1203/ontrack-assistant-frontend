@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { ClassProvider } from "@/contexts/ClassContext";
 import { StudentProvider } from "@/contexts/StudentContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/Auth/ProtectedRoute";
 import Home from "./pages/Home";
 import Classes from "./pages/Classes";
 import ClassDetail from "./pages/ClassDetail";
@@ -13,6 +15,9 @@ import Analytics from "./pages/Analytics";
 import Documents from "./pages/Documents";
 import Students from "./pages/Students";
 import Feedback from "./pages/Feedback";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 import { ElevenLabsProvider } from './contexts/ElevenLabsContext';
 
@@ -21,28 +26,65 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <ClassProvider>
-        <StudentProvider>
-          <ElevenLabsProvider>
-            <Toaster />
-            <Sonner />
-            <HashRouter>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/classes" element={<Classes />} />
-                <Route path="/class/:classId" element={<ClassDetail />} />
-                <Route path="/class/:classId/analysis" element={<ClassAnalysis />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/documents" element={<Documents />} />
-                <Route path="/students" element={<Students />} />
-                <Route path="/feedback" element={<Feedback />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </HashRouter>
-          </ElevenLabsProvider>
-        </StudentProvider>
-      </ClassProvider>
+      <AuthProvider>
+        <ClassProvider>
+          <StudentProvider>
+            <ElevenLabsProvider>
+              <Toaster />
+              <Sonner />
+              <HashRouter>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/unauthorized" element={<Unauthorized />} />
+                  
+                  {/* Protected Routes */}
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <Home />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/classes" element={
+                    <ProtectedRoute requiredRole="teacher">
+                      <Classes />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/class/:classId" element={
+                    <ProtectedRoute requiredRole="teacher">
+                      <ClassDetail />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/class/:classId/analysis" element={<ClassAnalysis />} />
+                  <Route path="/analytics" element={
+                    <ProtectedRoute requiredRole="teacher">
+                      <Analytics />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/documents" element={
+                    <ProtectedRoute requiredRole="teacher">
+                      <Documents />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/students" element={
+                    <ProtectedRoute requiredRole="teacher">
+                      <Students />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/feedback" element={
+                    <ProtectedRoute requiredRole="teacher">
+                      <Feedback />
+                    </ProtectedRoute>
+                  } />
+                  
+                  {/* Catch-all route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </HashRouter>
+            </ElevenLabsProvider>
+          </StudentProvider>
+        </ClassProvider>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

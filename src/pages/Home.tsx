@@ -132,11 +132,11 @@ const Home = () => {
             {/* Analytics Button */}
             <Button 
               variant="outline"
-              onClick={() => navigate('/analytics')}
+              onClick={() => navigate('/classes')}
               className="border-green-200 text-green-700 hover:bg-green-50 w-full sm:w-auto"
             >
               <BarChart3 className="w-4 h-4 mr-2" />
-              Ver Análisis
+              Ver Clases
             </Button>
             
             {/* New Class Button */}
