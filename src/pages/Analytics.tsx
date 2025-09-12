@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { MainLayout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -122,36 +123,37 @@ const Analytics: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <MainLayout>
+      <div className="space-y-6">
         {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-600 mt-1">
-            Análisis detallado del rendimiento y métricas de las clases
+            <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
+            <p className="text-gray-600 mt-1">
+              Análisis detallado del rendimiento y métricas de las clases
             </p>
           </div>
-        <div className="flex gap-2">
-          <Button
-            variant={selectedPeriod === '7d' ? 'default' : 'outline'}
-            onClick={() => setSelectedPeriod('7d')}
-            size="sm"
-          >
-            7 días
-          </Button>
-          <Button
-            variant={selectedPeriod === '30d' ? 'default' : 'outline'}
-            onClick={() => setSelectedPeriod('30d')}
-            size="sm"
-          >
-            30 días
+          <div className="flex gap-2">
+            <Button
+              variant={selectedPeriod === '7d' ? 'default' : 'outline'}
+              onClick={() => setSelectedPeriod('7d')}
+              size="sm"
+            >
+              7 días
             </Button>
-          <Button
-            variant={selectedPeriod === '90d' ? 'default' : 'outline'}
-            onClick={() => setSelectedPeriod('90d')}
-            size="sm"
-          >
-            90 días
+            <Button
+              variant={selectedPeriod === '30d' ? 'default' : 'outline'}
+              onClick={() => setSelectedPeriod('30d')}
+              size="sm"
+            >
+              30 días
+            </Button>
+            <Button
+              variant={selectedPeriod === '90d' ? 'default' : 'outline'}
+              onClick={() => setSelectedPeriod('90d')}
+              size="sm"
+            >
+              90 días
             </Button>
           </div>
         </div>
@@ -359,7 +361,8 @@ const Analytics: React.FC = () => {
           Exportar Datos
         </Button>
       </div>
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 
