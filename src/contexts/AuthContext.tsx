@@ -43,6 +43,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const userData = localStorage.getItem('user_data');
         
         console.log('🔄 Initializing auth - token:', !!token, 'userData:', !!userData);
+        console.log('📦 localStorage content:', {
+          auth_token: localStorage.getItem('auth_token'),
+          user_data: localStorage.getItem('user_data')
+        });
         
         if (token && userData) {
           const parsedUser = JSON.parse(userData);
@@ -75,6 +79,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('🔐 Attempting login with:', credentials.email);
       const response = await api.post('/auth/login', credentials);
       console.log('✅ Login response:', response);
+      console.log('📊 Response structure:', {
+        success: response.success,
+        data: response.data,
+        message: response.message
+      });
       
       // Extract data from the API response
       const { user, token, expiresIn } = response.data;
@@ -89,8 +98,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user_data', JSON.stringify(normalizedUser));
       
+      console.log('💾 Stored in localStorage:', {
+        token: token.substring(0, 20) + '...',
+        user: normalizedUser
+      });
+      
       setUser(normalizedUser);
       console.log('👤 User set in context:', normalizedUser);
+      console.log('✅ Login completed successfully');
     } catch (error) {
       console.error('❌ Login error:', error);
       throw error;
@@ -137,7 +152,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Refresh user data
   const refreshUser = async (): Promise<void> => {
     try {
+      console.log('🔄 Refreshing user data...');
       const response = await api.get('/auth/me');
+      console.log('✅ User refresh response:', response);
       
       // Normalize role to lowercase
       const normalizedUser = {
@@ -145,10 +162,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         role: response.data.role.toLowerCase() as 'teacher' | 'admin'
       };
       
+      console.log('👤 Refreshed user:', normalizedUser);
       setUser(normalizedUser);
       localStorage.setItem('user_data', JSON.stringify(normalizedUser));
     } catch (error) {
-      console.error('Error refreshing user:', error);
+      console.error('❌ Error refreshing user:', error);
       // If refresh fails, logout user
       logout();
       throw error;
