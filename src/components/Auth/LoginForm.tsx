@@ -31,7 +31,7 @@ export const LoginForm: React.FC = () => {
         title: 'Inicio de sesión exitoso',
         description: 'Bienvenido a OnTrack Assistant',
       });
-      navigate('/');
+      navigate('/home');
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Error al iniciar sesión';
       setError(errorMessage);

@@ -18,7 +18,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
     { icon: GraduationCap, label: 'Clases', href: '/classes' },
     { icon: BarChart3, label: 'Análisis', href: '/analytics' },
     { icon: MessageSquare, label: 'Feedback', href: '/feedback' },
-    { icon: FileText, label: 'Documentos', href: '/documents' },
+    { icon: FileText, label: 'Centro de Conocimiento', href: '/documents' },
     { icon: Users, label: 'Estudiantes', href: '/students' },
   ];
 

@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   const config = {
-    base: command === 'build' ? '/' : '/OnTrack_Assistant/',
+    base: command === 'build' ? '/OnTrack_Assistant/' : '/',
     plugins: [react()],
     resolve: {
       alias: {
@@ -23,6 +23,11 @@ export default defineConfig(({ command }) => {
         host: "::",
         port: 8080,
         proxy: {
+          '/api': {
+            target: 'http://localhost:3001',
+            changeOrigin: true,
+            secure: false,
+          },
           '/api/straico': {
             target: 'https://api.straico.com',
             changeOrigin: true,

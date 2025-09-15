@@ -2,11 +2,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ClassProvider } from "@/contexts/ClassContext";
 import { StudentProvider } from "@/contexts/StudentContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { DashboardProvider } from "@/contexts/DashboardContext";
 import { ProtectedRoute } from "@/components/Auth/ProtectedRoute";
+import { PublicRoute } from "@/components/Auth/PublicRoute";
+import { HomeRedirect } from "@/components/Auth/HomeRedirect";
 import Home from "./pages/Home";
 import Classes from "./pages/Classes";
 import ClassDetail from "./pages/ClassDetail";
@@ -27,20 +30,37 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <ClassProvider>
-          <StudentProvider>
-            <ElevenLabsProvider>
+        <DashboardProvider>
+          <ClassProvider>
+            <StudentProvider>
+              <ElevenLabsProvider>
               <Toaster />
               <Sonner />
-              <HashRouter>
+              <HashRouter
+                future={{
+                  v7_startTransition: true,
+                  v7_relativeSplatPath: true
+                }}
+              >
                 <Routes>
                   {/* Public Routes */}
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
+                  <Route path="/login" element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  } />
+                  <Route path="/register" element={
+                    <PublicRoute>
+                      <Register />
+                    </PublicRoute>
+                  } />
                   <Route path="/unauthorized" element={<Unauthorized />} />
                   
+                  {/* Default redirect */}
+                  <Route path="/" element={<HomeRedirect />} />
+                  
                   {/* Protected Routes */}
-                  <Route path="/" element={
+                  <Route path="/home" element={
                     <ProtectedRoute>
                       <Home />
                     </ProtectedRoute>
@@ -81,9 +101,10 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </HashRouter>
-            </ElevenLabsProvider>
-          </StudentProvider>
-        </ClassProvider>
+              </ElevenLabsProvider>
+            </StudentProvider>
+          </ClassProvider>
+        </DashboardProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

@@ -10,6 +10,7 @@ interface AuthContextType {
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  clearAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -149,6 +150,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  // Clear auth data (for debugging)
+  const clearAuth = () => {
+    console.log('🧹 Clearing auth data');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_data');
+    setUser(null);
+    console.log('✅ Auth data cleared');
+  };
+
   // Refresh user data
   const refreshUser = async (): Promise<void> => {
     try {
@@ -181,6 +191,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     refreshUser,
+    clearAuth,
   };
 
   return (

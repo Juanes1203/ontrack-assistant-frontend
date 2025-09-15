@@ -261,3 +261,4 @@ echo "  - Ver logs: ssh -i $KEY $SERVER 'pm2 logs ontrack-backend'"
 echo "  - Reiniciar: ssh -i $KEY $SERVER 'pm2 restart ontrack-backend'"
 echo "  - Estado: ssh -i $KEY $SERVER 'pm2 status'"
 echo "  - Nginx: ssh -i $KEY $SERVER 'sudo systemctl status nginx'"
+
