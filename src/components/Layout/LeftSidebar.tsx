@@ -51,7 +51,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
   return (
     <div 
       className={`relative text-white flex flex-col transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-16' : 'w-64'
+        isCollapsed ? 'w-16' : 'w-68'
       }`} 
       style={{ backgroundColor: '#27bd2f', border: 'none', outline: 'none' }}
     >
