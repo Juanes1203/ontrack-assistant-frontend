@@ -39,7 +39,12 @@ export const DashboardProvider: React.FC<DashboardProviderProps> = ({ children }
       setStats(data);
     } catch (err) {
       console.error('Error fetching dashboard stats:', err);
-      setError('Error al cargar las estadísticas del dashboard');
+      // Don't set error for mock data fallback
+      if (err instanceof Error && err.message.includes('mock data')) {
+        console.info('Using mock data for dashboard stats');
+      } else {
+        setError('Error al cargar las estadísticas del dashboard');
+      }
     } finally {
       setIsLoading(false);
     }
