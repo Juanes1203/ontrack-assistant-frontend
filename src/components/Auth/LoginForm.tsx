@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Eye, EyeOff, BookOpen } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -49,12 +49,18 @@ export const LoginForm: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-green-600 rounded-full flex items-center justify-center mb-4">
-            <BookOpen className="h-8 w-8 text-white" />
+          <div className="mx-auto mb-4">
+            <img 
+              src="/LogInLogo.png" 
+              alt="OnTrack Assistant" 
+              className="mx-auto"
+              style={{
+                height: '60px',
+                width: '427px',
+                imageRendering: 'auto'
+              }}
+            />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">
-            OnTrack Assistant
-          </h2>
           <p className="mt-2 text-sm text-gray-600">
             Inicia sesión para acceder a tu panel de control
           </p>

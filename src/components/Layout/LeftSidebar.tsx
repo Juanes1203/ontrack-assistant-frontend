@@ -113,7 +113,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   {!isCollapsed && (
-                    <span className="text-lg font-semibold whitespace-nowrap overflow-hidden">
+                    <span className={`font-semibold whitespace-nowrap overflow-hidden ${
+                      item.label === 'Centro de Conocimiento' ? 'text-sm' : 'text-lg'
+                    }`}>
                       {item.label}
                     </span>
                   )}
