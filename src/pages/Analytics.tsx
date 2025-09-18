@@ -9,7 +9,7 @@ import {
   Search, 
   BookOpen, 
   Clock, 
-  TrendingUp,
+  TrendingUp, 
   BarChart3,
   FileText,
   Calendar,
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { classesService } from '@/services/classesService';
+import { Class } from '@/types/api';
 
 interface AnalysisData {
   id: string;
@@ -88,12 +89,60 @@ const Analytics = () => {
       setIsLoading(true);
       setError(null);
       
-      // Obtener todas las clases con sus análisis
-      const response = await classesService.getClasses();
-      const classesData = response.data as ClassWithAnalyses[];
+      // Obtener todos los análisis directamente
+      const response = await classesService.getAllAnalyses();
+      const analysesData = response.data.analyses as AnalysisData[];
       
-      // Filtrar solo clases que tienen análisis
-      const classesWithAnalyses = classesData.filter(classItem => 
+      // Obtener información de las clases
+      const classesResponse = await classesService.getClasses(1, 100); // Obtener más clases
+      const classesData = classesResponse.data as Class[];
+      
+      // Crear un mapa de clases para acceso rápido
+      const classesInfoMap = new Map<string, Class>();
+      classesData.forEach(cls => {
+        classesInfoMap.set(cls.id, cls);
+      });
+      
+      // Agrupar análisis por clase
+      const classesMap = new Map<string, ClassWithAnalyses>();
+      
+      analysesData.forEach(analysis => {
+        const classId = analysis.recording.classId;
+        
+        if (!classesMap.has(classId)) {
+          const classInfo = classesInfoMap.get(classId);
+          classesMap.set(classId, {
+            id: classId,
+            name: classInfo?.name || `Clase ${classId.slice(-8)}`,
+            subject: classInfo?.subject || 'Sin especificar',
+            schedule: classInfo?.schedule || 'Sin especificar',
+            status: classInfo?.status || 'COMPLETED',
+            recordings: []
+          });
+        }
+        
+        const classItem = classesMap.get(classId)!;
+        
+        // Buscar si ya existe esta grabación
+        let recording = classItem.recordings.find(r => r.id === analysis.recording.id);
+        if (!recording) {
+          recording = {
+            id: analysis.recording.id,
+            title: analysis.recording.title,
+            status: analysis.recording.status,
+            createdAt: analysis.recording.createdAt,
+            transcript: analysis.recording.transcript,
+            analyses: []
+          };
+          classItem.recordings.push(recording);
+        }
+        
+        // Agregar el análisis a la grabación
+        recording.analyses.push(analysis);
+      });
+      
+      // Convertir Map a Array y filtrar solo clases con análisis
+      const classesWithAnalyses = Array.from(classesMap.values()).filter(classItem => 
         classItem.recordings.some(recording => recording.analyses.length > 0)
       );
       
@@ -108,7 +157,7 @@ const Analytics = () => {
 
   const getAllAnalyses = (): AnalysisData[] => {
     return classes.flatMap(classItem => 
-      classItem.recordings.flatMap(recording => recording.analyses)
+      classItem.recordings ? classItem.recordings.flatMap(recording => recording.analyses || []) : []
     );
   };
 
@@ -117,8 +166,8 @@ const Analytics = () => {
     
     if (selectedClass !== 'all') {
       analyses = analyses.filter(analysis => 
-        classes.find(c => c.id === selectedClass)?.recordings.some(r => 
-          r.analyses.includes(analysis)
+        classes.find(c => c.id === selectedClass)?.recordings?.some(r => 
+          r.analyses && r.analyses.includes(analysis)
         )
       );
     }
@@ -128,7 +177,7 @@ const Analytics = () => {
         analysis.recording.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         analysis.analysisData?.summary?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         analysis.analysisData?.concepts?.some(concept => 
-          concept.toLowerCase().includes(searchTerm.toLowerCase())
+          concept && (typeof concept === 'string' ? concept : concept.name || concept.description || '').toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
     }
@@ -160,8 +209,8 @@ const Analytics = () => {
 
   const exportAnalysis = (analysis: AnalysisData) => {
     const data = {
-      clase: classes.find(c => c.recordings.some(r => r.analyses.includes(analysis)))?.name,
-      materia: classes.find(c => c.recordings.some(r => r.analyses.includes(analysis)))?.subject,
+      clase: classes.find(c => c.recordings?.some(r => r.analyses && r.analyses.includes(analysis)))?.name,
+      materia: classes.find(c => c.recordings?.some(r => r.analyses && r.analyses.includes(analysis)))?.subject,
       fecha: formatDate(analysis.createdAt),
       titulo: analysis.recording.title,
       resumen: analysis.analysisData?.summary,
@@ -230,7 +279,7 @@ const Analytics = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center">
@@ -242,7 +291,7 @@ const Analytics = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center">
@@ -259,7 +308,7 @@ const Analytics = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center">
@@ -304,13 +353,13 @@ const Analytics = () => {
                 </option>
               ))}
             </select>
-          </div>
-        </div>
-
+                </div>
+              </div>
+              
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-600">{error}</p>
-          </div>
+                </div>
         )}
 
         {/* Analyses List */}
@@ -335,24 +384,24 @@ const Analytics = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredAnalyses.map((analysis) => (
               <Card key={analysis.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
+            <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-lg">{analysis.recording.title}</CardTitle>
                       <CardDescription className="mt-1">
-                        {classes.find(c => c.recordings.some(r => r.analyses.includes(analysis)))?.name} - 
-                        {classes.find(c => c.recordings.some(r => r.analyses.includes(analysis)))?.subject}
+                        {classes.find(c => c.recordings?.some(r => r.analyses && r.analyses.includes(analysis)))?.name} - 
+                        {classes.find(c => c.recordings?.some(r => r.analyses && r.analyses.includes(analysis)))?.subject}
                       </CardDescription>
                     </div>
                     <Badge className={getScoreBadgeColor(analysis.analysisData?.evaluation?.overall || 0)}>
                       {analysis.analysisData?.evaluation?.overall || 0}/10
                     </Badge>
                   </div>
-                </CardHeader>
+            </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Summary */}
                   {analysis.analysisData?.summary && (
-                    <div>
+                      <div>
                       <h4 className="font-medium text-gray-800 mb-2">Resumen</h4>
                       <p className="text-sm text-gray-600">
                         {analysis.analysisData.summary.title}
@@ -377,13 +426,13 @@ const Analytics = () => {
                       <div className="flex flex-wrap gap-1">
                         {analysis.analysisData.concepts.slice(0, 3).map((concept, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
-                            {concept}
-                          </Badge>
+                            {typeof concept === 'string' ? concept : concept.name || concept.description || 'Concepto'}
+                        </Badge>
                         ))}
                         {analysis.analysisData.concepts.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs">
                             +{analysis.analysisData.concepts.length - 3} más
-                          </Badge>
+                        </Badge>
                         )}
                       </div>
                     </div>
@@ -445,9 +494,9 @@ const Analytics = () => {
                         Exportar
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+              </div>
+            </CardContent>
+          </Card>
             ))}
           </div>
         )}
@@ -465,8 +514,8 @@ const Analytics = () => {
                   >
                     Cerrar
                   </Button>
-                </div>
-                
+        </div>
+
                 {/* Full Analysis Content */}
                 <div className="space-y-6">
                   {/* Summary */}
@@ -482,7 +531,7 @@ const Analytics = () => {
                           <div>
                             <span className="font-medium">Participación:</span> {selectedAnalysis.analysisData.summary.participation}
                           </div>
-                          <div>
+                      <div>
                             <span className="font-medium">Nivel:</span> {selectedAnalysis.analysisData.summary.level}
                           </div>
                         </div>
@@ -497,7 +546,7 @@ const Analytics = () => {
                       <div className="flex flex-wrap gap-2">
                         {selectedAnalysis.analysisData.concepts.map((concept, index) => (
                           <Badge key={index} variant="outline">
-                            {concept}
+                            {typeof concept === 'string' ? concept : concept.name || concept.description || 'Concepto'}
                           </Badge>
                         ))}
                       </div>
@@ -510,7 +559,9 @@ const Analytics = () => {
                       <h3 className="text-lg font-semibold mb-2">Ejemplos Destacados</h3>
                       <ul className="list-disc list-inside space-y-1">
                         {selectedAnalysis.analysisData.examples.map((example, index) => (
-                          <li key={index} className="text-sm">{example}</li>
+                          <li key={index} className="text-sm">
+                            {typeof example === 'string' ? example : example.description || example.type || 'Ejemplo'}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -522,7 +573,9 @@ const Analytics = () => {
                       <h3 className="text-lg font-semibold mb-2">Preguntas de Estudiantes</h3>
                       <ul className="list-disc list-inside space-y-1">
                         {selectedAnalysis.analysisData.questions.map((question, index) => (
-                          <li key={index} className="text-sm">{question}</li>
+                          <li key={index} className="text-sm">
+                            {typeof question === 'string' ? question : question.question || 'Pregunta'}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -534,7 +587,9 @@ const Analytics = () => {
                       <h3 className="text-lg font-semibold mb-2">Conexiones</h3>
                       <ul className="list-disc list-inside space-y-1">
                         {selectedAnalysis.analysisData.connections.map((connection, index) => (
-                          <li key={index} className="text-sm">{connection}</li>
+                          <li key={index} className="text-sm">
+                            {typeof connection === 'string' ? connection : connection.explanation || `${connection.from} → ${connection.to}` || 'Conexión'}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -546,7 +601,9 @@ const Analytics = () => {
                       <h3 className="text-lg font-semibold mb-2">Momentos Clave</h3>
                       <ul className="list-disc list-inside space-y-1">
                         {selectedAnalysis.analysisData.moments.map((moment, index) => (
-                          <li key={index} className="text-sm">{moment}</li>
+                          <li key={index} className="text-sm">
+                            {typeof moment === 'string' ? moment : moment.description || moment.type || 'Momento'}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -554,7 +611,7 @@ const Analytics = () => {
 
                   {/* Evaluation */}
                   {selectedAnalysis.analysisData?.evaluation && (
-                    <div>
+                      <div>
                       <h3 className="text-lg font-semibold mb-2">Evaluación Detallada</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -590,14 +647,14 @@ const Analytics = () => {
                               {selectedAnalysis.analysisData.evaluation.overall}/10
                             </span>
                           </div>
-                        </div>
+                      </div>
                       </div>
                     </div>
-                  )}
+                )}
                 </div>
               </div>
             </div>
-          </div>
+        </div>
         )}
       </div>
     </MainLayout>

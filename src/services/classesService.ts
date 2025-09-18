@@ -70,4 +70,9 @@ export const classesService = {
   getClassWithAnalyses: async (classId: string) => {
     return api.get(`/classes/${classId}/analyses`);
   },
+
+  // Get all analyses (for Analytics page)
+  getAllAnalyses: async () => {
+    return api.get('/analysis/debug-all');
+  },
 };
