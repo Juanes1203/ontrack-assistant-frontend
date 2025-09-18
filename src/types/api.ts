@@ -40,6 +40,10 @@ export interface Class {
   teacherId: string;
   schoolId: string;
   maxStudents: number;
+  status?: string;
+  description?: string;
+  startTime?: string;
+  endTime?: string;
   students: string[]; // Array of student IDs
   transcript?: string;
   hasAnalysis?: boolean;
@@ -133,10 +137,13 @@ export interface CreateClassRequest {
   location: string;
   schedule: string;
   maxStudents: number;
+  description?: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface UpdateClassRequest extends Partial<CreateClassRequest> {
-  id: string;
+  id?: string;
 }
 
 export interface AddStudentsToClassRequest {

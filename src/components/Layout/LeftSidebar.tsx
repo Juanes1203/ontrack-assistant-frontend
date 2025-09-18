@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, GraduationCap, MessageSquare, FileText, Users, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, GraduationCap, MessageSquare, FileText, Users, BarChart3, Brain, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import logoSuperior from '../../assets/LogoSuperiorR.png';
 import logoInferior from '../../assets/LogoInferior.png';
 
@@ -17,8 +17,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
     { icon: Home, label: 'Inicio', href: '/' },
     { icon: GraduationCap, label: 'Clases', href: '/classes' },
     { icon: BarChart3, label: 'Análisis', href: '/analytics' },
+    { icon: Brain, label: 'Centro de Conocimientos', href: '/knowledge-center' },
     { icon: MessageSquare, label: 'Feedback', href: '/feedback' },
-    { icon: FileText, label: 'Centro de Conocimiento', href: '/documents' },
     { icon: Users, label: 'Estudiantes', href: '/students' },
   ];
 
@@ -39,8 +39,8 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
     if (href === '/feedback') {
       return location.pathname === '/feedback';
     }
-    if (href === '/documents') {
-      return location.pathname === '/documents';
+    if (href === '/knowledge-center') {
+      return location.pathname === '/knowledge-center';
     }
     if (href === '/students') {
       return location.pathname === '/students';

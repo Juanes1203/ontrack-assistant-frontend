@@ -20,6 +20,13 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // console.log('API Request:', {
+    //   method: config.method?.toUpperCase(),
+    //   url: config.url,
+    //   baseURL: config.baseURL,
+    //   data: config.data,
+    //   headers: config.headers
+    // });
     return config;
   },
   (error) => {
@@ -30,9 +37,49 @@ apiClient.interceptors.request.use(
 // Response interceptor to handle common errors
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
+    // console.log('API Response:', {
+    //   status: response.status,
+    //   statusText: response.statusText,
+    //   data: response.data
+    // });
     return response;
   },
-  (error) => {
+  async (error) => {
+    console.error('API Error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+      config: {
+        method: error.config?.method,
+        url: error.config?.url,
+        data: error.config?.data
+      }
+    });
+
+    // Handle 429 (Too Many Requests) with retry logic
+    if (error.response?.status === 429) {
+      const retryCount = error.config?.retryCount || 0;
+      const maxRetries = 3;
+      const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s, 4s
+
+      if (retryCount < maxRetries) {
+        console.log(`🔄 Retrying request (${retryCount + 1}/${maxRetries}) after ${retryDelay}ms...`);
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        
+        // Add retry count to config
+        error.config.retryCount = retryCount + 1;
+        
+        // Retry the request
+        return apiClient.request(error.config);
+      } else {
+        console.error('❌ Max retries reached for 429 error');
+        error.message = 'Demasiadas peticiones. Por favor, espera unos segundos antes de intentar de nuevo.';
+      }
+    }
+
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.removeItem('auth_token');

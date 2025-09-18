@@ -1,38 +1,139 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import { 
-  BarChart3, 
-  Users, 
+  Brain, 
+  Search, 
   BookOpen, 
-  TrendingUp, 
-  Calendar,
-  Clock,
-  Star,
-  Target,
-  Brain,
+  Clock, 
+  TrendingUp,
+  BarChart3,
   FileText,
-  Activity,
-  Award,
+  Calendar,
+  Filter,
+  Download,
   RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useDashboard } from '@/contexts/DashboardContext';
+import { classesService } from '@/services/classesService';
 
-const Analytics: React.FC = () => {
+interface AnalysisData {
+  id: string;
+  status: string;
+  createdAt: string;
+  analysisData: {
+    summary: {
+      title: string;
+      duration: string;
+      participation: string;
+      level: string;
+    };
+    concepts: string[];
+    examples: string[];
+    questions: string[];
+    connections: string[];
+    moments: string[];
+    evaluation: {
+      overall: number;
+      clarity: number;
+      participation: number;
+      examples: number;
+      connections: number;
+    };
+  };
+  recording: {
+    id: string;
+    title: string;
+    status: string;
+    createdAt: string;
+    transcript: string;
+    classId: string;
+  };
+}
+
+interface ClassWithAnalyses {
+  id: string;
+  name: string;
+  subject: string;
+  schedule: string;
+  status: string;
+  recordings: Array<{
+    id: string;
+    title: string;
+    status: string;
+    createdAt: string;
+    transcript: string;
+    analyses: AnalysisData[];
+  }>;
+}
+
+const Analytics = () => {
   const { user } = useAuth();
-  const { stats, isLoading, error, refreshStats } = useDashboard();
-  const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [classes, setClasses] = useState<ClassWithAnalyses[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedClass, setSelectedClass] = useState<string>('all');
+  const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisData | null>(null);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  useEffect(() => {
+    loadAnalytics();
+  }, []);
+
+  const loadAnalytics = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Obtener todas las clases con sus análisis
+      const response = await classesService.getClasses();
+      const classesData = response.data as ClassWithAnalyses[];
+      
+      // Filtrar solo clases que tienen análisis
+      const classesWithAnalyses = classesData.filter(classItem => 
+        classItem.recordings.some(recording => recording.analyses.length > 0)
+      );
+      
+      setClasses(classesWithAnalyses);
+    } catch (err: any) {
+      setError('Error al cargar los análisis: ' + err.message);
+      console.error('Error loading analytics:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getAllAnalyses = (): AnalysisData[] => {
+    return classes.flatMap(classItem => 
+      classItem.recordings.flatMap(recording => recording.analyses)
+    );
+  };
+
+  const getFilteredAnalyses = (): AnalysisData[] => {
+    let analyses = getAllAnalyses();
+    
+    if (selectedClass !== 'all') {
+      analyses = analyses.filter(analysis => 
+        classes.find(c => c.id === selectedClass)?.recordings.some(r => 
+          r.analyses.includes(analysis)
+        )
+      );
+    }
+    
+    if (searchTerm) {
+      analyses = analyses.filter(analysis => 
+        analysis.recording.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        analysis.analysisData?.summary?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        analysis.analysisData?.concepts?.some(concept => 
+          concept.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+    
+    return analyses.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   };
 
   const getScoreColor = (score: number) => {
@@ -41,10 +142,46 @@ const Analytics: React.FC = () => {
     return 'text-red-600';
   };
 
-  const getScoreBadgeVariant = (score: number) => {
-    if (score >= 8) return 'default';
-    if (score >= 6) return 'secondary';
-    return 'destructive';
+  const getScoreBadgeColor = (score: number) => {
+    if (score >= 8) return 'bg-green-100 text-green-800';
+    if (score >= 6) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const exportAnalysis = (analysis: AnalysisData) => {
+    const data = {
+      clase: classes.find(c => c.recordings.some(r => r.analyses.includes(analysis)))?.name,
+      materia: classes.find(c => c.recordings.some(r => r.analyses.includes(analysis)))?.subject,
+      fecha: formatDate(analysis.createdAt),
+      titulo: analysis.recording.title,
+      resumen: analysis.analysisData?.summary,
+      conceptos: analysis.analysisData?.concepts,
+      ejemplos: analysis.analysisData?.examples,
+      preguntas: analysis.analysisData?.questions,
+      conexiones: analysis.analysisData?.connections,
+      momentos: analysis.analysisData?.moments,
+      evaluacion: analysis.analysisData?.evaluation
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analisis-${analysis.recording.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (isLoading) {
@@ -53,28 +190,14 @@ const Analytics: React.FC = () => {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600">Cargando estadísticas...</p>
+            <p className="text-gray-600">Cargando análisis...</p>
           </div>
         </div>
       </MainLayout>
     );
   }
 
-  if (error) {
-    return (
-      <MainLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={refreshStats} variant="outline">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Reintentar
-            </Button>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
+  const filteredAnalyses = getFilteredAnalyses();
 
   return (
     <MainLayout>
@@ -82,203 +205,400 @@ const Analytics: React.FC = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Centro de Análisis</h1>
             <p className="text-gray-600 mt-1">
-              Análisis detallado del rendimiento y métricas de las clases
+              Análisis de IA de todas tus clases grabadas
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant={selectedPeriod === '7d' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedPeriod('7d')}
-            >
-              7 días
-            </Button>
-            <Button
-              variant={selectedPeriod === '30d' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedPeriod('30d')}
-            >
-              30 días
-            </Button>
-            <Button
-              variant={selectedPeriod === '90d' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedPeriod('90d')}
-            >
-              90 días
-            </Button>
-            <Button onClick={refreshStats} variant="outline" size="sm">
+            <Button onClick={loadAnalytics} variant="outline">
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Clases</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.overview.totalClasses || 0}</div>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <Brain className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Análisis</p>
+                  <p className="text-2xl font-bold">{getAllAnalyses().length}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
-
+          
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Estudiantes</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.overview.totalStudents || 0}</div>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <BookOpen className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Clases Analizadas</p>
+                  <p className="text-2xl font-bold">{classes.length}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
-
+          
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Grabaciones</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.overview.totalRecordings || 0}</div>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <TrendingUp className="h-8 w-8 text-purple-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Promedio General</p>
+                  <p className="text-2xl font-bold">
+                    {getAllAnalyses().length > 0 
+                      ? (getAllAnalyses().reduce((sum, a) => sum + (a.analysisData?.evaluation?.overall || 0), 0) / getAllAnalyses().length).toFixed(1)
+                      : '0.0'
+                    }
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
-
+          
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Análisis Completados</CardTitle>
-              <Brain className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.overview.totalAnalyses || 0}</div>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <BarChart3 className="h-8 w-8 text-orange-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Último Análisis</p>
+                  <p className="text-sm font-bold">
+                    {getAllAnalyses().length > 0 
+                      ? formatDate(getAllAnalyses()[0].createdAt)
+                      : 'N/A'
+                    }
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Performance Overview */}
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Buscar análisis por título, concepto o clase..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+          <div className="sm:w-64">
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">Todas las clases</option>
+              {classes.map(classItem => (
+                <option key={classItem.id} value={classItem.id}>
+                  {classItem.name} - {classItem.subject}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
+
+        {/* Analyses List */}
+        {filteredAnalyses.length === 0 ? (
           <Card>
-            <CardHeader>
-              <CardTitle>Rendimiento General</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Puntuación Promedio</span>
-                <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-yellow-500" />
-                  <span className={`text-lg font-bold ${getScoreColor(stats?.performance.overallScore || 0)}`}>
-                    {stats?.performance.overallScore.toFixed(1) || '0.0'}/10
-                  </span>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Tasa de Participación</span>
-                  <span className="text-sm text-gray-600">{stats?.performance.participationRate.toFixed(1) || '0'}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${stats?.performance.participationRate || 0}%` }}
-                  />
-                </div>
+            <CardContent className="pt-6">
+              <div className="text-center py-8">
+                <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  {searchTerm || selectedClass !== 'all' ? 'No se encontraron análisis' : 'No hay análisis disponibles'}
+                </h3>
+                <p className="text-gray-500">
+                  {searchTerm || selectedClass !== 'all' 
+                    ? 'Intenta con otros filtros de búsqueda'
+                    : 'Los análisis aparecerán aquí cuando grabes y analices clases'
+                  }
+                </p>
               </div>
             </CardContent>
           </Card>
-
-          {/* Recent Analyses */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Análisis Recientes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {stats?.recentAnalyses.length ? (
-                  stats.recentAnalyses.map((analysis) => (
-                    <div key={analysis.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm">{analysis.className}</p>
-                        <p className="text-xs text-gray-500">{analysis.subject} • {formatDate(analysis.createdAt)}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={getScoreBadgeVariant(analysis.score)}>
-                          {analysis.score.toFixed(1)}/10
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {analysis.status}
-                        </Badge>
-                      </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filteredAnalyses.map((analysis) => (
+              <Card key={analysis.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{analysis.recording.title}</CardTitle>
+                      <CardDescription className="mt-1">
+                        {classes.find(c => c.recordings.some(r => r.analyses.includes(analysis)))?.name} - 
+                        {classes.find(c => c.recordings.some(r => r.analyses.includes(analysis)))?.subject}
+                      </CardDescription>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center py-4">No hay análisis recientes</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Performance by Subject */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Rendimiento por Materia</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {stats?.subjectPerformance.length ? (
-                  stats.subjectPerformance.map((subject, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm">{subject.subject}</p>
-                        <p className="text-xs text-gray-500">{subject.recordings} grabaciones</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-lg font-bold ${getScoreColor(parseFloat(subject.averageScore))}`}>
-                          {subject.averageScore}/10
+                    <Badge className={getScoreBadgeColor(analysis.analysisData?.evaluation?.overall || 0)}>
+                      {analysis.analysisData?.evaluation?.overall || 0}/10
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Summary */}
+                  {analysis.analysisData?.summary && (
+                    <div>
+                      <h4 className="font-medium text-gray-800 mb-2">Resumen</h4>
+                      <p className="text-sm text-gray-600">
+                        {analysis.analysisData.summary.title}
+                      </p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {analysis.analysisData.summary.duration}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <TrendingUp className="h-3 w-3" />
+                          {analysis.analysisData.summary.participation}
                         </span>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center py-4">No hay datos de materias</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  )}
 
-          {/* Monthly Trends */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tendencias Mensuales</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {stats?.monthlyTrends.length ? (
-                  stats.monthlyTrends.map((trend, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm">{trend.month}</p>
-                        <p className="text-xs text-gray-500">{trend.classes} clases</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          {trend.analyses} análisis
-                        </Badge>
+                  {/* Key Concepts */}
+                  {analysis.analysisData?.concepts && analysis.analysisData.concepts.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-gray-800 mb-2">Conceptos Clave</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {analysis.analysisData.concepts.slice(0, 3).map((concept, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {concept}
+                          </Badge>
+                        ))}
+                        {analysis.analysisData.concepts.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{analysis.analysisData.concepts.length - 3} más
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500 text-center py-4">No hay tendencias disponibles</p>
-                )}
+                  )}
+
+                  {/* Evaluation Scores */}
+                  {analysis.analysisData?.evaluation && (
+                    <div>
+                      <h4 className="font-medium text-gray-800 mb-2">Evaluación</h4>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex justify-between">
+                          <span>Claridad:</span>
+                          <span className={getScoreColor(analysis.analysisData.evaluation.clarity)}>
+                            {analysis.analysisData.evaluation.clarity}/10
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Participación:</span>
+                          <span className={getScoreColor(analysis.analysisData.evaluation.participation)}>
+                            {analysis.analysisData.evaluation.participation}/10
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Ejemplos:</span>
+                          <span className={getScoreColor(analysis.analysisData.evaluation.examples)}>
+                            {analysis.analysisData.evaluation.examples}/10
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Conexiones:</span>
+                          <span className={getScoreColor(analysis.analysisData.evaluation.connections)}>
+                            {analysis.analysisData.evaluation.connections}/10
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex justify-between items-center pt-2 border-t">
+                    <span className="text-xs text-gray-500">
+                      {formatDate(analysis.createdAt)}
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedAnalysis(analysis)}
+                      >
+                        <FileText className="h-3 w-3 mr-1" />
+                        Ver Detalles
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => exportAnalysis(analysis)}
+                      >
+                        <Download className="h-3 w-3 mr-1" />
+                        Exportar
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Analysis Detail Modal */}
+        {selectedAnalysis && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto w-full">
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <h2 className="text-2xl font-bold">{selectedAnalysis.recording.title}</h2>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedAnalysis(null)}
+                  >
+                    Cerrar
+                  </Button>
+                </div>
+                
+                {/* Full Analysis Content */}
+                <div className="space-y-6">
+                  {/* Summary */}
+                  {selectedAnalysis.analysisData?.summary && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Resumen</h3>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="font-medium">{selectedAnalysis.analysisData.summary.title}</p>
+                        <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
+                          <div>
+                            <span className="font-medium">Duración:</span> {selectedAnalysis.analysisData.summary.duration}
+                          </div>
+                          <div>
+                            <span className="font-medium">Participación:</span> {selectedAnalysis.analysisData.summary.participation}
+                          </div>
+                          <div>
+                            <span className="font-medium">Nivel:</span> {selectedAnalysis.analysisData.summary.level}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Concepts */}
+                  {selectedAnalysis.analysisData?.concepts && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Conceptos Clave</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedAnalysis.analysisData.concepts.map((concept, index) => (
+                          <Badge key={index} variant="outline">
+                            {concept}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Examples */}
+                  {selectedAnalysis.analysisData?.examples && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Ejemplos Destacados</h3>
+                      <ul className="list-disc list-inside space-y-1">
+                        {selectedAnalysis.analysisData.examples.map((example, index) => (
+                          <li key={index} className="text-sm">{example}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Questions */}
+                  {selectedAnalysis.analysisData?.questions && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Preguntas de Estudiantes</h3>
+                      <ul className="list-disc list-inside space-y-1">
+                        {selectedAnalysis.analysisData.questions.map((question, index) => (
+                          <li key={index} className="text-sm">{question}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Connections */}
+                  {selectedAnalysis.analysisData?.connections && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Conexiones</h3>
+                      <ul className="list-disc list-inside space-y-1">
+                        {selectedAnalysis.analysisData.connections.map((connection, index) => (
+                          <li key={index} className="text-sm">{connection}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Moments */}
+                  {selectedAnalysis.analysisData?.moments && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Momentos Clave</h3>
+                      <ul className="list-disc list-inside space-y-1">
+                        {selectedAnalysis.analysisData.moments.map((moment, index) => (
+                          <li key={index} className="text-sm">{moment}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Evaluation */}
+                  {selectedAnalysis.analysisData?.evaluation && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Evaluación Detallada</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span>Claridad:</span>
+                            <span className={getScoreColor(selectedAnalysis.analysisData.evaluation.clarity)}>
+                              {selectedAnalysis.analysisData.evaluation.clarity}/10
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Participación:</span>
+                            <span className={getScoreColor(selectedAnalysis.analysisData.evaluation.participation)}>
+                              {selectedAnalysis.analysisData.evaluation.participation}/10
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Ejemplos:</span>
+                            <span className={getScoreColor(selectedAnalysis.analysisData.evaluation.examples)}>
+                              {selectedAnalysis.analysisData.evaluation.examples}/10
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span>Conexiones:</span>
+                            <span className={getScoreColor(selectedAnalysis.analysisData.evaluation.connections)}>
+                              {selectedAnalysis.analysisData.evaluation.connections}/10
+                            </span>
+                          </div>
+                          <div className="flex justify-between font-bold">
+                            <span>General:</span>
+                            <span className={getScoreColor(selectedAnalysis.analysisData.evaluation.overall)}>
+                              {selectedAnalysis.analysisData.evaluation.overall}/10
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

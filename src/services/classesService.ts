@@ -55,4 +55,19 @@ export const classesService = {
   getClassesBySchool: async (schoolId: string): Promise<Class[]> => {
     return api.get(`/classes/school/${schoolId}`);
   },
+
+  // Start class recording
+  startClassRecording: async (classId: string, data: { title?: string; description?: string }) => {
+    return api.post(`/classes/${classId}/recordings/start`, data);
+  },
+
+  // Stop class recording
+  stopClassRecording: async (classId: string, recordingId: string, data: { transcript?: string; duration?: number }) => {
+    return api.post(`/classes/${classId}/recordings/${recordingId}/stop`, data);
+  },
+
+  // Get class with analyses
+  getClassWithAnalyses: async (classId: string) => {
+    return api.get(`/classes/${classId}/analyses`);
+  },
 };

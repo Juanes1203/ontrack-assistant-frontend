@@ -20,7 +20,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { classesService } from '@/services/classesService';
-import { ClassRecording } from '@/components/Classes/ClassRecording';
+import { ClassRecordingModal } from '@/components/Classes/ClassRecordingModal';
+import { ClassAnalysisModal } from '@/components/Classes/ClassAnalysisModal';
 import { CreateTeacherForm } from '@/components/Admin/CreateTeacherForm';
 import { Class } from '@/types/api';
 
@@ -58,6 +59,7 @@ const Classes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClass, setSelectedClass] = useState<ClassWithDetails | null>(null);
   const [showCreateTeacher, setShowCreateTeacher] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   useEffect(() => {
     loadClasses();
@@ -218,6 +220,17 @@ const Classes = () => {
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => {
+                        setSelectedClass(classItem);
+                        setShowAnalysis(true);
+                      }}
+                    >
+                      <Brain className="h-4 w-4 mr-1" />
+                      Análisis
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => window.location.href = `#/class/${classItem.id}`}
                     >
                       Ver Detalles
@@ -230,22 +243,34 @@ const Classes = () => {
         )}
 
         {/* Recording Modal */}
-        {selectedClass && (
+        {selectedClass && !showAnalysis && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <ClassRecording
-                classId={selectedClass.id}
-                className={selectedClass.name}
-                onRecordingSaved={handleRecordingSaved}
-              />
-              <div className="p-4 border-t">
-                <Button
-                  onClick={() => setSelectedClass(null)}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Cerrar
-                </Button>
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <ClassRecordingModal
+                  classId={selectedClass.id}
+                  className={selectedClass.name}
+                  onClose={() => setSelectedClass(null)}
+                  onRecordingSaved={handleRecordingSaved}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Analysis Modal */}
+        {selectedClass && showAnalysis && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <ClassAnalysisModal
+                  classId={selectedClass.id}
+                  className={selectedClass.name}
+                  onClose={() => {
+                    setSelectedClass(null);
+                    setShowAnalysis(false);
+                  }}
+                />
               </div>
             </div>
           </div>

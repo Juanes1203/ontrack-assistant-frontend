@@ -11,17 +11,20 @@ import { ProtectedRoute } from "@/components/Auth/ProtectedRoute";
 import { PublicRoute } from "@/components/Auth/PublicRoute";
 import { HomeRedirect } from "@/components/Auth/HomeRedirect";
 import Home from "./pages/Home";
-import Classes from "./pages/Classes";
+import Classes from "./pages/ClassesSimple";
 import ClassDetail from "./pages/ClassDetail";
 import ClassAnalysis from "./pages/ClassAnalysis";
+import ClassAnalysisPage from "./pages/ClassAnalysisPage";
 import Analytics from "./pages/Analytics";
 import Documents from "./pages/Documents";
+import KnowledgeCenter from "./pages/KnowledgeCenter";
 import Students from "./pages/Students";
 import Feedback from "./pages/Feedback";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
+import TestPage from "./pages/TestPage";
 import { ElevenLabsProvider } from './contexts/ElevenLabsContext';
 
 const queryClient = new QueryClient();
@@ -58,6 +61,7 @@ const App = () => (
                   
                   {/* Default redirect */}
                   <Route path="/" element={<HomeRedirect />} />
+                  <Route path="/test" element={<TestPage />} />
                   
                   {/* Protected Routes */}
                   <Route path="/home" element={
@@ -76,6 +80,11 @@ const App = () => (
                     </ProtectedRoute>
                   } />
                   <Route path="/class/:classId/analysis" element={<ClassAnalysis />} />
+                  <Route path="/class/:classId/analysis-page" element={
+                    <ProtectedRoute requiredRole="teacher">
+                      <ClassAnalysisPage />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/analytics" element={
                     <ProtectedRoute requiredRole="teacher">
                       <Analytics />
@@ -84,6 +93,11 @@ const App = () => (
                   <Route path="/documents" element={
                     <ProtectedRoute requiredRole="teacher">
                       <Documents />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/knowledge-center" element={
+                    <ProtectedRoute requiredRole="teacher">
+                      <KnowledgeCenter />
                     </ProtectedRoute>
                   } />
                   <Route path="/students" element={
