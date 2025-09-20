@@ -91,22 +91,32 @@ const Analytics = () => {
       
       // Obtener todos los análisis directamente
       const response = await classesService.getAllAnalyses();
-      const analysesData = response.data.analyses as AnalysisData[];
+      const analysesData = response.data.analyses as AnalysisData[] || [];
       
       // Obtener información de las clases
       const classesResponse = await classesService.getClasses(1, 100); // Obtener más clases
-      const classesData = classesResponse.data as Class[];
+      const classesData = classesResponse.data as Class[] || [];
       
       // Crear un mapa de clases para acceso rápido
       const classesInfoMap = new Map<string, Class>();
       classesData.forEach(cls => {
-        classesInfoMap.set(cls.id, cls);
+        if (cls && cls.id) {
+          classesInfoMap.set(cls.id, cls);
+        }
       });
       
       // Agrupar análisis por clase
       const classesMap = new Map<string, ClassWithAnalyses>();
       
-      analysesData.forEach(analysis => {
+      // Verificar que analysesData sea un array válido antes de procesarlo
+      if (Array.isArray(analysesData)) {
+        analysesData.forEach(analysis => {
+        // Verificar que analysis y analysis.recording existan
+        if (!analysis || !analysis.recording || !analysis.recording.classId) {
+          console.warn('Analysis o recording incompleto:', analysis);
+          return; // Saltar este análisis
+        }
+        
         const classId = analysis.recording.classId;
         
         if (!classesMap.has(classId)) {
@@ -139,7 +149,8 @@ const Analytics = () => {
         
         // Agregar el análisis a la grabación
         recording.analyses.push(analysis);
-      });
+        });
+      }
       
       // Convertir Map a Array y filtrar solo clases con análisis
       const classesWithAnalyses = Array.from(classesMap.values()).filter(classItem => 
