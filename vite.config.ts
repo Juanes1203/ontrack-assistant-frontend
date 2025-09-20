@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   const config = {
-    base: command === 'build' ? '/OnTrack_Assistant/' : '/',
+    base: '/', // Cambiado de '/OnTrack_Assistant/' a '/' para consistencia con Nginx
     plugins: [react()],
     resolve: {
       alias: {
