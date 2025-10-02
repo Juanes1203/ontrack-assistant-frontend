@@ -322,7 +322,7 @@ const KnowledgeCenter = () => {
                       value={documentTitle}
                       onChange={(e) => setDocumentTitle(e.target.value)}
                       placeholder="Ej: Currículo de Matemáticas - Grado 10"
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg placeholder:text-gray-600"
                     />
                   </div>
 
@@ -336,7 +336,7 @@ const KnowledgeCenter = () => {
                       onChange={(e) => setDocumentDescription(e.target.value)}
                       placeholder="Describe el contenido y propósito del documento..."
                       rows={3}
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg resize-none"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg resize-none placeholder:text-gray-600"
                     />
                   </div>
 
@@ -350,7 +350,7 @@ const KnowledgeCenter = () => {
                         value={documentCategory}
                         onChange={(e) => setDocumentCategory(e.target.value)}
                         placeholder="Ej: lecturas, recursos"
-                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg placeholder:text-gray-600"
                       />
                     </div>
                     <div className="space-y-2">
@@ -361,7 +361,7 @@ const KnowledgeCenter = () => {
                         value={documentTags}
                         onChange={(e) => setDocumentTags(e.target.value)}
                         placeholder="Ej: matemáticas, grado 10"
-                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg placeholder:text-gray-600"
                       />
                     </div>
                   </div>
