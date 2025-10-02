@@ -40,6 +40,20 @@ const KnowledgeCenter = () => {
     loadDocuments();
   }, []);
 
+  // Cerrar modal con tecla Escape
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && showUploadForm) {
+        setShowUploadForm(false);
+      }
+    };
+
+    if (showUploadForm) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showUploadForm]);
+
   const loadDocuments = async () => {
     try {
       setIsLoading(true);
@@ -250,9 +264,15 @@ const KnowledgeCenter = () => {
         {/* Upload Form Modal */}
         {showUploadForm && (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl max-w-2xl w-full shadow-2xl border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 px-6 py-4">
-                <div className="flex items-center space-x-3">
+            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 relative">
+              <div className="bg-gradient-to-r from-blue-600 to-green-600 px-6 py-4 relative">
+                <button
+                  onClick={() => setShowUploadForm(false)}
+                  className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors duration-200"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+                <div className="flex items-center space-x-3 pr-8">
                   <div className="bg-white/20 p-2 rounded-lg">
                     <Upload className="h-6 w-6 text-white" />
                   </div>
@@ -367,12 +387,13 @@ const KnowledgeCenter = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+                <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
                   <Button
                     variant="outline"
                     onClick={() => setShowUploadForm(false)}
                     className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
                   >
+                    <X className="h-4 w-4 mr-2" />
                     Cancelar
                   </Button>
                   <Button
