@@ -18,19 +18,9 @@ import {
   Plus,
   AlertCircle
 } from 'lucide-react';
+import { documentsService, Document } from '@/services/documentsService';
 
-interface Document {
-  id: string;
-  title: string;
-  description: string;
-  filename: string;
-  fileType: string;
-  fileSize: number;
-  uploadDate: string;
-  status: 'processing' | 'ready' | 'error';
-  content?: string;
-  chunks?: string[];
-}
+// Document interface is now imported from documentsService
 
 const KnowledgeCenter = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -42,6 +32,8 @@ const KnowledgeCenter = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentDescription, setDocumentDescription] = useState('');
+  const [documentCategory, setDocumentCategory] = useState('');
+  const [documentTags, setDocumentTags] = useState('');
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
   useEffect(() => {
@@ -53,45 +45,8 @@ const KnowledgeCenter = () => {
       setIsLoading(true);
       setError(null);
       
-      // Simular carga de documentos (en producción vendría del backend)
-      const mockDocuments: Document[] = [
-        {
-          id: '1',
-          title: 'Currículo de Matemáticas - Grado 10',
-          description: 'Documento oficial del currículo de matemáticas para grado 10',
-          filename: 'curriculo-matematicas-g10.pdf',
-          fileType: 'PDF',
-          fileSize: 2048576,
-          uploadDate: '2024-09-18T10:00:00Z',
-          status: 'ready',
-          content: 'Contenido del currículo de matemáticas...',
-          chunks: ['Álgebra lineal', 'Geometría analítica', 'Funciones trigonométricas']
-        },
-        {
-          id: '2',
-          title: 'Guía de Física - Mecánica',
-          description: 'Guía de estudio para el tema de mecánica en física',
-          filename: 'guia-fisica-mecanica.pdf',
-          fileType: 'PDF',
-          fileSize: 1536000,
-          uploadDate: '2024-09-17T15:30:00Z',
-          status: 'ready',
-          content: 'Contenido de la guía de física...',
-          chunks: ['Leyes de Newton', 'Cinemática', 'Dinámica']
-        },
-        {
-          id: '3',
-          title: 'Historia de Colombia - Siglo XIX',
-          description: 'Material de estudio sobre la historia de Colombia en el siglo XIX',
-          filename: 'historia-colombia-siglo19.docx',
-          fileType: 'DOCX',
-          fileSize: 1024000,
-          uploadDate: '2024-09-16T09:15:00Z',
-          status: 'processing'
-        }
-      ];
-      
-      setDocuments(mockDocuments);
+      const response = await documentsService.getDocuments();
+      setDocuments(response.data);
     } catch (err: any) {
       setError('Error al cargar documentos: ' + err.message);
       console.error('Error loading documents:', err);
@@ -123,33 +78,25 @@ const KnowledgeCenter = () => {
       setUploading(true);
       setError(null);
 
-      // Simular upload (en producción se enviaría al backend)
-      const newDocument: Document = {
-        id: Date.now().toString(),
+      const tagsArray = documentTags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+      
+      const response = await documentsService.uploadDocument({
         title: documentTitle,
         description: documentDescription,
-        filename: selectedFile.name,
-        fileType: selectedFile.name.split('.').pop()?.toUpperCase() || 'UNKNOWN',
-        fileSize: selectedFile.size,
-        uploadDate: new Date().toISOString(),
-        status: 'processing'
-      };
+        file: selectedFile,
+        category: documentCategory || 'general',
+        tags: tagsArray
+      });
 
-      setDocuments(prev => [newDocument, ...prev]);
-      
-      // Simular procesamiento
-      setTimeout(() => {
-        setDocuments(prev => prev.map(doc => 
-          doc.id === newDocument.id 
-            ? { ...doc, status: 'ready', content: 'Contenido procesado...', chunks: ['Chunk 1', 'Chunk 2'] }
-            : doc
-        ));
-      }, 3000);
+      // Agregar el nuevo documento a la lista
+      setDocuments(prev => [response.data, ...prev]);
 
       // Reset form
       setSelectedFile(null);
       setDocumentTitle('');
       setDocumentDescription('');
+      setDocumentCategory('');
+      setDocumentTags('');
       setShowUploadForm(false);
       
     } catch (err: any) {
@@ -161,7 +108,28 @@ const KnowledgeCenter = () => {
 
   const handleDelete = async (documentId: string) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este documento?')) {
-      setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      try {
+        await documentsService.deleteDocument(documentId);
+        setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      } catch (err: any) {
+        setError('Error al eliminar documento: ' + err.message);
+      }
+    }
+  };
+
+  const handleDownload = async (documentId: string, filename: string) => {
+    try {
+      const blob = await documentsService.downloadDocument(documentId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      setError('Error al descargar documento: ' + err.message);
     }
   };
 
@@ -185,18 +153,18 @@ const KnowledgeCenter = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ready': return 'bg-green-100 text-green-800';
-      case 'processing': return 'bg-yellow-100 text-yellow-800';
-      case 'error': return 'bg-red-100 text-red-800';
+      case 'READY': return 'bg-green-100 text-green-800';
+      case 'PROCESSING': return 'bg-yellow-100 text-yellow-800';
+      case 'ERROR': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'ready': return 'Listo';
-      case 'processing': return 'Procesando';
-      case 'error': return 'Error';
+      case 'READY': return 'Listo';
+      case 'PROCESSING': return 'Procesando';
+      case 'ERROR': return 'Error';
       default: return 'Desconocido';
     }
   };
@@ -324,6 +292,28 @@ const KnowledgeCenter = () => {
                       rows={3}
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Categoría
+                    </label>
+                    <Input
+                      value={documentCategory}
+                      onChange={(e) => setDocumentCategory(e.target.value)}
+                      placeholder="Ej: lecturas, recursos, evaluaciones"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tags (separados por comas)
+                    </label>
+                    <Input
+                      value={documentTags}
+                      onChange={(e) => setDocumentTags(e.target.value)}
+                      placeholder="Ej: matemáticas, grado 10, álgebra"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex justify-end space-x-2 mt-6">
@@ -393,7 +383,32 @@ const KnowledgeCenter = () => {
                   </div>
                   
                   <div className="text-xs text-gray-500">
-                    Subido: {formatDate(document.uploadDate)}
+                    Subido: {formatDate(document.createdAt)}
+                  </div>
+
+                  {/* Category and Tags */}
+                  <div className="space-y-2">
+                    {document.category && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-700">Categoría:</span>
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          {document.category}
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {document.tags && document.tags.length > 0 && (
+                      <div>
+                        <span className="text-xs font-medium text-gray-700">Tags:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {document.tags.map((tag, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Chunks preview */}
@@ -437,7 +452,8 @@ const KnowledgeCenter = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={document.status !== 'ready'}
+                      disabled={document.status !== 'READY'}
+                      onClick={() => handleDownload(document.id, document.filename)}
                     >
                       <Download className="h-3 w-3 mr-1" />
                       Descargar
@@ -467,7 +483,7 @@ const KnowledgeCenter = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="font-medium">Archivo:</span> {selectedDocument.filename}
+                      <span className="font-medium">Archivo:</span> {selectedDocument.originalName || selectedDocument.filename}
                     </div>
                     <div>
                       <span className="font-medium">Tipo:</span> {selectedDocument.fileType}
@@ -480,6 +496,12 @@ const KnowledgeCenter = () => {
                       <Badge className={`ml-2 ${getStatusColor(selectedDocument.status)}`}>
                         {getStatusText(selectedDocument.status)}
                       </Badge>
+                    </div>
+                    <div>
+                      <span className="font-medium">Categoría:</span> {selectedDocument.category || 'Sin categoría'}
+                    </div>
+                    <div>
+                      <span className="font-medium">Tags:</span> {selectedDocument.tags?.join(', ') || 'Sin tags'}
                     </div>
                   </div>
                   
