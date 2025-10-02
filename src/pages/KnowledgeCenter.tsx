@@ -16,7 +16,8 @@ import {
   Brain,
   RefreshCw,
   Plus,
-  AlertCircle
+  AlertCircle,
+  X
 } from 'lucide-react';
 import { documentsService, Document } from '@/services/documentsService';
 
