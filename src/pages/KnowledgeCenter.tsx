@@ -249,86 +249,148 @@ const KnowledgeCenter = () => {
 
         {/* Upload Form Modal */}
         {showUploadForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-2xl w-full">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4">Subir Nuevo Documento</h2>
-                
-                <div className="space-y-4">
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl max-w-2xl w-full shadow-2xl border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-green-600 px-6 py-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white/20 p-2 rounded-lg">
+                    <Upload className="h-6 w-6 text-white" />
+                  </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Archivo
+                    <h2 className="text-2xl font-bold text-white">Subir Nuevo Documento</h2>
+                    <p className="text-blue-100 text-sm">Comparte tu conocimiento con la comunidad</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                
+                <div className="space-y-6">
+                  {/* File Upload Area */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-3">
+                      📁 Seleccionar Archivo
                     </label>
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx,.txt,.md"
-                      onChange={handleFileSelect}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Formatos soportados: PDF, DOC, DOCX, TXT, MD
-                    </p>
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors duration-200">
+                      <div className="space-y-4">
+                        <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Upload className="h-8 w-8 text-blue-600" />
+                        </div>
+                        <div>
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx,.txt,.md"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                            id="file-upload-modal"
+                          />
+                          <label 
+                            htmlFor="file-upload-modal"
+                            className="cursor-pointer inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Seleccionar Archivo
+                          </label>
+                        </div>
+                        {selectedFile ? (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div className="flex items-center space-x-2">
+                              <FileText className="h-5 w-5 text-green-600" />
+                              <div className="text-left">
+                                <p className="text-sm font-medium text-green-800">{selectedFile.name}</p>
+                                <p className="text-xs text-green-600">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">
+                            Arrastra y suelta tu archivo aquí o haz clic para seleccionar
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400">
+                          Formatos soportados: PDF, DOC, DOCX, TXT, MD (máx. 10MB)
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Título del Documento
+                  {/* Document Title */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
+                      📝 Título del Documento
                     </label>
                     <Input
                       value={documentTitle}
                       onChange={(e) => setDocumentTitle(e.target.value)}
                       placeholder="Ej: Currículo de Matemáticas - Grado 10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Descripción
+                  {/* Description */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
+                      📄 Descripción
                     </label>
                     <Textarea
                       value={documentDescription}
                       onChange={(e) => setDocumentDescription(e.target.value)}
                       placeholder="Describe el contenido y propósito del documento..."
                       rows={3}
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg resize-none"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Categoría
-                    </label>
-                    <Input
-                      value={documentCategory}
-                      onChange={(e) => setDocumentCategory(e.target.value)}
-                      placeholder="Ej: lecturas, recursos, evaluaciones"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tags (separados por comas)
-                    </label>
-                    <Input
-                      value={documentTags}
-                      onChange={(e) => setDocumentTags(e.target.value)}
-                      placeholder="Ej: matemáticas, grado 10, álgebra"
-                    />
+                  {/* Category and Tags Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">
+                        🏷️ Categoría
+                      </label>
+                      <Input
+                        value={documentCategory}
+                        onChange={(e) => setDocumentCategory(e.target.value)}
+                        placeholder="Ej: lecturas, recursos"
+                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">
+                        🏷️ Tags
+                      </label>
+                      <Input
+                        value={documentTags}
+                        onChange={(e) => setDocumentTags(e.target.value)}
+                        placeholder="Ej: matemáticas, grado 10"
+                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2 mt-6">
+                <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
                   <Button
                     variant="outline"
                     onClick={() => setShowUploadForm(false)}
+                    className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
                   >
                     Cancelar
                   </Button>
                   <Button
                     onClick={handleUpload}
                     disabled={uploading || !selectedFile}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white rounded-lg font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                   >
-                    {uploading ? 'Subiendo...' : 'Subir Documento'}
+                    {uploading ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Subiendo...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Subir Documento
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
