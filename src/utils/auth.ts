@@ -48,26 +48,30 @@ export const userManager = {
 // Role checking utilities
 export const roleUtils = {
   isTeacher: (user: User | null): boolean => {
-    return user?.role === 'teacher';
+    return user?.role === 'TEACHER';
   },
 
   isAdmin: (user: User | null): boolean => {
-    return user?.role === 'admin';
+    return user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+  },
+
+  isSuperAdmin: (user: User | null): boolean => {
+    return user?.role === 'SUPER_ADMIN';
   },
 
   canManageClasses: (user: User | null): boolean => {
     console.log('🔍 canManageClasses check - user:', user, 'role:', user?.role);
-    const result = user?.role === 'teacher' || user?.role === 'admin';
+    const result = user?.role === 'TEACHER' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
     console.log('🔍 canManageClasses result:', result);
     return result;
   },
 
   canManageStudents: (user: User | null): boolean => {
-    return user?.role === 'teacher' || user?.role === 'admin';
+    return user?.role === 'TEACHER' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   },
 
   canViewAnalytics: (user: User | null): boolean => {
-    return user?.role === 'admin';
+    return user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   },
 };
 
@@ -102,8 +106,18 @@ export const routeUtils = {
     return !publicRoutes.includes(path);
   },
 
-  requiresRole: (path: string, requiredRole: 'teacher' | 'admin'): boolean => {
+  requiresRole: (path: string, requiredRole: 'teacher' | 'admin' | 'super_admin'): boolean => {
     const adminRoutes = ['/admin', '/analytics', '/users'];
-    return adminRoutes.some(route => path.startsWith(route)) && requiredRole === 'admin';
+    const superAdminRoutes = ['/admin'];
+    
+    if (superAdminRoutes.some(route => path.startsWith(route))) {
+      return requiredRole === 'super_admin';
+    }
+    
+    if (adminRoutes.some(route => path.startsWith(route))) {
+      return requiredRole === 'admin' || requiredRole === 'super_admin';
+    }
+    
+    return true;
   },
 };

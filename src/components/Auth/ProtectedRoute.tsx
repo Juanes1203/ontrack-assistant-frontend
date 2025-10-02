@@ -42,15 +42,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (requiredRole) {
     let hasRequiredRole = false;
     
+    console.log('🔐 Role check - requiredRole:', requiredRole, 'user.role:', user?.role);
+    
     if (requiredRole === 'super_admin') {
       hasRequiredRole = user?.role === 'SUPER_ADMIN';
     } else if (requiredRole === 'admin') {
-      hasRequiredRole = roleUtils.isAdmin(user);
-    } else {
-      hasRequiredRole = roleUtils.canManageClasses(user);
+      hasRequiredRole = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    } else if (requiredRole === 'teacher') {
+      hasRequiredRole = user?.role === 'TEACHER' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
     }
 
-    console.log('🔐 Role check - requiredRole:', requiredRole, 'user.role:', user?.role, 'hasRequiredRole:', hasRequiredRole);
+    console.log('🔐 Role check result - hasRequiredRole:', hasRequiredRole);
 
     if (!hasRequiredRole) {
       console.log('🚫 Access denied - insufficient role');
