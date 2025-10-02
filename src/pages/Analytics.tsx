@@ -89,8 +89,8 @@ const Analytics = () => {
       setIsLoading(true);
       setError(null);
       
-      // Obtener todos los análisis directamente
-      const response = await classesService.getAllAnalyses();
+      // Obtener análisis del usuario actual (seguro)
+      const response = await classesService.getUserAnalyses(1, 100);
       const analysesData = response.data.analyses as AnalysisData[] || [];
       
       // Obtener información de las clases

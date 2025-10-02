@@ -71,8 +71,8 @@ export const classesService = {
     return api.get(`/classes/${classId}/analyses`);
   },
 
-  // Get all analyses (for Analytics page)
-  getAllAnalyses: async () => {
-    return api.get('/analysis/debug-all');
+  // Get user's analyses (secure)
+  getUserAnalyses: async (page = 1, limit = 10) => {
+    return api.get(`/analysis/user?page=${page}&limit=${limit}`);
   },
 };
