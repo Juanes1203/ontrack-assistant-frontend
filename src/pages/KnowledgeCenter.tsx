@@ -397,11 +397,13 @@ const KnowledgeCenter = () => {
                       </div>
                     )}
                     
-                    {document.tags && document.tags.length > 0 && (
+                    {document.tags && (
                       <div>
                         <span className="text-xs font-medium text-gray-700">Tags:</span>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {document.tags.map((tag, index) => (
+                          {(Array.isArray(document.tags) ? document.tags : 
+                            typeof document.tags === 'string' ? JSON.parse(document.tags || '[]') : 
+                            []).map((tag, index) => (
                             <Badge key={index} variant="outline" className="text-xs">
                               {tag}
                             </Badge>
@@ -501,7 +503,16 @@ const KnowledgeCenter = () => {
                       <span className="font-medium">Categoría:</span> {selectedDocument.category || 'Sin categoría'}
                     </div>
                     <div>
-                      <span className="font-medium">Tags:</span> {selectedDocument.tags?.join(', ') || 'Sin tags'}
+                      <span className="font-medium">Tags:</span> {
+                        selectedDocument.tags ? 
+                          (Array.isArray(selectedDocument.tags) ? 
+                            selectedDocument.tags.join(', ') : 
+                            typeof selectedDocument.tags === 'string' ? 
+                              JSON.parse(selectedDocument.tags || '[]').join(', ') : 
+                              'Sin tags'
+                          ) : 
+                          'Sin tags'
+                      }
                     </div>
                   </div>
                   
