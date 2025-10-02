@@ -232,12 +232,12 @@ const KnowledgeCenter = () => {
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
           <Input
             placeholder="Buscar documentos por título, descripción o nombre de archivo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 text-gray-800 placeholder:text-gray-600 border-gray-300 focus:border-blue-500"
           />
         </div>
 
@@ -357,7 +357,7 @@ const KnowledgeCenter = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDocuments.map((document) => (
-              <Card key={document.id} className="hover:shadow-lg transition-shadow border border-gray-200">
+              <Card key={document.id} className="hover:shadow-lg transition-shadow border border-gray-200 h-fit">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -436,13 +436,13 @@ const KnowledgeCenter = () => {
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                    <div className="flex space-x-2">
+                  <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                    <div className="flex justify-center space-x-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => setSelectedDocument(document)}
-                        className="text-blue-600 hover:bg-blue-50 border-blue-200"
+                        className="text-blue-600 hover:bg-blue-50 border-blue-200 flex-1"
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         Ver
@@ -451,7 +451,7 @@ const KnowledgeCenter = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => handleDelete(document.id)}
-                        className="text-red-600 hover:bg-red-50 border-red-200"
+                        className="text-red-600 hover:bg-red-50 border-red-200 flex-1"
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
                         Eliminar
@@ -462,7 +462,7 @@ const KnowledgeCenter = () => {
                       variant="outline"
                       disabled={document.status !== 'READY'}
                       onClick={() => handleDownload(document.id, document.filename)}
-                      className="text-green-600 hover:bg-green-50 border-green-200 disabled:opacity-50"
+                      className="text-green-600 hover:bg-green-50 border-green-200 disabled:opacity-50 w-full"
                     >
                       <Download className="h-4 w-4 mr-1" />
                       Descargar
