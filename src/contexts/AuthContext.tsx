@@ -34,6 +34,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Check if user is authenticated
   const isAuthenticated = !!user;
   
+  // Helper function to normalize role to uppercase
+  const normalizeRole = (role: string): 'TEACHER' | 'ADMIN' | 'SUPER_ADMIN' => {
+    const upperRole = role.toUpperCase();
+    if (upperRole === 'SUPER_ADMIN') return 'SUPER_ADMIN';
+    if (upperRole === 'ADMIN') return 'ADMIN';
+    return 'TEACHER';
+  };
+  
   console.log('🔍 AuthContext - user:', user, 'isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
 
   // Initialize auth state from localStorage
@@ -51,8 +59,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         if (token && userData) {
           const parsedUser = JSON.parse(userData);
-          console.log('👤 Found user in localStorage:', parsedUser);
-          setUser(parsedUser);
+          // Normalize role to uppercase
+          const normalizedUser = {
+            ...parsedUser,
+            role: normalizeRole(parsedUser.role)
+          };
+          console.log('👤 Found user in localStorage:', normalizedUser);
+          setUser(normalizedUser);
           
           // Verify token is still valid by refreshing user data
           await refreshUser();
@@ -89,10 +102,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Extract data from the API response
       const { user, token, expiresIn } = response.data;
       
-      // Normalize role to lowercase
+      // Normalize role to uppercase
       const normalizedUser = {
         ...user,
-        role: user.role.toLowerCase() as 'teacher' | 'admin'
+        role: normalizeRole(user.role)
       };
       
       // Store token and user data
@@ -124,10 +137,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Extract data from the API response
       const { user, token, expiresIn } = response.data;
       
-      // Normalize role to lowercase
+      // Normalize role to uppercase
       const normalizedUser = {
         ...user,
-        role: user.role.toLowerCase() as 'teacher' | 'admin'
+        role: normalizeRole(user.role)
       };
       
       // Store token and user data
@@ -166,10 +179,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await api.get('/auth/me');
       console.log('✅ User refresh response:', response);
       
-      // Normalize role to lowercase
+      // Normalize role to uppercase
       const normalizedUser = {
         ...response.data,
-        role: response.data.role.toLowerCase() as 'teacher' | 'admin'
+        role: normalizeRole(response.data.role)
       };
       
       console.log('👤 Refreshed user:', normalizedUser);

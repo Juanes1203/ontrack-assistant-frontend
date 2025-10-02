@@ -25,8 +25,15 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
   ];
 
   // Agregar enlace de administración solo para SUPER_ADMIN
+  console.log('🔍 LeftSidebar - user:', user);
+  console.log('🔍 LeftSidebar - user.role:', user?.role);
+  console.log('🔍 LeftSidebar - is SUPER_ADMIN?', user?.role === 'SUPER_ADMIN');
+  
   if (user?.role === 'SUPER_ADMIN') {
+    console.log('✅ Adding Admin link to sidebar');
     navigationItems.push({ icon: Shield, label: 'Administración', href: '/admin' });
+  } else {
+    console.log('❌ Not adding Admin link - user role:', user?.role);
   }
 
   const handleNavigation = (href: string) => {
