@@ -357,41 +357,45 @@ const KnowledgeCenter = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDocuments.map((document) => (
-              <Card key={document.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
+              <Card key={document.id} className="hover:shadow-lg transition-shadow border border-gray-200">
+                <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
-                    <div className="flex items-center space-x-2">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                      <div>
-                        <CardTitle className="text-lg">{document.title}</CardTitle>
-                        <CardDescription className="mt-1">
-                          {document.filename}
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <FileText className="h-6 w-6 text-blue-600 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="text-lg font-semibold text-gray-900 truncate">
+                          {document.title}
+                        </CardTitle>
+                        <CardDescription className="mt-1 text-sm text-gray-600 truncate">
+                          {document.originalName || document.filename}
                         </CardDescription>
                       </div>
                     </div>
-                    <Badge className={getStatusColor(document.status)}>
+                    <Badge className={`ml-2 flex-shrink-0 ${getStatusColor(document.status)}`}>
                       {getStatusText(document.status)}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-gray-600">{document.description}</p>
+                <CardContent className="space-y-4 pt-0">
+                  {document.description && (
+                    <p className="text-sm text-gray-700 leading-relaxed">{document.description}</p>
+                  )}
                   
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{document.fileType}</span>
-                    <span>{formatFileSize(document.fileSize)}</span>
+                  <div className="flex items-center justify-between text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md">
+                    <span className="font-medium">{document.fileType}</span>
+                    <span className="font-medium">{formatFileSize(document.fileSize)}</span>
                   </div>
                   
-                  <div className="text-xs text-gray-500">
-                    Subido: {formatDate(document.createdAt)}
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium">Subido:</span> {formatDate(document.createdAt)}
                   </div>
 
                   {/* Category and Tags */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {document.category && (
                       <div>
-                        <span className="text-xs font-medium text-gray-700">Categoría:</span>
-                        <Badge variant="outline" className="ml-2 text-xs">
+                        <span className="text-sm font-semibold text-gray-800">Categoría:</span>
+                        <Badge variant="outline" className="ml-2 text-sm bg-blue-50 text-blue-700 border-blue-200">
                           {document.category}
                         </Badge>
                       </div>
@@ -399,12 +403,12 @@ const KnowledgeCenter = () => {
                     
                     {document.tags && (
                       <div>
-                        <span className="text-xs font-medium text-gray-700">Tags:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        <span className="text-sm font-semibold text-gray-800">Tags:</span>
+                        <div className="flex flex-wrap gap-2 mt-2">
                           {(Array.isArray(document.tags) ? document.tags : 
                             typeof document.tags === 'string' ? JSON.parse(document.tags || '[]') : 
                             []).map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
+                            <Badge key={index} variant="outline" className="text-sm bg-green-50 text-green-700 border-green-200">
                               {tag}
                             </Badge>
                           ))}
@@ -415,16 +419,16 @@ const KnowledgeCenter = () => {
 
                   {/* Chunks preview */}
                   {document.chunks && document.chunks.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-gray-700 mb-1">Fragmentos procesados:</p>
-                      <div className="flex flex-wrap gap-1">
+                    <div className="bg-gray-50 p-3 rounded-md">
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Fragmentos procesados:</p>
+                      <div className="flex flex-wrap gap-2">
                         {document.chunks.slice(0, 3).map((chunk, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
+                          <Badge key={index} variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
                             {chunk}
                           </Badge>
                         ))}
                         {document.chunks.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs bg-gray-100 text-gray-600">
                             +{document.chunks.length - 3} más
                           </Badge>
                         )}
@@ -432,22 +436,24 @@ const KnowledgeCenter = () => {
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center pt-2 border-t">
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-200">
                     <div className="flex space-x-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => setSelectedDocument(document)}
+                        className="text-blue-600 hover:bg-blue-50 border-blue-200"
                       >
-                        <Eye className="h-3 w-3 mr-1" />
+                        <Eye className="h-4 w-4 mr-1" />
                         Ver
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleDelete(document.id)}
+                        className="text-red-600 hover:bg-red-50 border-red-200"
                       >
-                        <Trash2 className="h-3 w-3 mr-1" />
+                        <Trash2 className="h-4 w-4 mr-1" />
                         Eliminar
                       </Button>
                     </div>
@@ -456,8 +462,9 @@ const KnowledgeCenter = () => {
                       variant="outline"
                       disabled={document.status !== 'READY'}
                       onClick={() => handleDownload(document.id, document.filename)}
+                      className="text-green-600 hover:bg-green-50 border-green-200 disabled:opacity-50"
                     >
-                      <Download className="h-3 w-3 mr-1" />
+                      <Download className="h-4 w-4 mr-1" />
                       Descargar
                     </Button>
                   </div>

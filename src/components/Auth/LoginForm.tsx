@@ -49,14 +49,14 @@ export const LoginForm: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto mb-4">
+          <div className="mx-auto mb-6 flex justify-center">
             <img 
               src="/LogInLogo.png" 
               alt="OnTrack Assistant" 
-              className="mx-auto"
+              className="max-h-20 w-auto object-contain"
               style={{
-                height: '60px',
-                width: '427px',
+                maxWidth: '300px',
+                height: 'auto',
                 imageRendering: 'auto'
               }}
             />
