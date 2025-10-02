@@ -4,8 +4,9 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'teacher' | 'admin';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'TEACHER';
   schoolId: string;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -100,7 +101,7 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
-  role: 'teacher' | 'admin';
+  role: 'ADMIN' | 'TEACHER';
   schoolId?: string;
 }
 
