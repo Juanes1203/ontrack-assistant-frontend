@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, GraduationCap, MessageSquare, FileText, Users, BarChart3, Brain, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, GraduationCap, MessageSquare, FileText, Users, BarChart3, Brain, BookOpen, ChevronLeft, ChevronRight, Shield } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import logoSuperior from '../../assets/LogoSuperiorR.png';
 import logoInferior from '../../assets/LogoInferior.png';
 
@@ -12,6 +13,7 @@ interface LeftSidebarProps {
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const navigationItems = [
     { icon: Home, label: 'Inicio', href: '/' },
@@ -21,6 +23,11 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
     { icon: MessageSquare, label: 'Feedback', href: '/feedback' },
     { icon: Users, label: 'Estudiantes', href: '/students' },
   ];
+
+  // Agregar enlace de administración solo para SUPER_ADMIN
+  if (user?.role === 'SUPER_ADMIN') {
+    navigationItems.push({ icon: Shield, label: 'Administración', href: '/admin' });
+  }
 
   const handleNavigation = (href: string) => {
     navigate(href);
@@ -44,6 +51,9 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
     }
     if (href === '/students') {
       return location.pathname === '/students';
+    }
+    if (href === '/admin') {
+      return location.pathname === '/admin';
     }
     return location.pathname.startsWith(href);
   };

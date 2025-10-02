@@ -20,6 +20,7 @@ import Documents from "./pages/Documents";
 import KnowledgeCenter from "./pages/KnowledgeCenter";
 import Students from "./pages/Students";
 import Feedback from "./pages/Feedback";
+import AdminPanel from "./pages/AdminPanel";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Unauthorized from "./pages/Unauthorized";
@@ -108,6 +109,11 @@ const App = () => (
                   <Route path="/feedback" element={
                     <ProtectedRoute requiredRole="teacher">
                       <Feedback />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin" element={
+                    <ProtectedRoute requiredRole="super_admin">
+                      <AdminPanel />
                     </ProtectedRoute>
                   } />
                   

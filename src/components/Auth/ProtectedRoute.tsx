@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'teacher' | 'admin';
+  requiredRole?: 'teacher' | 'admin' | 'super_admin';
   fallbackPath?: string;
 }
 
@@ -40,9 +40,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check role requirements
   if (requiredRole) {
-    const hasRequiredRole = requiredRole === 'admin' 
-      ? roleUtils.isAdmin(user) 
-      : roleUtils.canManageClasses(user);
+    let hasRequiredRole = false;
+    
+    if (requiredRole === 'super_admin') {
+      hasRequiredRole = user?.role === 'SUPER_ADMIN';
+    } else if (requiredRole === 'admin') {
+      hasRequiredRole = roleUtils.isAdmin(user);
+    } else {
+      hasRequiredRole = roleUtils.canManageClasses(user);
+    }
 
     console.log('🔐 Role check - requiredRole:', requiredRole, 'user.role:', user?.role, 'hasRequiredRole:', hasRequiredRole);
 
@@ -58,7 +64,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 // Higher-order component for easier usage
 export const withAuth = <P extends object>(
   Component: React.ComponentType<P>,
-  requiredRole?: 'teacher' | 'admin'
+  requiredRole?: 'teacher' | 'admin' | 'super_admin'
 ) => {
   return (props: P) => (
     <ProtectedRoute requiredRole={requiredRole}>
