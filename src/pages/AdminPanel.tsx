@@ -174,7 +174,7 @@ const AdminPanel = () => {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600">Cargando panel de administración...</p>
+            <p className="text-gray-800">Cargando panel de administración...</p>
           </div>
         </div>
       </MainLayout>
@@ -188,7 +188,7 @@ const AdminPanel = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Panel de Administración</h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-800 mt-1">
               Gestiona usuarios y permisos del sistema
             </p>
           </div>
@@ -222,7 +222,7 @@ const AdminPanel = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalUsers}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-gray-800">
                   Usuarios registrados
                 </p>
               </CardContent>
@@ -235,7 +235,7 @@ const AdminPanel = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-green-600">{stats.activeUsers}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-gray-800">
                   Usuarios activos
                 </p>
               </CardContent>
@@ -248,7 +248,7 @@ const AdminPanel = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-600">{stats.teachers}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-gray-800">
                   Profesores registrados
                 </p>
               </CardContent>
@@ -261,7 +261,7 @@ const AdminPanel = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-purple-600">{stats.admins}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-gray-800">
                   Administradores
                 </p>
               </CardContent>
@@ -276,7 +276,7 @@ const AdminPanel = () => {
             placeholder="Buscar usuarios por nombre o email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 text-gray-800 placeholder:text-gray-600 border-gray-300 focus:border-blue-500"
+            className="pl-10 text-gray-800 placeholder:text-gray-800 border-gray-300 focus:border-blue-500"
           />
         </div>
 
@@ -403,7 +403,7 @@ const AdminPanel = () => {
         <Card>
           <CardHeader>
             <CardTitle>Usuarios ({filteredUsers.length})</CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-800">
               Lista de todos los usuarios del sistema
             </CardDescription>
           </CardHeader>
@@ -433,7 +433,7 @@ const AdminPanel = () => {
                         <h3 className="font-medium text-gray-900">
                           {user.firstName} {user.lastName}
                         </h3>
-                        <p className="text-sm text-gray-600">{user.email}</p>
+                        <p className="text-sm text-gray-800">{user.email}</p>
                         <div className="flex items-center space-x-2 mt-1">
                           {getRoleBadge(user.role)}
                           <Badge variant="outline" className={`text-xs ${user.isActive ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}`}>
@@ -442,7 +442,7 @@ const AdminPanel = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <div className="flex items-center space-x-2 text-sm text-gray-800">
                       <span>Creado: {formatDate(user.createdAt)}</span>
                       {user.isActive && (
                         <Button

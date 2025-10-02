@@ -124,7 +124,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
                   }                   ${
                     active
                       ? 'text-white bg-white/20'
-                      : 'text-white/80 hover:text-white hover:bg-white/10'
+                      : 'text-white hover:text-white hover:bg-white/10'
                   }`}
                   title={isCollapsed ? item.label : undefined}
                 >
@@ -161,7 +161,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed, onToggle 
                   className="h-6 mx-auto object-contain"
                 />
               </div>
-              <p className="text-white/80 text-sm">Your Learning Partner</p>
+              <p className="text-white text-sm">Your Learning Partner</p>
             </>
           )}
           {isCollapsed && (
