@@ -66,7 +66,7 @@ const KnowledgeCenter = () => {
       setError(null);
       
       const response = await documentsService.getDocuments();
-      setDocuments(response.data);
+      setDocuments(response.data.documents);
     } catch (err: any) {
       setError('Error al cargar documentos: ' + err.message);
       console.error('Error loading documents:', err);
