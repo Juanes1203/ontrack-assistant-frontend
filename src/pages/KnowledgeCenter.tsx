@@ -19,7 +19,7 @@ import {
   AlertCircle,
   X
 } from 'lucide-react';
-import { documentsService, Document } from '@/services/documentsService';
+import { documentsService, Document, DocumentStats, SearchResult } from '@/services/documentsService';
 
 // Document interface is now imported from documentsService
 
@@ -36,9 +36,14 @@ const KnowledgeCenter = () => {
   const [documentCategory, setDocumentCategory] = useState('');
   const [documentTags, setDocumentTags] = useState('');
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [stats, setStats] = useState<DocumentStats | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
     loadDocuments();
+    loadStats();
   }, []);
 
   // Cerrar modal con tecla Escape
@@ -67,6 +72,46 @@ const KnowledgeCenter = () => {
       console.error('Error loading documents:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const response = await documentsService.getDocumentStats();
+      setStats(response.data);
+    } catch (err: any) {
+      console.error('Error loading stats:', err);
+    }
+  };
+
+  const handleSemanticSearch = async () => {
+    if (!searchTerm.trim()) return;
+    
+    try {
+      setIsSearching(true);
+      setError(null);
+      
+      const response = await documentsService.searchDocuments(searchTerm, 10);
+      setSearchResults(response.data);
+    } catch (err: any) {
+      setError('Error en búsqueda semántica: ' + err.message);
+      console.error('Error in semantic search:', err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleReprocessDocument = async (documentId: string) => {
+    if (window.confirm('¿Estás seguro de que quieres re-procesar este documento? Esto puede tomar unos minutos.')) {
+      try {
+        await documentsService.reprocessDocument(documentId);
+        setError(null);
+        // Recargar documentos y estadísticas
+        await loadDocuments();
+        await loadStats();
+      } catch (err: any) {
+        setError('Error al re-procesar documento: ' + err.message);
+      }
     }
   };
 
@@ -105,6 +150,9 @@ const KnowledgeCenter = () => {
 
       // Agregar el nuevo documento a la lista
       setDocuments(prev => [response.data, ...prev]);
+
+      // Recargar estadísticas
+      await loadStats();
 
       // Reset form
       setSelectedFile(null);
@@ -170,6 +218,7 @@ const KnowledgeCenter = () => {
     switch (status) {
       case 'READY': return 'bg-green-100 text-green-800';
       case 'PROCESSING': return 'bg-yellow-100 text-yellow-800';
+      case 'VECTORIZED': return 'bg-blue-100 text-blue-800';
       case 'ERROR': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -179,6 +228,7 @@ const KnowledgeCenter = () => {
     switch (status) {
       case 'READY': return 'Listo';
       case 'PROCESSING': return 'Procesando';
+      case 'VECTORIZED': return 'Vectorizado';
       case 'ERROR': return 'Error';
       default: return 'Desconocido';
     }
@@ -216,6 +266,14 @@ const KnowledgeCenter = () => {
           </div>
           <div className="flex gap-2">
             <Button 
+              onClick={() => setShowStats(true)}
+              variant="outline"
+              className="border-purple-200 text-purple-700 hover:bg-purple-50"
+            >
+              <Brain className="h-4 w-4 mr-2" />
+              Estadísticas
+            </Button>
+            <Button 
               onClick={() => setShowUploadForm(true)}
               className="bg-blue-600 hover:bg-blue-700"
             >
@@ -246,20 +304,97 @@ const KnowledgeCenter = () => {
         </Card>
 
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
-          <Input
-            placeholder="Buscar documentos por título, descripción o nombre de archivo..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 text-gray-800 placeholder:text-gray-600 border-gray-300 focus:border-blue-500"
-          />
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+            <Input
+              placeholder="Buscar documentos por título, descripción o nombre de archivo..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 text-gray-800 placeholder:text-gray-600 border-gray-300 focus:border-blue-500"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSemanticSearch();
+                }
+              }}
+            />
+          </div>
+          
+          {searchTerm && (
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleSemanticSearch}
+                disabled={isSearching}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {isSearching ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Buscando...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="h-4 w-4 mr-2" />
+                    Búsqueda Semántica
+                  </>
+                )}
+              </Button>
+              <Button 
+                onClick={() => {
+                  setSearchResults(null);
+                  setSearchTerm('');
+                }}
+                variant="outline"
+              >
+                Limpiar
+              </Button>
+            </div>
+          )}
         </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-600">{error}</p>
           </div>
+        )}
+
+        {/* Search Results */}
+        {searchResults && (
+          <Card className="border-purple-200 bg-purple-50">
+            <CardHeader>
+              <CardTitle className="text-purple-800 flex items-center">
+                <Brain className="h-5 w-5 mr-2" />
+                Resultados de Búsqueda Semántica
+              </CardTitle>
+              <CardDescription>
+                Encontrados {searchResults.totalResults} resultados para "{searchResults.query}"
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {searchResults.results.length === 0 ? (
+                <p className="text-gray-600">No se encontraron documentos relevantes.</p>
+              ) : (
+                <div className="space-y-4">
+                  {searchResults.results.map((result, index) => (
+                    <div key={index} className="bg-white p-4 rounded-lg border border-purple-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold text-gray-800">{result.document.title}</h4>
+                        <Badge className="bg-purple-100 text-purple-800">
+                          {(result.similarity * 100).toFixed(1)}% relevancia
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">
+                        Categoría: {result.document.category || 'Sin categoría'}
+                      </p>
+                      <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded border-l-4 border-purple-400">
+                        "{result.chunk.text}"
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Upload Form Modal */}
@@ -541,6 +676,20 @@ const KnowledgeCenter = () => {
                         Eliminar
                       </Button>
                     </div>
+                    
+                    {/* Reprocess button for READY documents */}
+                    {document.status === 'READY' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleReprocessDocument(document.id)}
+                        className="text-purple-600 hover:bg-purple-50 border-purple-200 w-full"
+                      >
+                        <Brain className="h-4 w-4 mr-1" />
+                        Vectorizar
+                      </Button>
+                    )}
+                    
                     <Button
                       size="sm"
                       variant="outline"
@@ -633,6 +782,109 @@ const KnowledgeCenter = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats Modal */}
+        {showStats && stats && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 relative">
+              <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 relative">
+                <button
+                  onClick={() => setShowStats(false)}
+                  className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors duration-200"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+                <div className="flex items-center space-x-3 pr-8">
+                  <div className="bg-white/20 p-2 rounded-lg">
+                    <Brain className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Estadísticas del Centro de Conocimiento</h2>
+                    <p className="text-purple-100 text-sm">Resumen de documentos y vectorización</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="border-blue-200 bg-blue-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-blue-800 flex items-center">
+                        <FileText className="h-5 w-5 mr-2" />
+                        Documentos Totales
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-blue-600">{stats.totalDocuments}</div>
+                      <p className="text-sm text-blue-600">documentos subidos</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-green-200 bg-green-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-green-800 flex items-center">
+                        <Brain className="h-5 w-5 mr-2" />
+                        Documentos Vectorizados
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-green-600">{stats.vectorizedDocuments}</div>
+                      <p className="text-sm text-green-600">listos para RAG</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-purple-200 bg-purple-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-purple-800 flex items-center">
+                        <RefreshCw className="h-5 w-5 mr-2" />
+                        Fragmentos Totales
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-purple-600">{stats.totalChunks}</div>
+                      <p className="text-sm text-purple-600">chunks procesados</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-orange-200 bg-orange-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-orange-800 flex items-center">
+                        <BookOpen className="h-5 w-5 mr-2" />
+                        Categorías
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-orange-600">{stats.categories.length}</div>
+                      <p className="text-sm text-orange-600">categorías diferentes</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {stats.categories.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Distribución por Categorías</h3>
+                    <div className="space-y-2">
+                      {stats.categories.map((category, index) => (
+                        <div key={index} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                          <span className="font-medium text-gray-700">{category.category || 'Sin categoría'}</span>
+                          <Badge className="bg-blue-100 text-blue-800">{category.count} documentos</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+                  <Button
+                    onClick={() => setShowStats(false)}
+                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg font-medium shadow-lg"
+                  >
+                    Cerrar
+                  </Button>
                 </div>
               </div>
             </div>

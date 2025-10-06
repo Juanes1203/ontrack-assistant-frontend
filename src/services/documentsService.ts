@@ -14,7 +14,7 @@ export interface Document {
   tags: string[];
   content?: string;
   chunks?: string[];
-  status: 'PROCESSING' | 'READY' | 'ERROR';
+  status: 'PROCESSING' | 'READY' | 'ERROR' | 'VECTORIZED';
   teacherId: string;
   schoolId: string;
   createdAt: string;
@@ -27,6 +27,39 @@ export interface UploadDocumentData {
   file: File;
   category?: string;
   tags?: string[];
+}
+
+export interface DocumentStats {
+  totalDocuments: number;
+  vectorizedDocuments: number;
+  totalChunks: number;
+  categories: Array<{
+    category: string;
+    count: number;
+  }>;
+}
+
+export interface SearchResult {
+  query: string;
+  results: Array<{
+    chunk: {
+      id: string;
+      text: string;
+      index: number;
+      metadata?: any;
+      vector: number[];
+    };
+    document: {
+      id: string;
+      title: string;
+      category?: string;
+      teacherId: string;
+      schoolId: string;
+    };
+    similarity: number;
+    relevanceScore: number;
+  }>;
+  totalResults: number;
 }
 
 export const documentsService = {
@@ -76,6 +109,24 @@ export const documentsService = {
     const response = await apiClient.get(`/documents/${id}/download`, {
       responseType: 'blob',
     });
+    return response.data;
+  },
+
+  // Obtener estadísticas de documentos
+  async getDocumentStats(): Promise<{ success: boolean; data: DocumentStats }> {
+    const response = await apiClient.get('/documents/stats');
+    return response.data;
+  },
+
+  // Buscar documentos semánticamente
+  async searchDocuments(query: string, limit: number = 5): Promise<{ success: boolean; data: SearchResult }> {
+    const response = await apiClient.get(`/documents/search?query=${encodeURIComponent(query)}&limit=${limit}`);
+    return response.data;
+  },
+
+  // Re-procesar un documento para vectorización
+  async reprocessDocument(id: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post(`/documents/${id}/reprocess`);
     return response.data;
   },
 };
