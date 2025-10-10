@@ -556,6 +556,7 @@ const KnowledgeCenter = () => {
                       </>
                     )}
                   </Button>
+                  </div>
                 </div>
               </div>
             </div>
