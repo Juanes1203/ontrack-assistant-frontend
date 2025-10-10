@@ -399,37 +399,37 @@ const KnowledgeCenter = () => {
 
         {/* Upload Form Modal */}
         {showUploadForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-gray-100 relative">
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 px-6 py-4 relative rounded-t-xl">
+          <div className="fixed inset-0 bg-gray-900/40 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-xl border border-gray-200 relative">
+              {/* Header */}
+              <div className="bg-white border-b border-gray-200 px-6 py-5 relative">
                 <button
                   onClick={() => setShowUploadForm(false)}
-                  className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors duration-200"
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded-full hover:bg-gray-100"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" />
                 </button>
                 <div className="flex items-center space-x-3 pr-8">
-                  <div className="bg-white/20 p-2 rounded-lg">
-                    <Upload className="h-6 w-6 text-white" />
+                  <div className="bg-blue-50 p-3 rounded-xl">
+                    <Upload className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Subir Nuevo Documento</h2>
-                    <p className="text-blue-100 text-sm">Comparte tu conocimiento con la comunidad</p>
+                    <h2 className="text-xl font-semibold text-gray-900">Subir Nuevo Documento</h2>
+                    <p className="text-gray-500 text-sm">Comparte tu conocimiento con la comunidad</p>
                   </div>
                 </div>
               </div>
               <div className="p-6">
-                
                 <div className="space-y-6">
                   {/* File Upload Area */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-800 mb-3">
-                      📁 Seleccionar Archivo
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Seleccionar Archivo
                     </label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors duration-200">
-                      <div className="space-y-4">
-                        <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Upload className="h-8 w-8 text-blue-600" />
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-200">
+                      <div className="space-y-3">
+                        <div className="mx-auto w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Upload className="h-6 w-6 text-gray-400" />
                         </div>
                         <div>
                           <input
@@ -441,19 +441,19 @@ const KnowledgeCenter = () => {
                           />
                           <label 
                             htmlFor="file-upload-modal"
-                            className="cursor-pointer inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
+                            className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 text-sm font-medium"
                           >
                             <Upload className="h-4 w-4 mr-2" />
                             Seleccionar Archivo
                           </label>
                         </div>
                         {selectedFile ? (
-                          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
                             <div className="flex items-center space-x-2">
-                              <FileText className="h-5 w-5 text-green-600" />
+                              <FileText className="h-4 w-4 text-emerald-600" />
                               <div className="text-left">
-                                <p className="text-sm font-medium text-green-800">{selectedFile.name}</p>
-                                <p className="text-xs text-green-600">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                                <p className="text-sm font-medium text-emerald-900">{selectedFile.name}</p>
+                                <p className="text-xs text-emerald-600">{(selectedFile.size / 1024).toFixed(1)} KB</p>
                               </div>
                             </div>
                           </div>
@@ -471,71 +471,70 @@ const KnowledgeCenter = () => {
 
                   {/* Document Title */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-800 mb-2">
-                      📝 Título del Documento
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Título del Documento
                     </label>
                     <Input
                       value={documentTitle}
                       onChange={(e) => setDocumentTitle(e.target.value)}
                       placeholder="Ej: Currículo de Matemáticas - Grado 10"
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg placeholder:text-gray-600"
+                      className="border-gray-300 focus:border-gray-900 focus:ring-gray-900 rounded-lg placeholder:text-gray-400"
                     />
                   </div>
 
                   {/* Description */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-800 mb-2">
-                      📄 Descripción
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Descripción
                     </label>
                     <Textarea
                       value={documentDescription}
                       onChange={(e) => setDocumentDescription(e.target.value)}
                       placeholder="Describe el contenido y propósito del documento..."
                       rows={3}
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg resize-none placeholder:text-gray-600"
+                      className="border-gray-300 focus:border-gray-900 focus:ring-gray-900 rounded-lg resize-none placeholder:text-gray-400"
                     />
                   </div>
 
                   {/* Category and Tags Row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-gray-800 mb-2">
-                        🏷️ Categoría
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Categoría
                       </label>
                       <Input
                         value={documentCategory}
                         onChange={(e) => setDocumentCategory(e.target.value)}
                         placeholder="Ej: lecturas, recursos"
-                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg placeholder:text-gray-600"
+                        className="border-gray-300 focus:border-gray-900 focus:ring-gray-900 rounded-lg placeholder:text-gray-400"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-gray-800 mb-2">
-                        🏷️ Tags
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tags
                       </label>
                       <Input
                         value={documentTags}
                         onChange={(e) => setDocumentTags(e.target.value)}
                         placeholder="Ej: matemáticas, grado 10"
-                        className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg placeholder:text-gray-600"
+                        className="border-gray-300 focus:border-gray-900 focus:ring-gray-900 rounded-lg placeholder:text-gray-400"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                <div className="flex justify-end items-center gap-3 mt-8 pt-6 border-t border-gray-200">
                   <Button
                     variant="outline"
                     onClick={() => setShowUploadForm(false)}
-                    className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-medium"
+                    className="px-4 py-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-sm font-medium"
                   >
-                    <X className="h-4 w-4 mr-2" />
                     Cancelar
                   </Button>
                   <Button
                     onClick={handleUpload}
                     disabled={uploading || !selectedFile}
-                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white rounded-lg font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    className="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     {uploading ? (
                       <>

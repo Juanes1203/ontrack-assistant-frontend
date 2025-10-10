@@ -399,7 +399,7 @@ const Analytics = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-lg text-gray-900">{analysis.recording.title}</CardTitle>
-                      <CardDescription className="mt-1">
+                      <CardDescription className="mt-1 text-gray-700">
                         {classes.find(c => c.recordings?.some(r => r.analyses && r.analyses.includes(analysis)))?.name} - 
                         {classes.find(c => c.recordings?.some(r => r.analyses && r.analyses.includes(analysis)))?.subject}
                       </CardDescription>
