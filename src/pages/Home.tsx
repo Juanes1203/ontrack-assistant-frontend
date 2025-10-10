@@ -1,19 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/Layout';
-import { Search, Plus, BookOpen, Users, Clock, MapPin, Eye, BarChart3 } from 'lucide-react';
+import { Search, Plus, BookOpen, Users, Clock, MapPin, Eye, BarChart3, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '@/services/apiClient';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = React.useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [classes, setClasses] = useState<any[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const summaryData = [
+  // Cargar datos reales de la API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Obtener clases reales
+        const classesResponse = await apiClient.get('/classes');
+        const classesData = classesResponse.data.data || classesResponse.data || [];
+        setClasses(classesData);
+
+        // Obtener estadísticas reales del dashboard
+        const statsResponse = await apiClient.get('/dashboard/stats');
+        setDashboardStats(statsResponse.data.data || statsResponse.data);
+      } catch (error) {
+        console.error('Error cargando datos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Datos del resumen basados en stats reales
+  const summaryData = dashboardStats ? [
     {
       title: 'Total de Clases',
-      value: '4',
+      value: dashboardStats.totalClasses?.toString() || '0',
       icon: BookOpen,
       iconColor: 'text-green-600',
       bgColor: 'bg-white',
@@ -21,63 +50,30 @@ const Home = () => {
     },
     {
       title: 'Estudiantes Activos',
-      value: '95',
+      value: dashboardStats.totalStudents?.toString() || '0',
       icon: Users,
       iconColor: 'text-gray-600',
       bgColor: 'bg-white',
       borderColor: 'border-gray-200'
     },
     {
-      title: 'Esta Semana',
-      value: '12',
-      subtitle: 'Sesiones',
+      title: 'Grabaciones',
+      value: dashboardStats.totalRecordings?.toString() || '0',
+      subtitle: 'Total',
       icon: Clock,
       iconColor: 'text-green-600',
       bgColor: 'bg-pink-50',
       borderColor: 'border-pink-200'
     },
     {
-      title: 'Tasa de Finalización',
-      value: '94%',
-      icon: BookOpen,
+      title: 'Análisis Completados',
+      value: dashboardStats.completedAnalyses?.toString() || '0',
+      icon: BarChart3,
       iconColor: 'text-green-600',
       bgColor: 'bg-yellow-50',
       borderColor: 'border-yellow-200'
     }
-  ];
-
-  const classData = [
-    {
-      id: '1',
-      title: 'Matemáticas Avanzadas',
-      category: 'Matemáticas',
-      students: 28,
-      schedule: 'Lun, Mié, Vie - 09:00-10:30',
-      room: 'Sala 204',
-      image: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&h=250&fit=crop',
-      status: 'active'
-    },
-    {
-      id: '2',
-      title: 'Laboratorio de Física',
-      category: 'Física',
-      students: 20,
-      schedule: 'Mar, Jue - 14:00-15:30',
-      room: 'Laboratorio 1',
-      image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=250&fit=crop',
-      status: 'active'
-    },
-    {
-      id: '3',
-      title: 'Química Básica',
-      category: 'Química',
-      students: 25,
-      schedule: 'Lun, Mié - 10:00-11:30',
-      room: 'Sala 301',
-      image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&h=250&fit=crop',
-      status: 'active'
-    }
-  ];
+  ] : [];
 
   const handleViewDetails = (classId: string) => {
     navigate(`/class/${classId}`);
@@ -88,10 +84,10 @@ const Home = () => {
   };
 
   // Filtrar clases basado en el término de búsqueda
-  const filteredClasses = classData.filter(cls => 
-    cls.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cls.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cls.room.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredClasses = classes.filter(cls => 
+    cls.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cls.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cls.location?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -151,7 +147,13 @@ const Home = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+            <span className="ml-2 text-gray-600">Cargando datos...</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {summaryData.map((item, index) => {
             const Icon = item.icon;
             return (
@@ -177,6 +179,7 @@ const Home = () => {
             );
           })}
         </div>
+        )}
 
         {/* Class Cards */}
         <div>
@@ -184,52 +187,62 @@ const Home = () => {
             {searchTerm ? `Resultados de búsqueda para "${searchTerm}"` : 'Clases Recientes'}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-            {filteredClasses.length > 0 ? (
+            {loading ? (
+              <div className="col-span-full flex justify-center items-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+              </div>
+            ) : filteredClasses.length > 0 ? (
               filteredClasses.map((cls) => (
                 <div
                   key={cls.id}
                   className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200"
                 >
                 {/* Class Image */}
-                <div className="relative h-40 lg:h-48 bg-gray-200">
-                  <img
-                    src={cls.image}
-                    alt={cls.title}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="relative h-40 lg:h-48 bg-gradient-to-br from-green-400 to-green-600">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <BookOpen className="w-16 h-16 text-white opacity-50" />
+                  </div>
                   <Badge 
                     variant="secondary" 
-                    className="absolute top-3 right-3 bg-green-100 text-green-800 border-green-200"
+                    className={`absolute top-3 right-3 ${
+                      cls.status === 'COMPLETED' ? 'bg-green-100 text-green-800 border-green-200' :
+                      cls.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                      'bg-gray-100 text-gray-800 border-gray-200'
+                    }`}
                   >
-                    {cls.status}
+                    {cls.status === 'COMPLETED' ? 'Completada' :
+                     cls.status === 'IN_PROGRESS' ? 'En Curso' :
+                     cls.status === 'SCHEDULED' ? 'Programada' : cls.status}
                   </Badge>
                 </div>
 
                 {/* Class Content */}
                 <div className="p-4 lg:p-6">
                   <h3 className="text-lg lg:text-xl font-semibold text-gray-800 mb-2">
-                    {cls.title}
+                    {cls.name}
                   </h3>
                   
                   <Badge variant="outline" className="mb-4 text-gray-600 border-gray-300">
-                    {cls.category}
+                    {cls.subject}
                   </Badge>
 
                   {/* Class Details */}
                   <div className="space-y-2 lg:space-y-3 mb-4 lg:mb-6">
                     <div className="flex items-center space-x-2 text-gray-600">
                       <Users className="w-4 h-4" />
-                      <span className="text-sm">{cls.students} estudiantes</span>
+                      <span className="text-sm">
+                        {cls._count?.classStudents || cls.classStudents?.length || 0} estudiantes
+                      </span>
                     </div>
                     
                     <div className="flex items-center space-x-2 text-gray-600">
                       <Clock className="w-4 h-4" />
-                      <span className="text-sm">{cls.schedule}</span>
+                      <span className="text-sm">{cls.schedule || 'Sin horario'}</span>
                     </div>
                     
                     <div className="flex items-center space-x-2 text-gray-600">
                       <MapPin className="w-4 h-4" />
-                      <span className="text-sm">{cls.room}</span>
+                      <span className="text-sm">{cls.location || 'Sin ubicación'}</span>
                     </div>
                   </div>
 
