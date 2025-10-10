@@ -400,8 +400,8 @@ const KnowledgeCenter = () => {
         {/* Upload Form Modal */}
         {showUploadForm && (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100 relative">
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 px-6 py-4 relative">
+            <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-gray-100 relative">
+              <div className="bg-gradient-to-r from-blue-600 to-green-600 px-6 py-4 relative rounded-t-xl">
                 <button
                   onClick={() => setShowUploadForm(false)}
                   className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors duration-200"

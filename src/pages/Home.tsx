@@ -27,7 +27,9 @@ const Home = () => {
 
         // Obtener estadísticas reales del dashboard
         const statsResponse = await apiClient.get('/dashboard/stats');
-        setDashboardStats(statsResponse.data.data || statsResponse.data);
+        const statsData = statsResponse.data.data || statsResponse.data;
+        console.log('Dashboard stats received:', statsData);
+        setDashboardStats(statsData);
       } catch (error) {
         console.error('Error cargando datos:', error);
       } finally {
@@ -39,10 +41,10 @@ const Home = () => {
   }, []);
 
   // Datos del resumen basados en stats reales
-  const summaryData = dashboardStats ? [
+  const summaryData = dashboardStats?.overview ? [
     {
       title: 'Total de Clases',
-      value: dashboardStats.totalClasses?.toString() || '0',
+      value: dashboardStats.overview.totalClasses?.toString() || '0',
       icon: BookOpen,
       iconColor: 'text-green-600',
       bgColor: 'bg-white',
@@ -50,7 +52,7 @@ const Home = () => {
     },
     {
       title: 'Estudiantes Activos',
-      value: dashboardStats.totalStudents?.toString() || '0',
+      value: dashboardStats.overview.totalStudents?.toString() || '0',
       icon: Users,
       iconColor: 'text-gray-600',
       bgColor: 'bg-white',
@@ -58,7 +60,7 @@ const Home = () => {
     },
     {
       title: 'Grabaciones',
-      value: dashboardStats.totalRecordings?.toString() || '0',
+      value: dashboardStats.overview.totalRecordings?.toString() || '0',
       subtitle: 'Total',
       icon: Clock,
       iconColor: 'text-green-600',
@@ -67,7 +69,7 @@ const Home = () => {
     },
     {
       title: 'Análisis Completados',
-      value: dashboardStats.completedAnalyses?.toString() || '0',
+      value: dashboardStats.overview.totalAnalyses?.toString() || '0',
       icon: BarChart3,
       iconColor: 'text-green-600',
       bgColor: 'bg-yellow-50',
