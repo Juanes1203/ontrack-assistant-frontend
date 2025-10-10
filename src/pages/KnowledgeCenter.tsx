@@ -397,29 +397,35 @@ const KnowledgeCenter = () => {
           </Card>
         )}
 
-        {/* Upload Form Modal */}
+        {/* Upload Form Sidebar */}
         {showUploadForm && (
-          <div className="fixed inset-0 flex items-start justify-center p-4 z-50 overflow-y-auto">
-            <div className="bg-white rounded-2xl max-w-2xl w-full my-8 shadow-xl border border-gray-200 relative">
+          <div className="fixed inset-0 z-50 overflow-hidden">
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/20" onClick={() => setShowUploadForm(false)}></div>
+            
+            {/* Sidebar */}
+            <div className="absolute right-0 top-0 h-full w-full max-w-lg bg-white shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto">
               {/* Header */}
-              <div className="bg-white border-b border-gray-200 px-6 py-5 relative">
-                <button
-                  onClick={() => setShowUploadForm(false)}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded-full hover:bg-gray-100"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-                <div className="flex items-center space-x-3 pr-8">
-                  <div className="bg-blue-50 p-3 rounded-xl">
-                    <Upload className="h-6 w-6 text-blue-600" />
+              <div className="bg-white border-b border-gray-200 px-6 py-5 sticky top-0 z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-blue-50 p-3 rounded-xl">
+                      <Upload className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">Subir Nuevo Documento</h2>
+                      <p className="text-gray-500 text-sm">Comparte tu conocimiento con la comunidad</p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900">Subir Nuevo Documento</h2>
-                    <p className="text-gray-500 text-sm">Comparte tu conocimiento con la comunidad</p>
-                  </div>
+                  <button
+                    onClick={() => setShowUploadForm(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 rounded-full hover:bg-gray-100"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                 </div>
               </div>
-              <div className="p-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+              <div className="p-6 pb-24">
                 <div className="space-y-6">
                   {/* File Upload Area */}
                   <div>
@@ -523,7 +529,9 @@ const KnowledgeCenter = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-end items-center gap-3 mt-8 pt-6 border-t border-gray-200">
+                {/* Fixed Bottom Buttons */}
+                <div className="fixed bottom-0 right-0 w-full max-w-lg bg-white border-t border-gray-200 p-6">
+                  <div className="flex justify-end items-center gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setShowUploadForm(false)}
