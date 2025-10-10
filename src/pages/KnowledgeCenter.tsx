@@ -399,7 +399,7 @@ const KnowledgeCenter = () => {
 
         {/* Upload Form Modal */}
         {showUploadForm && (
-          <div className="fixed inset-0 bg-gray-900/40 flex items-center justify-center p-4 z-50">
+          <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-xl border border-gray-200 relative">
               {/* Header */}
               <div className="bg-white border-b border-gray-200 px-6 py-5 relative">
