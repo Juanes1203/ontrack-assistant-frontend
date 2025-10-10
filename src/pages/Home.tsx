@@ -78,6 +78,7 @@ const Home = () => {
   ] : [];
 
   const handleViewDetails = (classId: string) => {
+    console.log('Navigating to class details:', classId);
     navigate(`/class/${classId}`);
   };
 
