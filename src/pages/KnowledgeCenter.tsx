@@ -897,8 +897,7 @@ const KnowledgeCenter = () => {
             </div>
           </div>
         )}
-      </div>
-    </MainLayout>
+      </MainLayout>
   );
 };
 
