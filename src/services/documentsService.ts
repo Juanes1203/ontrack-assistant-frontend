@@ -82,7 +82,7 @@ export const documentsService = {
     if (data.tags && data.tags.length > 0) {
       formData.append('tags', JSON.stringify(data.tags));
     }
-    formData.append('file', data.file);
+    formData.append('document', data.file); // Cambiado de 'file' a 'document' para match con backend
 
     const response = await apiClient.post('/documents', formData, {
       headers: {
