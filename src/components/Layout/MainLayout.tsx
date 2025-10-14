@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LeftSidebar } from './LeftSidebar';
 import { TopBar } from './TopBar';
+import RightSidebar from './RightSidebar';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     return saved ? JSON.parse(saved) : false;
   });
   const [showShortcutHint, setShowShortcutHint] = useState(false);
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  const [recordingContext, setRecordingContext] = useState<{
+    className: string;
+    classId: string;
+  } | null>(null);
 
   const toggleSidebar = () => {
     const newState = !isSidebarCollapsed;
@@ -48,6 +54,27 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   }, []);
 
+  // Listen for recording events
+  useEffect(() => {
+    const handleRecordingStart = (event: CustomEvent) => {
+      setRecordingContext(event.detail);
+      setIsRightSidebarOpen(true);
+    };
+
+    const handleRecordingStop = () => {
+      setIsRightSidebarOpen(false);
+      setRecordingContext(null);
+    };
+
+    window.addEventListener('start-recording', handleRecordingStart as EventListener);
+    window.addEventListener('stop-recording', handleRecordingStop);
+
+    return () => {
+      window.removeEventListener('start-recording', handleRecordingStart as EventListener);
+      window.removeEventListener('stop-recording', handleRecordingStop);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#27bd2f' }}>
       <div className="flex h-screen">
@@ -71,6 +98,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </div>
           </main>
         </div>
+
+        {/* Right Sidebar - Recording Panel */}
+        {recordingContext && (
+          <RightSidebar
+            isOpen={isRightSidebarOpen}
+            onClose={() => setIsRightSidebarOpen(false)}
+            className={recordingContext.className}
+            classId={recordingContext.classId}
+          />
+        )}
       </div>
       
       {/* Keyboard Shortcut Hint */}

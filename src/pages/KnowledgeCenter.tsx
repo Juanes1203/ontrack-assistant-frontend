@@ -425,7 +425,7 @@ const KnowledgeCenter = () => {
                   </button>
                 </div>
               </div>
-              <div className="p-6 pb-24">
+              <div className="p-6 pb-32">
                 <div className="space-y-6">
                   {/* File Upload Area */}
                   <div>
@@ -497,8 +497,8 @@ const KnowledgeCenter = () => {
                       value={documentDescription}
                       onChange={(e) => setDocumentDescription(e.target.value)}
                       placeholder="Describe el contenido y propósito del documento..."
-                      rows={3}
-                      className="border-gray-300 focus:border-gray-900 focus:ring-gray-900 rounded-lg resize-none placeholder:text-gray-400"
+                      rows={4}
+                      className="border-gray-300 focus:border-gray-900 focus:ring-gray-900 rounded-lg resize-none placeholder:text-gray-400 min-h-[100px]"
                     />
                   </div>
 

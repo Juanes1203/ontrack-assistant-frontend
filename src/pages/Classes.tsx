@@ -21,6 +21,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { classesService } from '@/services/classesService';
 import { ClassRecordingModal } from '@/components/Classes/ClassRecordingModal';
+import TranscriptViewer from '@/components/Classes/TranscriptViewer';
 import { ClassAnalysisModal } from '@/components/Classes/ClassAnalysisModal';
 import { CreateTeacherForm } from '@/components/Admin/CreateTeacherForm';
 import { Class } from '@/types/api';
@@ -60,6 +61,8 @@ const Classes = () => {
   const [selectedClass, setSelectedClass] = useState<ClassWithDetails | null>(null);
   const [showCreateTeacher, setShowCreateTeacher] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [selectedRecordingId, setSelectedRecordingId] = useState<string | null>(null);
+  const [showTranscript, setShowTranscript] = useState(false);
 
   useEffect(() => {
     loadClasses();
@@ -87,6 +90,22 @@ const Classes = () => {
 
   const handleRecordingSaved = () => {
     loadClasses(); // Refresh classes to update recording count
+  };
+
+  const startRecording = (classItem: ClassWithDetails) => {
+    // Dispatch event to open right sidebar
+    const event = new CustomEvent('start-recording', {
+      detail: {
+        className: classItem.name,
+        classId: classItem.id
+      }
+    });
+    window.dispatchEvent(event);
+  };
+
+  const viewTranscript = (recordingId: string) => {
+    setSelectedRecordingId(recordingId);
+    setShowTranscript(true);
   };
 
   if (isLoading) {
@@ -211,7 +230,7 @@ const Classes = () => {
                   <div className="flex gap-2 pt-2">
                     <Button
                       size="sm"
-                      onClick={() => setSelectedClass(selectedClass?.id === classItem.id ? null : classItem)}
+                      onClick={() => startRecording(classItem)}
                       className="flex-1"
                     >
                       <Play className="h-4 w-4 mr-1" />
@@ -274,6 +293,18 @@ const Classes = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Transcript Viewer */}
+        {selectedRecordingId && (
+          <TranscriptViewer
+            recordingId={selectedRecordingId}
+            isOpen={showTranscript}
+            onClose={() => {
+              setShowTranscript(false);
+              setSelectedRecordingId(null);
+            }}
+          />
         )}
       </div>
     </MainLayout>

@@ -57,17 +57,52 @@ export const recordingsService = {
     return api.get(`/recordings/${recordingId}`);
   },
 
+  // Get formatted transcript for better display
+  async getRecordingTranscript(recordingId: string) {
+    return api.get(`/recordings/${recordingId}/transcript`);
+  },
+
   // Create a new recording
   async createRecording(data: CreateRecordingRequest) {
     return api.post('/recordings', data);
   },
 
-  // Start a class recording
+  // Start a class recording (live mode)
+  async startLiveRecording(data: { classId: string; title?: string; description?: string }) {
+    return api.post('/recordings/process', {
+      ...data,
+      isLive: true
+    });
+  },
+
+  // Update transcript in real-time during recording
+  async updateRecordingTranscript(recordingId: string, transcript: string, confidence?: number) {
+    return api.patch(`/recordings/${recordingId}/transcript`, {
+      transcript,
+      confidence,
+      isLive: true
+    });
+  },
+
+  // Finish live recording and start analysis
+  async finishLiveRecording(recordingId: string, finalTranscript: string, duration: number) {
+    return api.post(`/recordings/${recordingId}/finish`, {
+      finalTranscript,
+      duration
+    });
+  },
+
+  // Get live recording status for sidebar
+  async getLiveRecordingStatus(classId: string) {
+    return api.get(`/recordings/class/${classId}/live-status`);
+  },
+
+  // Start a class recording (legacy)
   async startClassRecording(classId: string, data: StartRecordingRequest) {
     return api.post(`/classes/${classId}/recordings/start`, data);
   },
 
-  // Stop a class recording
+  // Stop a class recording (legacy)
   async stopClassRecording(classId: string, recordingId: string, data: StopRecordingRequest) {
     return api.post(`/classes/${classId}/recordings/${recordingId}/stop`, data);
   },
