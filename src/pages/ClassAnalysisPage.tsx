@@ -125,14 +125,15 @@ const ClassAnalysisPage: React.FC = () => {
       
       if (allAnalyses.length > 0) {
         const latestAnalysis = allAnalyses[0];
+        const status = (latestAnalysis.status || '').toUpperCase();
         
-        if (latestAnalysis.status === 'COMPLETED' && latestAnalysis.analysisData) {
+        if (status === 'COMPLETED' && latestAnalysis.analysisData) {
           const parsedData = JSON.parse(latestAnalysis.analysisData);
           setAnalysisData(parsedData);
           setError(null); // Limpiar error si se encuentra análisis
-        } else if (latestAnalysis.status === 'PENDING') {
-          setError('El análisis aún está en progreso. Por favor, intenta de nuevo en unos minutos.');
-        } else if (latestAnalysis.status === 'FAILED') {
+        } else if (status === 'PENDING') {
+          setError('PENDING');
+        } else if (status === 'FAILED') {
           setError('Error en el análisis. Por favor, intenta grabar la clase nuevamente.');
         } else {
           setError('Estado de análisis desconocido: ' + latestAnalysis.status);
@@ -203,27 +204,47 @@ const ClassAnalysisPage: React.FC = () => {
         <Card className="max-w-md">
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-red-600 text-2xl">⚠️</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Error</h3>
-              <p className="text-gray-600 mb-4">{error}</p>
-              <div className="flex gap-2 justify-center">
-                <Button onClick={() => navigate('/classes')}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Volver a Clases
-                </Button>
-                {error.includes('en progreso') && (
-                  <Button 
-                    onClick={handleRefresh} 
-                    variant="outline"
-                    disabled={isRefreshing}
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    {isRefreshing ? 'Actualizando...' : 'Actualizar'}
-                  </Button>
-                )}
-              </div>
+              {error === 'PENDING' ? (
+                <>
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-blue-600 text-2xl">⏳</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Generando análisis</h3>
+                  <p className="text-gray-600 mb-4">Tu análisis se está generando. Esto puede tardar unos minutos.</p>
+                  <div className="flex gap-2 justify-center">
+                    <Button onClick={() => navigate('/classes')}>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Volver a Clases
+                    </Button>
+                    <Button 
+                      onClick={handleRefresh} 
+                      variant="outline"
+                      disabled={isRefreshing}
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-red-600 text-2xl">⚠️</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Error</h3>
+                  <p className="text-gray-600 mb-4">{error}</p>
+                  <div className="flex gap-2 justify-center">
+                    <Button onClick={() => navigate('/classes')}>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Volver a Clases
+                    </Button>
+                    <Button onClick={handleRefresh} variant="outline" disabled={isRefreshing}>
+                      <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      {isRefreshing ? 'Actualizando...' : 'Reintentar'}
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

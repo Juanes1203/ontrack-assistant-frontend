@@ -543,7 +543,12 @@ const ClassesSimple = () => {
                       </CardDescription>
                     </div>
                     <Badge variant="outline">
-                      {classItem.status || 'SCHEDULED'}
+                      {classItem.status === 'COMPLETED' ? 'Completada'
+                        : classItem.status === 'IN_PROGRESS' ? 'En progreso'
+                        : classItem.status === 'PENDING' ? 'En proceso'
+                        : classItem.status === 'FAILED' ? 'Fallida'
+                        : classItem.status === 'SCHEDULED' || !classItem.status ? 'Programada'
+                        : classItem.status}
                     </Badge>
                   </div>
                 </CardHeader>
