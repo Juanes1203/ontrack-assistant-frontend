@@ -85,13 +85,83 @@ export class LiveTranscriptionService {
         return;
       }
       
+      // Manejar error de red con reconexión automática
+      if (event.error === 'network') {
+        console.warn('Network error detected, attempting to reconnect...');
+        
+        // Si está grabando, intentar reconectar automáticamente
+        if (this.isRecording) {
+          setTimeout(() => {
+            try {
+              // Detener el reconocimiento actual
+              this.recognition.stop();
+              
+              // Reiniciar después de un breve delay
+              setTimeout(() => {
+                try {
+                  this.recognition.start();
+                  console.log('Successfully reconnected after network error');
+                } catch (restartError) {
+                  console.error('Error restarting recognition after network error:', restartError);
+                  // Si falla, intentar reinicializar completamente
+                  this.initializeRecognition();
+                  if (this.isRecording) {
+                    setTimeout(() => {
+                      try {
+                        this.recognition.start();
+                        console.log('Reinitialized and restarted recognition after network error');
+                      } catch (finalError) {
+                        console.error('Failed to restart after reinitialization:', finalError);
+                        this.isRecording = false;
+                        if (this.onError) {
+                          this.onError('Failed to reconnect after network error. Please restart recording manually.');
+                        }
+                      }
+                    }, 500);
+                  }
+                }
+              }, 500);
+            } catch (error) {
+              console.error('Error handling network error:', error);
+              this.isRecording = false;
+              if (this.onError) {
+                this.onError('Network error occurred. Please restart recording.');
+              }
+            }
+          }, 1000); // Esperar 1 segundo antes de intentar reconectar
+        } else {
+          // Si no está grabando, solo reportar el error
+          if (this.onError) {
+            this.onError('Network error occurred.');
+          }
+        }
+        return;
+      }
+      
       if (this.onError) {
         this.onError(event.error);
       }
     };
 
     this.recognition.onend = () => {
-      this.isRecording = false;
+      // Si estaba grabando y se detuvo inesperadamente (no por stopRecording), intentar reiniciar
+      if (this.isRecording) {
+        console.log('Recognition ended unexpectedly, attempting to restart...');
+        setTimeout(() => {
+          try {
+            this.recognition.start();
+            console.log('Successfully restarted recognition after unexpected end');
+          } catch (error) {
+            console.error('Error restarting recognition after unexpected end:', error);
+            this.isRecording = false;
+            if (this.onError) {
+              this.onError('Recording stopped unexpectedly. Please restart manually.');
+            }
+          }
+        }, 500);
+      } else {
+        this.isRecording = false;
+      }
     };
   }
 

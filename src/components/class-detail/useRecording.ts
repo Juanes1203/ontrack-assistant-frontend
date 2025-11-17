@@ -129,8 +129,47 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
 
     recognition.onerror = (event: any) => {
       console.error(`Speech recognition error for ${primaryLanguage}:`, event.error);
+      
       if (event.error === 'no-speech') {
         recognition.stop();
+        return;
+      }
+      
+      // Manejar error de red con reconexión automática
+      if (event.error === 'network') {
+        console.warn(`Network error detected for ${primaryLanguage}, attempting to reconnect...`);
+        const participant = participants.find(p => p.id === participantId);
+        
+        // Si el participante sigue grabando, intentar reconectar después de un breve delay
+        if (participant?.isRecording) {
+          setTimeout(() => {
+            try {
+              // Reiniciar el reconocimiento
+              recognition.stop();
+              setTimeout(() => {
+                try {
+                  recognition.start();
+                  console.log(`Successfully reconnected recognition for ${primaryLanguage} after network error`);
+                } catch (restartError) {
+                  console.error(`Error restarting recognition after network error:`, restartError);
+                  // Si falla el reinicio, intentar crear una nueva instancia
+                  const newRecognition = initializeRecognition(participantId);
+                  if (newRecognition && newRecognition[primaryLanguage]) {
+                    setRecognitionInstances(prev => ({
+                      ...prev,
+                      [participantId]: newRecognition
+                    }));
+                    newRecognition[primaryLanguage].start();
+                    console.log(`Created new recognition instance for ${primaryLanguage} after network error`);
+                  }
+                }
+              }, 500);
+            } catch (error) {
+              console.error(`Error handling network error for ${primaryLanguage}:`, error);
+            }
+          }, 1000); // Esperar 1 segundo antes de intentar reconectar
+        }
+        return;
       }
     };
 
