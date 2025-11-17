@@ -271,9 +271,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                         transcriptConfidence > 0.8 ? 'bg-green-500' :
                         transcriptConfidence > 0.6 ? 'bg-yellow-500' : 'bg-red-500'
                       } animate-pulse`}></div>
-                      <span className="text-xs text-gray-600">
-                        Confianza: {Math.round(transcriptConfidence * 100)}%
-                      </span>
                     </div>
                   </div>
                   <ScrollArea className="h-48">

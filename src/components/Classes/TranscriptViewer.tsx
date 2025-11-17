@@ -177,7 +177,11 @@ const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
                     </div>
                     <div className="flex items-center space-x-2">
                       <Badge variant={recording.status === 'COMPLETED' ? 'default' : 'secondary'}>
-                        {recording.status === 'COMPLETED' ? 'Completada' : recording.status}
+                        {recording.status === 'COMPLETED' ? 'Completada'
+                          : recording.status === 'IN_PROGRESS' ? 'En progreso'
+                          : recording.status === 'PENDING' ? 'En proceso'
+                          : recording.status === 'FAILED' ? 'Fallida'
+                          : recording.status}
                       </Badge>
                     </div>
                   </div>

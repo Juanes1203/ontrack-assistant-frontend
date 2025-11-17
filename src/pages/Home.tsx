@@ -214,7 +214,9 @@ const Home = () => {
                     }`}
                   >
                     {cls.status === 'COMPLETED' ? 'Completada' :
-                     cls.status === 'IN_PROGRESS' ? 'En Curso' :
+                     cls.status === 'IN_PROGRESS' ? 'En progreso' :
+                     cls.status === 'PENDING' ? 'En proceso' :
+                     cls.status === 'FAILED' ? 'Fallida' :
                      cls.status === 'SCHEDULED' ? 'Programada' : cls.status}
                   </Badge>
                 </div>

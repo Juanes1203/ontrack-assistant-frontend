@@ -299,9 +299,6 @@ Profesor: De nada, me alegra que hayan entendido. Recuerden hacer los ejercicios
                     <h4 className="font-medium text-gray-800">Transcripción en Vivo</h4>
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-gray-600">
-                        Confianza: {Math.round(transcriptConfidence * 100)}%
-                      </span>
                     </div>
                   </div>
                   <div className="max-h-32 overflow-y-auto">

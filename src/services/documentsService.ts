@@ -104,11 +104,9 @@ export const documentsService = {
     return response.data;
   },
 
-  // Descargar un documento
-  async downloadDocument(id: string): Promise<Blob> {
-    const response = await apiClient.get(`/documents/${id}/download`, {
-      responseType: 'blob',
-    });
+  // Obtener URL firmada para descargar un documento
+  async getDocumentDownloadUrl(id: string): Promise<{ success: boolean; data: { downloadUrl: string; expiresIn: number } }> {
+    const response = await apiClient.get(`/documents/${id}/download`);
     return response.data;
   },
 

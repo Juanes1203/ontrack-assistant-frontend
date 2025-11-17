@@ -18,7 +18,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
-  console.log('🛡️ ProtectedRoute - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading, 'user:', user, 'location:', location.pathname, 'requiredRole:', requiredRole);
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -34,15 +33,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    console.log('🚫 Not authenticated, redirecting to login');
     return <Navigate to={fallbackPath} state={{ from: location }} replace />;
   }
 
   // Check role requirements
   if (requiredRole) {
     let hasRequiredRole = false;
-    
-    console.log('🔐 Role check - requiredRole:', requiredRole, 'user.role:', user?.role);
     
     if (requiredRole === 'super_admin') {
       hasRequiredRole = user?.role === 'SUPER_ADMIN';
@@ -52,10 +48,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       hasRequiredRole = user?.role === 'TEACHER' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
     }
 
-    console.log('🔐 Role check result - hasRequiredRole:', hasRequiredRole);
-
     if (!hasRequiredRole) {
-      console.log('🚫 Access denied - insufficient role');
       return <Navigate to="/unauthorized" replace />;
     }
   }

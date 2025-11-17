@@ -34,7 +34,6 @@ export const ElevenLabsProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
         await new Promise((resolve, reject) => {
           script.onload = () => {
-            console.log('✅ ElevenLabs script loaded in context');
             resolve(true);
           };
           script.onerror = (error) => {

@@ -132,6 +132,12 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
     };
 
     recognition.onerror = (event: any) => {
+      // No mostrar error para "abortado" - es normal durante reinicio proactivo
+      if (event.error === 'aborted') {
+        console.log(`Recognition aborted for ${primaryLanguage} (normal durante reinicio proactivo)`);
+        return;
+      }
+      
       console.error(`Speech recognition error for ${primaryLanguage}:`, event.error);
       
       if (event.error === 'no-speech') {

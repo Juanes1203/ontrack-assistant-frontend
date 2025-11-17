@@ -42,7 +42,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return 'TEACHER';
   };
   
-  console.log('🔍 AuthContext - user:', user, 'isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
 
   // Initialize auth state from localStorage
   useEffect(() => {
@@ -51,12 +50,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const token = localStorage.getItem('auth_token');
         const userData = localStorage.getItem('user_data');
         
-        console.log('🔄 Initializing auth - token:', !!token, 'userData:', !!userData);
-        console.log('📦 localStorage content:', {
-          auth_token: localStorage.getItem('auth_token'),
-          user_data: localStorage.getItem('user_data')
-        });
-        
         if (token && userData) {
           const parsedUser = JSON.parse(userData);
           // Normalize role to uppercase
@@ -64,13 +57,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             ...parsedUser,
             role: normalizeRole(parsedUser.role)
           };
-          console.log('👤 Found user in localStorage:', normalizedUser);
           setUser(normalizedUser);
           
           // Verify token is still valid by refreshing user data
           await refreshUser();
-        } else {
-          console.log('🚫 No auth data found in localStorage');
         }
       } catch (error) {
         console.error('❌ Error initializing auth:', error);
@@ -79,7 +69,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.removeItem('user_data');
       } finally {
         setIsLoading(false);
-        console.log('✅ Auth initialization complete');
       }
     };
 
@@ -90,14 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: LoginRequest): Promise<void> => {
     try {
       setIsLoading(true);
-      console.log('🔐 Attempting login with:', credentials.email);
       const response = await api.post('/auth/login', credentials);
-      console.log('✅ Login response:', response);
-      console.log('📊 Response structure:', {
-        success: response.success,
-        data: response.data,
-        message: response.message
-      });
       
       // Extract data from the API response
       const { user, token, expiresIn } = response.data;
@@ -112,14 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user_data', JSON.stringify(normalizedUser));
       
-      console.log('💾 Stored in localStorage:', {
-        token: token.substring(0, 20) + '...',
-        user: normalizedUser
-      });
-      
       setUser(normalizedUser);
-      console.log('👤 User set in context:', normalizedUser);
-      console.log('✅ Login completed successfully');
     } catch (error) {
       console.error('❌ Login error:', error);
       throw error;
@@ -165,19 +140,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Clear auth data (for debugging)
   const clearAuth = () => {
-    console.log('🧹 Clearing auth data');
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     setUser(null);
-    console.log('✅ Auth data cleared');
   };
 
   // Refresh user data
   const refreshUser = async (): Promise<void> => {
     try {
-      console.log('🔄 Refreshing user data...');
       const response = await api.get('/auth/me');
-      console.log('✅ User refresh response:', response);
       
       // Normalize role to uppercase
       const normalizedUser = {
@@ -185,7 +156,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         role: normalizeRole(response.data.role)
       };
       
-      console.log('👤 Refreshed user:', normalizedUser);
       setUser(normalizedUser);
       localStorage.setItem('user_data', JSON.stringify(normalizedUser));
     } catch (error) {

@@ -60,10 +60,7 @@ export const roleUtils = {
   },
 
   canManageClasses: (user: User | null): boolean => {
-    console.log('🔍 canManageClasses check - user:', user, 'role:', user?.role);
-    const result = user?.role === 'TEACHER' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
-    console.log('🔍 canManageClasses result:', result);
-    return result;
+    return user?.role === 'TEACHER' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
   },
 
   canManageStudents: (user: User | null): boolean => {

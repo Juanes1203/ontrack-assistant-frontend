@@ -87,6 +87,13 @@ export class LiveTranscriptionService {
         return;
       }
       
+      // Manejar error "abortado" - no es un error crítico, solo significa que se reinició
+      if (event.error === 'aborted') {
+        console.log('Recognition aborted (normal durante reinicio proactivo)');
+        // No llamar onError para "aborted" ya que es parte del proceso normal de reinicio
+        return;
+      }
+      
       // Manejar error de red con reconexión automática
       if (event.error === 'network') {
         console.warn('Network error detected, attempting to reconnect...');

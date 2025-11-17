@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,6 +77,7 @@ const ClassesSimple = () => {
   const [liveTranscript, setLiveTranscript] = useState('');
   const [transcriptConfidence, setTranscriptConfidence] = useState(0);
   const [recordingId, setRecordingId] = useState<string | null>(null);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [selectedClassForAnalysis, setSelectedClassForAnalysis] = useState<ClassWithDetails | null>(null);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   const [analysisData, setAnalysisData] = useState<string | null>(null);
@@ -87,6 +88,33 @@ const ClassesSimple = () => {
   useEffect(() => {
     loadClasses();
   }, []);
+
+  // Asegurar que el timer continúe incluso si hay errores
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (isRecording) {
+      // Si ya hay un intervalo, no crear otro
+      if (!recordingIntervalRef.current) {
+        interval = setInterval(() => {
+          setRecordingTime(prev => prev + 1);
+        }, 1000);
+        recordingIntervalRef.current = interval;
+      }
+    } else {
+      // Limpiar cuando se detiene la grabación
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isRecording]);
 
   const loadClasses = async () => {
     try {
@@ -171,7 +199,15 @@ const ClassesSimple = () => {
             setTranscriptConfidence(result.confidence);
           },
           (error: string) => {
-            setError('Error en transcripción: ' + error);
+            // No mostrar error para "abortado" o "network" ya que se manejan automáticamente
+            if (error === 'aborted' || error === 'network') {
+              console.log(`Transcripción ${error === 'aborted' ? 'reiniciada' : 'reconectada'} automáticamente`);
+              return;
+            }
+            // Solo mostrar errores críticos
+            if (error !== 'no-speech') {
+              setError('Error en transcripción: ' + error);
+            }
           }
         );
       } catch (error: any) {
@@ -180,13 +216,8 @@ const ClassesSimple = () => {
         return;
       }
       
-      // Contador de tiempo
-      const interval = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
-      
-      // Guardar referencia del interval para poder limpiarlo
-      (window as any).recordingInterval = interval;
+      // El timer se maneja automáticamente con el useEffect que depende de isRecording
+      // No necesitamos crear el intervalo aquí porque useEffect lo hará
       
     } catch (err: any) {
       setError('Error al iniciar la grabación: ' + err.message);
@@ -201,11 +232,8 @@ const ClassesSimple = () => {
       // Detener transcripción en vivo
       liveTranscriptionService.stopRecording();
       
-      // Limpiar contador de tiempo
-      if ((window as any).recordingInterval) {
-        clearInterval((window as any).recordingInterval);
-        (window as any).recordingInterval = null;
-      }
+      // El timer se limpia automáticamente cuando setIsRecording(false) cambia el estado
+      // El useEffect se encargará de limpiar el intervalo
       
       // Obtener transcripción final
       const finalTranscript = liveTranscriptionService.getFullTranscript();
@@ -250,11 +278,7 @@ const ClassesSimple = () => {
       // Detener transcripción en vivo
       liveTranscriptionService.stopRecording();
       
-      // Limpiar contador de tiempo
-      if ((window as any).recordingInterval) {
-        clearInterval((window as any).recordingInterval);
-        (window as any).recordingInterval = null;
-      }
+      // El timer se limpia automáticamente cuando setIsRecording(false) cambia el estado
       
       if (recordingId && recordingClass) {
         // Enviar transcripción al backend para análisis
@@ -496,9 +520,6 @@ const ClassesSimple = () => {
                     <h4 className="font-medium text-gray-800">Transcripción en Vivo</h4>
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-gray-600">
-                        Confianza: {Math.round(transcriptConfidence * 100)}%
-                      </span>
                     </div>
                   </div>
                   <div className="max-h-32 overflow-y-auto">

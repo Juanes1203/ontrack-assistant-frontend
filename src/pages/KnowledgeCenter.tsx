@@ -182,14 +182,14 @@ const KnowledgeCenter = () => {
 
   const handleDownload = async (documentId: string, filename: string) => {
     try {
-      const blob = await documentsService.downloadDocument(documentId);
-      const url = window.URL.createObjectURL(blob);
+      const resp = await documentsService.getDocumentDownloadUrl(documentId);
+      const url = resp.data.downloadUrl;
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
+      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err: any) {
       setError('Error al descargar documento: ' + err.message);
@@ -701,7 +701,7 @@ const KnowledgeCenter = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={document.status !== 'READY'}
+                      disabled={!(document.status === 'READY' || document.status === 'VECTORIZED')}
                       onClick={() => handleDownload(document.id, document.filename)}
                       className="text-green-600 hover:bg-green-50 border-green-200 disabled:opacity-50 w-full"
                     >
