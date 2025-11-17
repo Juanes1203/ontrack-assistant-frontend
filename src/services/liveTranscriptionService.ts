@@ -336,49 +336,88 @@ export class LiveTranscriptionService {
       // Iniciar reinicio proactivo cada 1.5 minutos (90000ms) para NUNCA llegar al timeout
       // MUY frecuente para garantizar que nunca se desconecte
       this.restartInterval = setInterval(() => {
-        if (this.isRecording && this.recognition) {
+        if (this.isRecording && this.recognition && !this.isRestarting) {
+          this.isRestarting = true; // Prevenir múltiples reinicios simultáneos
+          
           console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento (cada 1.5 min - prevención activa)`);
           try {
             if (this.recognition && typeof this.recognition.stop === 'function') {
               this.recognition.stop();
               setTimeout(() => {
+                if (!this.isRecording) {
+                  this.isRestarting = false;
+                  return;
+                }
+                
                 try {
                   if (this.recognition && typeof this.recognition.start === 'function') {
                     this.recognition.start();
                     console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reconocimiento reiniciado exitosamente`);
+                    this.isRestarting = false;
                   } else {
                     console.warn('Recognition instance invalid, reinitializing...');
                     this.initializeRecognition();
                     if (this.isRecording && this.recognition) {
                       setTimeout(() => {
                         try {
-                          this.recognition.start();
-                          console.log('Reinitialized and restarted after invalid instance');
-                        } catch (finalError) {
-                          console.error('Failed to restart after reinitialization:', finalError);
+                          if (this.recognition && typeof this.recognition.start === 'function' && this.isRecording) {
+                            this.recognition.start();
+                            console.log('Reinitialized and restarted after invalid instance');
+                            this.isRestarting = false;
+                          }
+                        } catch (finalError: any) {
+                          if (finalError.name === 'InvalidStateError' && finalError.message.includes('already started')) {
+                            console.log('Recognition already started after reinitialization');
+                            this.isRestarting = false;
+                          } else {
+                            console.error('Failed to restart after reinitialization:', finalError);
+                            this.isRestarting = false;
+                          }
                         }
                       }, 200);
+                    } else {
+                      this.isRestarting = false;
                     }
                   }
-                } catch (restartError) {
-                  console.error('Error en reinicio proactivo:', restartError);
-                  // Si falla, intentar reinicializar completamente
-                  this.initializeRecognition();
-                  if (this.isRecording && this.recognition) {
-                    setTimeout(() => {
-                      try {
-                        this.recognition.start();
-                        console.log('Reinitialized and restarted after proactive restart failure');
-                      } catch (finalError) {
-                        console.error('Failed to restart after reinitialization:', finalError);
-                      }
-                    }, 200);
+                } catch (restartError: any) {
+                  if (restartError.name === 'InvalidStateError' && restartError.message.includes('already started')) {
+                    // Ya está iniciado, eso está bien - no es un error
+                    console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Recognition ya estaba iniciado en reinicio proactivo`);
+                    this.isRestarting = false;
+                  } else {
+                    console.error('Error en reinicio proactivo:', restartError);
+                    // Si falla, intentar reinicializar completamente
+                    this.initializeRecognition();
+                    if (this.isRecording && this.recognition) {
+                      setTimeout(() => {
+                        try {
+                          if (this.recognition && typeof this.recognition.start === 'function' && this.isRecording) {
+                            this.recognition.start();
+                            console.log('Reinitialized and restarted after proactive restart failure');
+                            this.isRestarting = false;
+                          }
+                        } catch (finalError: any) {
+                          if (finalError.name === 'InvalidStateError' && finalError.message.includes('already started')) {
+                            console.log('Recognition already started after reinitialization');
+                            this.isRestarting = false;
+                          } else {
+                            console.error('Failed to restart after reinitialization:', finalError);
+                            this.isRestarting = false;
+                          }
+                        }
+                      }, 200);
+                    } else {
+                      this.isRestarting = false;
+                    }
                   }
                 }
-              }, 200); // Aumentar delay a 200ms para asegurar que se detuvo
+              }, 200); // Delay de 200ms para asegurar que se detuvo
+            } else {
+              this.isRestarting = false;
             }
           } catch (error) {
             console.error('Error en reinicio proactivo:', error);
+            this.isRestarting = false;
             // Si hay un error, intentar reinicializar
             try {
               this.initializeRecognition();
