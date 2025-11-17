@@ -87,7 +87,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Main Content Area - White with smooth rounded transition */}
         <div className={`flex-1 flex flex-col bg-white rounded-l-[3rem] overflow-hidden transition-all duration-300 ${
           isSidebarCollapsed ? 'ml-0' : ''
-        }`}>
+        } ${isRightSidebarOpen ? 'mr-96' : ''}`}>
           {/* Top Bar */}
           <TopBar />
           

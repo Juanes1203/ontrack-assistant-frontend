@@ -37,6 +37,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   const [description, setDescription] = useState('');
   const [recordingId, setRecordingId] = useState<string | null>(null);
   const [activeRecordings, setActiveRecordings] = useState<LiveRecording[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize form data when sidebar opens
   useEffect(() => {
@@ -82,6 +83,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
 
   const startRecording = async () => {
     try {
+      setError(null);
+      
       const response = await fetch('/api/recordings/process', {
         method: 'POST',
         headers: {
@@ -104,19 +107,33 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         setLiveTranscript('');
         
         // Start live transcription
-        liveTranscriptionService.startListening(
-          (result) => {
-            setLiveTranscript(result.transcript);
-            setTranscriptConfidence(result.confidence);
-            updateTranscript(data.data.recording.id, result.transcript, result.confidence);
-          },
-          (error) => {
-            console.error('Transcription error:', error);
-          }
-        );
+        try {
+          liveTranscriptionService.startListening(
+            (result) => {
+              setLiveTranscript(result.transcript);
+              setTranscriptConfidence(result.confidence);
+              updateTranscript(data.data.recording.id, result.transcript, result.confidence);
+            },
+            (error) => {
+              console.error('Transcription error:', error);
+              // Mostrar error al usuario si es crítico
+              if (error && typeof error === 'string' && !error.includes('abortado') && !error.includes('network')) {
+                setError(`Error en transcripción: ${error}`);
+              }
+            }
+          );
+        } catch (micError: any) {
+          // Error específico del micrófono
+          setError(micError.message || 'Error al acceder al micrófono');
+          setIsRecording(false);
+          setRecordingId(null);
+        }
+      } else {
+        setError(data.message || 'Error al iniciar la grabación');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error starting recording:', error);
+      setError(error.message || 'Error al iniciar la grabación. Por favor intenta de nuevo.');
     }
   };
 
@@ -181,24 +198,40 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!isOpen) return null;
+  // Si está grabando, siempre mostrar el panel (no se puede cerrar)
+  const shouldShow = isOpen || isRecording;
+
+  if (!shouldShow) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-lg z-50 flex flex-col">
+    <div className="fixed inset-y-0 right-0 w-96 bg-white border-l border-gray-200 shadow-2xl z-50 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
         <div className="flex items-center space-x-2">
           <FileText className="h-5 w-5 text-blue-600" />
           <h2 className="text-lg font-semibold text-gray-900">Grabación de Clase</h2>
+          {isRecording && (
+            <span className="ml-2 px-2 py-1 text-xs font-semibold bg-red-500 text-white rounded-full animate-pulse">
+              EN VIVO
+            </span>
+          )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          className="h-8 w-8 p-0"
-        >
-          <X className="h-4 w-4" />
-        </Button>
+        {!isRecording && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-8 w-8 p-0 hover:bg-gray-100"
+            title="Cerrar panel"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+        {isRecording && (
+          <div className="h-8 w-8 flex items-center justify-center">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+          </div>
+        )}
       </div>
 
       <ScrollArea className="flex-1">
@@ -226,6 +259,21 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
               />
             </div>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-800">{error}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setError(null)}
+                className="mt-2 text-red-600 hover:text-red-800"
+              >
+                Cerrar
+              </Button>
+            </div>
+          )}
 
           {/* Recording Controls */}
           <div className="space-y-4">

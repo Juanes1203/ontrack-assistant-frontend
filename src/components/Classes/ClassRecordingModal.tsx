@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -191,6 +191,9 @@ Profesor: De nada, me alegra que hayan entendido. Recuerden hacer los ejercicios
             <FileText className="h-6 w-6 text-blue-600" />
             Grabar Clase: {className}
           </DialogTitle>
+          <DialogDescription>
+            Inicia la grabación de tu clase para generar transcripción automática y análisis con IA
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">

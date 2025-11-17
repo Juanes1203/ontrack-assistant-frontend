@@ -242,12 +242,48 @@ export class LiveTranscriptionService {
 
     // Request microphone permission first
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Verificar que el navegador soporte getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Tu navegador no soporta acceso al micrófono. Por favor usa Chrome, Firefox o Edge.');
+      }
+
+      // Listar dispositivos disponibles primero
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioDevices = devices.filter(device => device.kind === 'audioinput');
+        
+        if (audioDevices.length === 0) {
+          throw new Error('No se encontró ningún micrófono conectado. Por favor conecta un micrófono y recarga la página.');
+        }
+      } catch (enumError) {
+        // Si no podemos enumerar, continuamos de todas formas
+        console.warn('No se pudieron enumerar dispositivos:', enumError);
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
       stream.getTracks().forEach(track => track.stop()); // Stop the stream, we just needed permission
       console.log('Microphone permission granted');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error accessing microphone:', error);
-      throw new Error('Microphone access denied. Please allow microphone access and try again.');
+      
+      // Mensajes de error más específicos
+      if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        throw new Error('No se encontró ningún micrófono. Por favor conecta un micrófono y recarga la página.');
+      } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        throw new Error('Acceso al micrófono denegado. Por favor permite el acceso al micrófono en la configuración del navegador y recarga la página.');
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        throw new Error('El micrófono está siendo usado por otra aplicación. Por favor cierra otras aplicaciones que usen el micrófono e intenta de nuevo.');
+      } else if (error.message) {
+        throw new Error(`Error al acceder al micrófono: ${error.message}`);
+      } else {
+        throw new Error('Error al acceder al micrófono. Por favor verifica que tengas un micrófono conectado y que el navegador tenga permisos para usarlo.');
+      }
     }
 
     this.onTranscript = onTranscript;
