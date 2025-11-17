@@ -12,6 +12,8 @@ export class LiveTranscriptionService {
   private fullTranscript = '';
   private restartInterval: NodeJS.Timeout | null = null;
   private isRestarting = false; // Flag para prevenir múltiples reinicios simultáneos
+  private healthCheckInterval: NodeJS.Timeout | null = null; // Intervalo para verificar salud del reconocimiento
+  private lastResultTime: number = 0; // Timestamp del último resultado recibido
 
   constructor() {
     this.initializeRecognition();
@@ -35,6 +37,9 @@ export class LiveTranscriptionService {
     // Esto ayuda a mantener la conexión más estable
 
     this.recognition.onresult = (event: any) => {
+      // Actualizar timestamp del último resultado para health check
+      this.lastResultTime = Date.now();
+      
       let interimTranscript = '';
       let finalTranscript = '';
 
@@ -331,15 +336,30 @@ export class LiveTranscriptionService {
     try {
       this.recognition.start();
       this.isRecording = true;
+      this.lastResultTime = Date.now(); // Inicializar timestamp
       console.log('Live transcription started successfully');
       
-      // Iniciar reinicio proactivo cada 1.5 minutos (90000ms) para NUNCA llegar al timeout
-      // MUY frecuente para garantizar que nunca se desconecte
+      // Health check cada 30 segundos para detectar si el reconocimiento se detuvo silenciosamente
+      this.healthCheckInterval = setInterval(() => {
+        if (this.isRecording && this.recognition) {
+          const timeSinceLastResult = Date.now() - this.lastResultTime;
+          // Si no hay resultados en 2 minutos, algo está mal
+          if (timeSinceLastResult > 120000) {
+            console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ Health check: No hay resultados desde hace ${Math.round(timeSinceLastResult / 1000)}s - reiniciando reconocimiento`);
+            this.forceRestart();
+          } else {
+            console.log(`[${new Date().toLocaleTimeString()}] ✅ Health check: Reconocimiento activo (último resultado hace ${Math.round(timeSinceLastResult / 1000)}s)`);
+          }
+        }
+      }, 30000); // Cada 30 segundos
+      
+      // Iniciar reinicio proactivo cada 1 minuto (60000ms) - MÁS FRECUENTE para grabaciones de 30+ minutos
+      // Reducido de 1.5 min a 1 min para mayor seguridad
       this.restartInterval = setInterval(() => {
         if (this.isRecording && this.recognition && !this.isRestarting) {
           this.isRestarting = true; // Prevenir múltiples reinicios simultáneos
           
-          console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento (cada 1.5 min - prevención activa)`);
+          console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento (cada 1 min - prevención activa para grabaciones de 30+ min)`);
           try {
             if (this.recognition && typeof this.recognition.stop === 'function') {
               this.recognition.stop();
@@ -465,11 +485,67 @@ export class LiveTranscriptionService {
             this.restartInterval = null;
           }
         }
-      }, 90000); // 1.5 minutos = 90000ms (MUY frecuente para NUNCA llegar al timeout)
+      }, 60000); // 1 minuto = 60000ms (MUY frecuente para grabaciones de 30+ minutos)
     } catch (error) {
       console.error('Error starting speech recognition:', error);
       throw error;
     }
+  }
+
+  // Método para forzar reinicio cuando el health check detecta problemas
+  private forceRestart(): void {
+    if (!this.isRecording || this.isRestarting) {
+      return;
+    }
+    
+    this.isRestarting = true;
+    console.log(`[${new Date().toLocaleTimeString()}] 🔄 Force restart: Reiniciando reconocimiento por health check`);
+    
+    try {
+      if (this.recognition && typeof this.recognition.stop === 'function') {
+        this.recognition.stop();
+      }
+    } catch (stopError) {
+      // Ignorar errores al detener
+    }
+    
+    setTimeout(() => {
+      if (!this.isRecording) {
+        this.isRestarting = false;
+        return;
+      }
+      
+      try {
+        // Reinicializar completamente
+        this.initializeRecognition();
+        if (this.recognition && this.isRecording) {
+          setTimeout(() => {
+            try {
+              if (this.recognition && typeof this.recognition.start === 'function' && this.isRecording) {
+                this.recognition.start();
+                this.lastResultTime = Date.now(); // Resetear timestamp
+                console.log(`[${new Date().toLocaleTimeString()}] ✅ Force restart: Reconocimiento reiniciado exitosamente`);
+                this.isRestarting = false;
+              }
+            } catch (startError: any) {
+              if (startError.name === 'InvalidStateError' && startError.message.includes('already started')) {
+                console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Force restart: Recognition ya estaba iniciado`);
+                this.lastResultTime = Date.now();
+                this.isRestarting = false;
+              } else {
+                console.error('Force restart: Error al iniciar:', startError);
+                this.isRestarting = false;
+              }
+            }
+          }, 200);
+        } else {
+          this.isRestarting = false;
+        }
+      } catch (error) {
+        console.error('Force restart: Error reinicializando:', error);
+        this.isRestarting = false;
+      }
+    }, 200);
   }
 
   stopRecording(): void {
@@ -477,6 +553,12 @@ export class LiveTranscriptionService {
     if (this.restartInterval) {
       clearInterval(this.restartInterval);
       this.restartInterval = null;
+    }
+    
+    // Limpiar el health check interval
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = null;
     }
     
     if (this.recognition && this.isRecording) {
