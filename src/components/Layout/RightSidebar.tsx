@@ -307,25 +307,41 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                   </div>
                 </div>
 
-                {/* Live Transcript Display */}
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-gray-800 flex items-center">
-                      <Mic className="h-4 w-4 mr-2" />
-                      Transcripción en Vivo
-                    </h4>
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        transcriptConfidence > 0.8 ? 'bg-green-500' :
-                        transcriptConfidence > 0.6 ? 'bg-yellow-500' : 'bg-red-500'
-                      } animate-pulse`}></div>
+                {/* Recording Status Indicator */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    {/* Animated Microphone Icon */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-20 h-20 bg-blue-200 rounded-full animate-ping opacity-75"></div>
+                      </div>
+                      <div className="relative flex items-center justify-center w-20 h-20 bg-blue-500 rounded-full">
+                        <Mic className="h-10 w-10 text-white" />
+                      </div>
+                    </div>
+                    
+                    {/* Status Text */}
+                    <div className="text-center">
+                      <h4 className="font-semibold text-gray-800 mb-1 text-lg">Grabación en Progreso</h4>
+                      <p className="text-sm text-gray-600">
+                        El audio se está capturando correctamente
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        La transcripción se procesará automáticamente al finalizar
+                      </p>
+                    </div>
+                    
+                    {/* Visual Waveform Indicator */}
+                    <div className="flex items-end justify-center space-x-1.5 h-10 w-full">
+                      <div className="w-1.5 bg-blue-400 rounded-full animate-pulse" style={{ height: '50%', animationDelay: '0s' }}></div>
+                      <div className="w-1.5 bg-blue-500 rounded-full animate-pulse" style={{ height: '70%', animationDelay: '0.1s' }}></div>
+                      <div className="w-1.5 bg-blue-600 rounded-full animate-pulse" style={{ height: '100%', animationDelay: '0.2s' }}></div>
+                      <div className="w-1.5 bg-blue-500 rounded-full animate-pulse" style={{ height: '80%', animationDelay: '0.3s' }}></div>
+                      <div className="w-1.5 bg-blue-600 rounded-full animate-pulse" style={{ height: '90%', animationDelay: '0.4s' }}></div>
+                      <div className="w-1.5 bg-blue-500 rounded-full animate-pulse" style={{ height: '60%', animationDelay: '0.5s' }}></div>
+                      <div className="w-1.5 bg-blue-400 rounded-full animate-pulse" style={{ height: '40%', animationDelay: '0.6s' }}></div>
                     </div>
                   </div>
-                  <ScrollArea className="h-48">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {liveTranscript || 'Iniciando transcripción...'}
-                    </p>
-                  </ScrollArea>
                 </div>
               </div>
             )}

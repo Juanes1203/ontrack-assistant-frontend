@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Play, Square, FileText, Copy, Check } from 'lucide-react';
+import { Play, Square, FileText, Copy, Check, Mic } from 'lucide-react';
 import { liveTranscriptionService, LiveTranscriptionResult } from '@/services/liveTranscriptionService';
 
 interface ClassRecordingModalProps {
@@ -295,19 +295,39 @@ Profesor: De nada, me alegra que hayan entendido. Recuerden hacer los ejercicios
                 </Button>
               </div>
 
-              {/* Live Transcript */}
+              {/* Recording Status Indicator */}
               {!useManualTranscript && (
-                <div className="mt-4 bg-white rounded-lg p-4 border">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-800">Transcripción en Vivo</h4>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    {/* Animated Microphone Icon */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 bg-blue-200 rounded-full animate-ping opacity-75"></div>
+                      </div>
+                      <div className="relative flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full">
+                        <Mic className="h-8 w-8 text-white" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="max-h-32 overflow-y-auto">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {liveTranscript || 'Iniciando transcripción...'}
-                    </p>
+                    
+                    {/* Status Text */}
+                    <div className="text-center">
+                      <h4 className="font-semibold text-gray-800 mb-1">Grabación en Progreso</h4>
+                      <p className="text-sm text-gray-600">
+                        El audio se está capturando correctamente
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        La transcripción se procesará automáticamente al finalizar
+                      </p>
+                    </div>
+                    
+                    {/* Visual Waveform Indicator */}
+                    <div className="flex items-end justify-center space-x-1 h-8">
+                      <div className="w-1 bg-blue-400 rounded-full animate-pulse" style={{ height: '60%', animationDelay: '0s' }}></div>
+                      <div className="w-1 bg-blue-500 rounded-full animate-pulse" style={{ height: '80%', animationDelay: '0.1s' }}></div>
+                      <div className="w-1 bg-blue-600 rounded-full animate-pulse" style={{ height: '100%', animationDelay: '0.2s' }}></div>
+                      <div className="w-1 bg-blue-500 rounded-full animate-pulse" style={{ height: '70%', animationDelay: '0.3s' }}></div>
+                      <div className="w-1 bg-blue-400 rounded-full animate-pulse" style={{ height: '50%', animationDelay: '0.4s' }}></div>
+                    </div>
                   </div>
                 </div>
               )}

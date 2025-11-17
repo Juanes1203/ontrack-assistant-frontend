@@ -21,6 +21,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { classesService } from '@/services/classesService';
 import { liveTranscriptionService, LiveTranscriptionResult } from '@/services/liveTranscriptionService';
+import { whisperTranscriptionService } from '@/services/whisperTranscriptionService';
 import ClassAnalysisModal from '@/components/Classes/ClassAnalysisModal';
 import ClassRecordingModal from '@/components/Classes/ClassRecordingModal';
 
@@ -191,27 +192,23 @@ const ClassesSimple = () => {
       
       setRecordingId(response.data.id);
       
-      // Iniciar transcripción en vivo
+      // Iniciar grabación con Whisper (acumula audio, envía completo al final)
       try {
-        await liveTranscriptionService.startRecording(
+        await whisperTranscriptionService.startRecording(
+          response.data.id,
+          selectedClassForRecording.id,
           (result: LiveTranscriptionResult) => {
-            setLiveTranscript(result.transcript);
-            setTranscriptConfidence(result.confidence);
+            // Durante la grabación, no hay transcripción en vivo
+            // Solo mostramos un mensaje indicando que está grabando
+            setLiveTranscript('Grabando... La transcripción se procesará al finalizar.');
+            setTranscriptConfidence(1.0);
           },
           (error: string) => {
-            // No mostrar error para "abortado" o "network" ya que se manejan automáticamente
-            if (error === 'aborted' || error === 'network') {
-              console.log(`Transcripción ${error === 'aborted' ? 'reiniciada' : 'reconectada'} automáticamente`);
-              return;
-            }
-            // Solo mostrar errores críticos
-            if (error !== 'no-speech') {
-              setError('Error en transcripción: ' + error);
-            }
+            setError('Error en grabación: ' + error);
           }
         );
       } catch (error: any) {
-        setError('Error al iniciar transcripción: ' + error.message);
+        setError('Error al iniciar grabación: ' + error.message);
         setIsRecording(false);
         return;
       }
@@ -229,24 +226,17 @@ const ClassesSimple = () => {
     try {
       setIsRecording(false);
       
-      // Detener transcripción en vivo
-      liveTranscriptionService.stopRecording();
+      // Detener grabación y enviar archivo completo al backend
+      const result = await whisperTranscriptionService.stopRecording();
       
       // El timer se limpia automáticamente cuando setIsRecording(false) cambia el estado
       // El useEffect se encargará de limpiar el intervalo
       
-      // Obtener transcripción final
-      const finalTranscript = liveTranscriptionService.getFullTranscript();
-      
-      if (recordingId && recordingClass) {
-        // Enviar transcripción al backend para análisis
-        await classesService.stopClassRecording(recordingClass.id, recordingId, {
-          transcript: finalTranscript,
-          duration: recordingTime
-        });
-        
-        console.log('Transcripción enviada al backend para análisis con IA:', finalTranscript);
-        console.log('El backend procesará la transcripción y generará un análisis detallado usando Straico API');
+      if (recordingId && recordingClass && result) {
+        // El backend ya está procesando la transcripción en background
+        // Solo necesitamos esperar a que termine
+        console.log('Grabación enviada al backend. El backend procesará la transcripción y generará un análisis detallado usando Straico API');
+        console.log(`Duración de la grabación: ${result.duration} segundos`);
         
         // Mostrar confirmación de análisis
         setShowAnalysisConfirmation(true);
@@ -261,7 +251,7 @@ const ClassesSimple = () => {
       setLiveTranscript('');
       setTranscriptConfidence(0);
       setRecordingId(null);
-      liveTranscriptionService.reset();
+      whisperTranscriptionService.reset();
       
       // Recargar clases para mostrar la nueva grabación
       await loadClasses();
@@ -275,20 +265,24 @@ const ClassesSimple = () => {
     try {
       setIsRecording(false);
       
-      // Detener transcripción en vivo
-      liveTranscriptionService.stopRecording();
+      // Detener grabación y enviar archivo completo al backend
+      const result = await whisperTranscriptionService.stopRecording();
       
       // El timer se limpia automáticamente cuando setIsRecording(false) cambia el estado
       
-      if (recordingId && recordingClass) {
-        // Enviar transcripción al backend para análisis
-        await classesService.stopClassRecording(recordingClass.id, recordingId, {
-          transcript,
-          duration
-        });
+      if (recordingId && recordingClass && result) {
+        // El backend ya está procesando la transcripción en background
+        // Si hay transcripción manual, también la podemos usar
+        if (transcript && transcript.trim().length > 0) {
+          // Si hay transcripción manual, actualizar el recording con ella
+          await classesService.stopClassRecording(recordingClass.id, recordingId, {
+            transcript,
+            duration: result.duration
+          });
+        }
         
-        console.log('Transcripción enviada al backend para análisis con IA:', transcript);
-        console.log('El backend procesará la transcripción y generará un análisis detallado usando Straico API');
+        console.log('Grabación enviada al backend. El backend procesará la transcripción y generará un análisis detallado usando Straico API');
+        console.log(`Duración de la grabación: ${result.duration} segundos`);
         
         // Mostrar confirmación de análisis
         setShowAnalysisConfirmation(true);
@@ -303,7 +297,7 @@ const ClassesSimple = () => {
       setLiveTranscript('');
       setTranscriptConfidence(0);
       setRecordingId(null);
-      liveTranscriptionService.reset();
+      whisperTranscriptionService.reset();
       
       // Cerrar modal
       setShowRecordingModal(false);
