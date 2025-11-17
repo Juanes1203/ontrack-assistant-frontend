@@ -231,7 +231,7 @@ Profesor: De nada, me alegra que hayan entendido. Recuerden hacer los ejercicios
                 className="w-4 h-4 text-blue-600"
               />
               <Label htmlFor="live-transcription" className="text-base">
-                Transcripción en Vivo (Recomendado)
+                Grabación de Audio (Recomendado) - La transcripción se procesará al finalizar
               </Label>
             </div>
             <div className="flex items-center space-x-4">
