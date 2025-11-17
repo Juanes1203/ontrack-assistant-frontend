@@ -16,7 +16,8 @@ import {
   Square,
   FileText,
   Brain,
-  RefreshCw
+  RefreshCw,
+  Mic
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { classesService } from '@/services/classesService';
@@ -511,15 +512,24 @@ const ClassesSimple = () => {
                 {/* Live Transcript */}
                 <div className="bg-white rounded-lg p-4 border">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-800">Transcripción en Vivo</h4>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    </div>
+                    <h4 className="font-medium text-gray-800 flex items-center">
+                      <Mic className="h-4 w-4 mr-2 text-blue-600" />
+                      Estado de Grabación
+                    </h4>
                   </div>
-                  <div className="max-h-32 overflow-y-auto">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {liveTranscript || 'Iniciando transcripción...'}
-                    </p>
+                  <div className="max-h-32 overflow-y-auto flex items-center justify-center py-4">
+                    <div className="text-center space-y-2">
+                      <div className="relative inline-block">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-12 h-12 bg-blue-200 rounded-full animate-ping opacity-75"></div>
+                        </div>
+                        <div className="relative flex items-center justify-center w-12 h-12 bg-blue-500 rounded-full">
+                          <Mic className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 font-medium">Grabando...</p>
+                      <p className="text-xs text-gray-500">La transcripción se procesará al finalizar</p>
+                    </div>
                   </div>
                 </div>
               </div>
