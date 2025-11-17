@@ -10,6 +10,7 @@ export class LiveTranscriptionService {
   private onTranscript: ((result: LiveTranscriptionResult) => void) | null = null;
   private onError: ((error: string) => void) | null = null;
   private fullTranscript = '';
+  private restartInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     this.initializeRecognition();
@@ -195,6 +196,44 @@ export class LiveTranscriptionService {
       this.recognition.start();
       this.isRecording = true;
       console.log('Live transcription started successfully');
+      
+      // Iniciar reinicio proactivo cada 4 minutos (240000ms) para evitar error de red
+      this.restartInterval = setInterval(() => {
+        if (this.isRecording && this.recognition) {
+          console.log('Proactive restart: Reiniciando reconocimiento antes del timeout de 5 minutos');
+          try {
+            this.recognition.stop();
+            setTimeout(() => {
+              try {
+                this.recognition.start();
+                console.log('Proactive restart: Reconocimiento reiniciado exitosamente');
+              } catch (restartError) {
+                console.error('Error en reinicio proactivo:', restartError);
+                // Si falla, intentar reinicializar
+                this.initializeRecognition();
+                if (this.isRecording) {
+                  setTimeout(() => {
+                    try {
+                      this.recognition.start();
+                      console.log('Reinitialized and restarted after proactive restart failure');
+                    } catch (finalError) {
+                      console.error('Failed to restart after reinitialization:', finalError);
+                    }
+                  }, 500);
+                }
+              }
+            }, 100);
+          } catch (error) {
+            console.error('Error en reinicio proactivo:', error);
+          }
+        } else {
+          // Si ya no está grabando, limpiar el intervalo
+          if (this.restartInterval) {
+            clearInterval(this.restartInterval);
+            this.restartInterval = null;
+          }
+        }
+      }, 240000); // 4 minutos = 240000ms (antes del timeout de 5 minutos)
     } catch (error) {
       console.error('Error starting speech recognition:', error);
       throw error;
@@ -202,6 +241,12 @@ export class LiveTranscriptionService {
   }
 
   stopRecording(): void {
+    // Limpiar el intervalo de reinicio proactivo
+    if (this.restartInterval) {
+      clearInterval(this.restartInterval);
+      this.restartInterval = null;
+    }
+    
     if (this.recognition && this.isRecording) {
       this.recognition.stop();
       this.isRecording = false;

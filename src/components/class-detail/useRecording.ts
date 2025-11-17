@@ -49,6 +49,7 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
   const [currentTranscripts, setCurrentTranscripts] = useState<{ [key: string]: { text: string; timestamp: number; language: string } }>({});
   const [classAnalysis, setClassAnalysis] = useState<ClassAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [restartIntervals, setRestartIntervals] = useState<{ [key: string]: NodeJS.Timeout }>({});
 
   const addParticipant = useCallback((name: string, type: 'teacher' | 'student') => {
     const newParticipant: Participant = {
@@ -219,6 +220,52 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
           recognition.start();
         });
         console.log(`Recognition started successfully for ${participantId}`);
+        
+        // Iniciar reinicio proactivo cada 4 minutos (240000ms) para evitar error de red
+        const restartInterval = setInterval(() => {
+          // Usar el estado actualizado de participants
+          setParticipants(currentParticipants => {
+            const participant = currentParticipants.find(p => p.id === participantId);
+            if (participant?.isRecording && recognitionInstancesForParticipant) {
+              console.log(`Proactive restart: Reiniciando reconocimiento para ${participantId} antes del timeout de 5 minutos`);
+              try {
+                // Detener y reiniciar cada instancia de reconocimiento
+                Object.values(recognitionInstancesForParticipant).forEach((recognition: any) => {
+                  try {
+                    recognition.stop();
+                    setTimeout(() => {
+                      try {
+                        recognition.start();
+                        console.log(`Proactive restart: Reconocimiento reiniciado exitosamente para ${participantId}`);
+                      } catch (restartError) {
+                        console.error(`Error en reinicio proactivo:`, restartError);
+                      }
+                    }, 100);
+                  } catch (stopError) {
+                    console.error(`Error deteniendo reconocimiento para reinicio proactivo:`, stopError);
+                  }
+                });
+              } catch (error) {
+                console.error(`Error en reinicio proactivo para ${participantId}:`, error);
+              }
+            } else {
+              // Si el participante ya no está grabando, limpiar el intervalo
+              clearInterval(restartInterval);
+              setRestartIntervals(prev => {
+                const newIntervals = { ...prev };
+                delete newIntervals[participantId];
+                return newIntervals;
+              });
+            }
+            return currentParticipants; // Retornar sin cambios
+          });
+        }, 240000); // 4 minutos = 240000ms (antes del timeout de 5 minutos)
+        
+        // Guardar el intervalo para poder limpiarlo después
+        setRestartIntervals(prev => ({
+          ...prev,
+          [participantId]: restartInterval
+        }));
       } catch (error) {
         console.error('Error starting recognition:', error);
         // If there's an error, revert the state
@@ -241,7 +288,7 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
         return p;
       }));
     }
-  }, [initializeRecognition, recognitionInstances]);
+  }, [initializeRecognition, recognitionInstances, participants]);
 
   // Get combined transcript from all participants
   const getCombinedTranscript = useCallback(() => {
@@ -289,6 +336,17 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
   const stopRecording = useCallback(async (participantId: string) => {
     try {
       console.log(`Stopping recording for participant: ${participantId}`);
+      
+      // Limpiar el intervalo de reinicio proactivo
+      const restartInterval = restartIntervals[participantId];
+      if (restartInterval) {
+        clearInterval(restartInterval);
+        setRestartIntervals(prev => {
+          const newIntervals = { ...prev };
+          delete newIntervals[participantId];
+          return newIntervals;
+        });
+      }
       
       const currentTranscript = currentTranscripts[participantId];
       
@@ -389,7 +447,7 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
         setIsAnalyzing(false);
       }
     }, 100); // Small delay to ensure UI updates first
-  }, [recognitionInstances, currentTranscripts, getCombinedTranscript, isRecording, toast]);
+  }, [recognitionInstances, currentTranscripts, getCombinedTranscript, isRecording, toast, restartIntervals]);
 
   // Stop recording for a specific participant
 
