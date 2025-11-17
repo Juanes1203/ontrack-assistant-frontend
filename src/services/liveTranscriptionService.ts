@@ -424,15 +424,27 @@ export class LiveTranscriptionService {
               if (this.isRecording && this.recognition) {
                 setTimeout(() => {
                   try {
-                    this.recognition.start();
-                    console.log('Reinitialized after error in proactive restart');
-                  } catch (finalError) {
-                    console.error('Failed to restart after error:', finalError);
+                    if (this.recognition && typeof this.recognition.start === 'function' && this.isRecording) {
+                      this.recognition.start();
+                      console.log('Reinitialized after error in proactive restart');
+                      this.isRestarting = false;
+                    }
+                  } catch (finalError: any) {
+                    if (finalError.name === 'InvalidStateError' && finalError.message.includes('already started')) {
+                      console.log('Recognition already started after reinitialization');
+                      this.isRestarting = false;
+                    } else {
+                      console.error('Failed to restart after error:', finalError);
+                      this.isRestarting = false;
+                    }
                   }
                 }, 200);
+              } else {
+                this.isRestarting = false;
               }
             } catch (reinitError) {
               console.error('Failed to reinitialize after error:', reinitError);
+              this.isRestarting = false;
             }
           }
         } else {
