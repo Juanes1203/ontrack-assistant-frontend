@@ -30,7 +30,8 @@ export class LiveTranscriptionService {
     this.recognition.interimResults = true;
     this.recognition.lang = 'es-ES';
     this.recognition.maxAlternatives = 1;
-    this.recognition.serviceURI = undefined; // Use default service
+    // No establecer serviceURI para usar el servicio por defecto del navegador
+    // Esto ayuda a mantener la conexión más estable
 
     this.recognition.onresult = (event: any) => {
       let interimTranscript = '';
@@ -145,21 +146,75 @@ export class LiveTranscriptionService {
     };
 
     this.recognition.onend = () => {
-      // Si estaba grabando y se detuvo inesperadamente (no por stopRecording), intentar reiniciar
+      // Si estaba grabando y se detuvo inesperadamente (no por stopRecording), reiniciar INMEDIATAMENTE
+      // Esto es CRÍTICO para mantener la conexión continua
       if (this.isRecording) {
-        console.log('Recognition ended unexpectedly, attempting to restart...');
-        setTimeout(() => {
+        console.log(`[${new Date().toLocaleTimeString()}] ⚠️ Recognition ended - REINICIANDO INMEDIATAMENTE para mantener conexión continua`);
+        
+        // Función para reiniciar inmediatamente
+        const restartImmediately = () => {
           try {
-            this.recognition.start();
-            console.log('Successfully restarted recognition after unexpected end');
-          } catch (error) {
-            console.error('Error restarting recognition after unexpected end:', error);
-            this.isRecording = false;
-            if (this.onError) {
-              this.onError('Recording stopped unexpectedly. Please restart manually.');
+            if (this.recognition && typeof this.recognition.start === 'function') {
+              this.recognition.start();
+              console.log(`[${new Date().toLocaleTimeString()}] ✅ Recognition reiniciado exitosamente después de onend`);
+              return true;
             }
+          } catch (error) {
+            console.warn(`No se pudo reiniciar la instancia actual:`, error);
+            return false;
           }
-        }, 500);
+          return false;
+        };
+
+        // Intentar reiniciar inmediatamente (sin delay)
+        if (!restartImmediately()) {
+          // Si falla, reinicializar completamente
+          console.warn(`[${new Date().toLocaleTimeString()}] Reinicializando reconocimiento...`);
+          try {
+            this.initializeRecognition();
+            if (this.isRecording && this.recognition) {
+              try {
+                this.recognition.start();
+                console.log(`[${new Date().toLocaleTimeString()}] ✅ Recognition reinicializado y activado después de onend`);
+              } catch (reinitError) {
+                console.error('Error iniciando reconocimiento reinicializado:', reinitError);
+                // Último intento: esperar un momento mínimo y reintentar
+                setTimeout(() => {
+                  if (restartImmediately()) {
+                    console.log(`[${new Date().toLocaleTimeString()}] ✅ Reconexión exitosa después de retry`);
+                  } else {
+                    // Si todo falla, reinicializar una vez más
+                    try {
+                      this.initializeRecognition();
+                      if (this.recognition) {
+                        this.recognition.start();
+                        console.log(`[${new Date().toLocaleTimeString()}] ✅ Reconexión de emergencia exitosa`);
+                      }
+                    } catch (finalError) {
+                      console.error(`[${new Date().toLocaleTimeString()}] ❌ Error crítico: No se pudo mantener la conexión:`, finalError);
+                      this.isRecording = false;
+                      if (this.onError) {
+                        this.onError('Recording stopped unexpectedly. Please restart manually.');
+                      }
+                    }
+                  }
+                }, 50); // Delay mínimo de 50ms
+              }
+            }
+          } catch (error) {
+            console.error('Error reinicializando después de onend:', error);
+            // Último recurso: intentar reiniciar la instancia actual después de un breve delay
+            setTimeout(() => {
+              if (!restartImmediately()) {
+                console.error(`[${new Date().toLocaleTimeString()}] ❌ No se pudo mantener la conexión después de múltiples intentos`);
+                this.isRecording = false;
+                if (this.onError) {
+                  this.onError('Recording stopped unexpectedly. Please restart manually.');
+                }
+              }
+            }, 100);
+          }
+        }
       } else {
         this.isRecording = false;
       }
@@ -197,11 +252,11 @@ export class LiveTranscriptionService {
       this.isRecording = true;
       console.log('Live transcription started successfully');
       
-      // Iniciar reinicio proactivo cada 2.5 minutos (150000ms) para evitar error de red
-      // Más frecuente para asegurar que nunca llegue al timeout
+      // Iniciar reinicio proactivo cada 1.5 minutos (90000ms) para NUNCA llegar al timeout
+      // MUY frecuente para garantizar que nunca se desconecte
       this.restartInterval = setInterval(() => {
         if (this.isRecording && this.recognition) {
-          console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento (cada 2.5 min)`);
+          console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento (cada 1.5 min - prevención activa)`);
           try {
             if (this.recognition && typeof this.recognition.stop === 'function') {
               this.recognition.stop();
@@ -267,7 +322,7 @@ export class LiveTranscriptionService {
             this.restartInterval = null;
           }
         }
-      }, 150000); // 2.5 minutos = 150000ms (más frecuente para evitar cualquier timeout)
+      }, 90000); // 1.5 minutos = 90000ms (MUY frecuente para NUNCA llegar al timeout)
     } catch (error) {
       console.error('Error starting speech recognition:', error);
       throw error;

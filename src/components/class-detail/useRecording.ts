@@ -101,6 +101,9 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = primaryLanguage;
+    // Configuraciones adicionales para mantener la conexión
+    recognition.maxAlternatives = 1;
+    // No establecer serviceURI para usar el servicio por defecto del navegador
 
     recognition.onresult = (event: any) => {
       const participant = participants.find(p => p.id === participantId);
@@ -191,10 +194,54 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
     recognition.onend = () => {
       const participant = participants.find(p => p.id === participantId);
       if (participant?.isRecording) {
-        try {
-          recognition.start();
-        } catch (error) {
-          console.error(`Error restarting recognition for ${primaryLanguage}:`, error);
+        console.log(`[${new Date().toLocaleTimeString()}] ⚠️ Recognition ended for ${primaryLanguage} - REINICIANDO INMEDIATAMENTE para mantener conexión continua`);
+        
+        // REINICIAR INMEDIATAMENTE - sin ningún delay
+        // Esto es crítico para mantener la conexión continua
+        const restartImmediately = () => {
+          try {
+            if (recognition && typeof recognition.start === 'function') {
+              recognition.start();
+              console.log(`[${new Date().toLocaleTimeString()}] ✅ Recognition reiniciado exitosamente después de onend`);
+              return true;
+            }
+          } catch (error) {
+            console.warn(`No se pudo reiniciar la instancia actual:`, error);
+            return false;
+          }
+          return false;
+        };
+
+        // Intentar reiniciar inmediatamente
+        if (!restartImmediately()) {
+          // Si falla, crear nueva instancia inmediatamente
+          console.warn(`[${new Date().toLocaleTimeString()}] Creando nueva instancia de reconocimiento...`);
+          try {
+            const newRecognition = initializeRecognition(participantId);
+            if (newRecognition && newRecognition[primaryLanguage]) {
+              setRecognitionInstances(prev => ({
+                ...prev,
+                [participantId]: newRecognition
+              }));
+              newRecognition[primaryLanguage].start();
+              console.log(`[${new Date().toLocaleTimeString()}] ✅ Nueva instancia creada y activada después de onend`);
+            } else {
+              // Si falla crear nueva, intentar una vez más con la actual
+              setTimeout(() => {
+                if (restartImmediately()) {
+                  console.log(`[${new Date().toLocaleTimeString()}] ✅ Reconexión exitosa después de retry`);
+                } else {
+                  console.error(`[${new Date().toLocaleTimeString()}] ❌ No se pudo mantener la conexión`);
+                }
+              }, 50); // Delay mínimo de 50ms
+            }
+          } catch (error) {
+            console.error(`Error crítico creando nueva instancia:`, error);
+            // Último intento: esperar un momento y reiniciar la actual
+            setTimeout(() => {
+              restartImmediately();
+            }, 100);
+          }
         }
       }
     };
@@ -235,14 +282,14 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
         });
         console.log(`Recognition started successfully for ${participantId}`);
         
-        // Iniciar reinicio proactivo cada 2.5 minutos (150000ms) para evitar error de red
-        // Más frecuente para asegurar que nunca llegue al timeout
+        // Iniciar reinicio proactivo cada 1.5 minutos (90000ms) para NUNCA llegar al timeout
+        // Muy frecuente para garantizar que nunca se desconecte
         const restartInterval = setInterval(() => {
           // Usar el estado actualizado de participants
           setParticipants(currentParticipants => {
             const participant = currentParticipants.find(p => p.id === participantId);
             if (participant?.isRecording && recognitionInstancesForParticipant) {
-              console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento para ${participantId} (cada 2.5 min)`);
+              console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento para ${participantId} (cada 1.5 min - prevención activa)`);
               try {
                 // Obtener las instancias actualizadas por si cambiaron
                 setRecognitionInstances(currentInstances => {
@@ -316,7 +363,7 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
             }
             return currentParticipants; // Retornar sin cambios
           });
-        }, 150000); // 2.5 minutos = 150000ms (más frecuente para evitar cualquier timeout)
+        }, 90000); // 1.5 minutos = 90000ms (MUY frecuente para NUNCA llegar al timeout)
         
         // Guardar el intervalo para poder limpiarlo después
         setRestartIntervals(prev => ({
