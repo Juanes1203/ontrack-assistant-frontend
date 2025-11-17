@@ -380,13 +380,20 @@ export class LiveTranscriptionService {
                     }
                   }
                 } catch (restartError: any) {
-                  if (restartError.name === 'InvalidStateError' && restartError.message.includes('already started')) {
-                    // Ya está iniciado, eso está bien - no es un error
-                    console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Recognition ya estaba iniciado en reinicio proactivo`);
+                  // Verificar si el error es "already started" - esto NO es un error, es normal
+                  const isAlreadyStarted = restartError?.name === 'InvalidStateError' || 
+                                          restartError?.message?.includes('already started') ||
+                                          restartError?.toString()?.includes('already started');
+                  
+                  if (isAlreadyStarted) {
+                    // Ya está iniciado, eso está bien - no es un error, no hacer nada
+                    console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Recognition ya estaba iniciado en reinicio proactivo (normal)`);
                     this.isRestarting = false;
+                    return; // Salir temprano, no intentar reinicializar
                   } else {
+                    // Solo reinicializar si es un error REAL (no "already started")
                     console.error('Error en reinicio proactivo:', restartError);
-                    // Si falla, intentar reinicializar completamente
+                    // Si falla con un error real, intentar reinicializar completamente
                     this.initializeRecognition();
                     if (this.isRecording && this.recognition) {
                       setTimeout(() => {
@@ -397,8 +404,12 @@ export class LiveTranscriptionService {
                             this.isRestarting = false;
                           }
                         } catch (finalError: any) {
-                          if (finalError.name === 'InvalidStateError' && finalError.message.includes('already started')) {
-                            console.log('Recognition already started after reinitialization');
+                          const isFinalAlreadyStarted = finalError?.name === 'InvalidStateError' || 
+                                                       finalError?.message?.includes('already started') ||
+                                                       finalError?.toString()?.includes('already started');
+                          
+                          if (isFinalAlreadyStarted) {
+                            console.log('Recognition already started after reinitialization (normal)');
                             this.isRestarting = false;
                           } else {
                             console.error('Failed to restart after reinitialization:', finalError);
