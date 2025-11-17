@@ -10,7 +10,6 @@ export class LiveTranscriptionService {
   private onTranscript: ((result: LiveTranscriptionResult) => void) | null = null;
   private onError: ((error: string) => void) | null = null;
   private fullTranscript = '';
-  private restartInterval: NodeJS.Timeout | null = null;
   private isRestarting = false; // Flag para prevenir múltiples reinicios simultáneos
   private healthCheckInterval: NodeJS.Timeout | null = null; // Intervalo para verificar salud del reconocimiento
   private lastResultTime: number = 0; // Timestamp del último resultado recibido
@@ -33,6 +32,7 @@ export class LiveTranscriptionService {
     this.recognition.interimResults = true;
     this.recognition.lang = 'es-ES';
     this.recognition.maxAlternatives = 1;
+    // Configuraciones para mantener la conexión estable por 30+ minutos
     // No establecer serviceURI para usar el servicio por defecto del navegador
     // Esto ayuda a mantener la conexión más estable
 
@@ -342,157 +342,25 @@ export class LiveTranscriptionService {
       this.lastResultTime = Date.now(); // Inicializar timestamp
       console.log('Live transcription started successfully');
       
-      // Health check cada 15 segundos para detectar si el reconocimiento se detuvo silenciosamente
-      // MÁS AGRESIVO para grabaciones de 30+ minutos
+      // Health check cada 2 minutos para detectar si el reconocimiento se detuvo silenciosamente
+      // Solo para detectar problemas reales, NO para reiniciar proactivamente
       this.healthCheckInterval = setInterval(() => {
         if (this.isRecording && this.recognition) {
           const timeSinceLastResult = Date.now() - this.lastResultTime;
-          // Si no hay resultados en 45 segundos, algo está mal (reducido de 2 min a 45s)
-          if (timeSinceLastResult > 45000) {
+          // Solo reiniciar si no hay resultados en 3 minutos (problema real)
+          if (timeSinceLastResult > 180000) {
             console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ Health check: No hay resultados desde hace ${Math.round(timeSinceLastResult / 1000)}s - reiniciando reconocimiento`);
             this.forceRestart();
-          } else if (timeSinceLastResult > 30000) {
-            // Advertencia si no hay resultados en 30 segundos
-            console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ Health check: Sin resultados hace ${Math.round(timeSinceLastResult / 1000)}s - monitoreando...`);
           } else {
-            console.log(`[${new Date().toLocaleTimeString()}] ✅ Health check: Reconocimiento activo (último resultado hace ${Math.round(timeSinceLastResult / 1000)}s)`);
+            // Solo log cada 2 minutos para no saturar la consola
+            console.log(`[${new Date().toLocaleTimeString()}] ✅ Health check: Reconocimiento activo (último resultado hace ${Math.round(timeSinceLastResult / 60)} min)`);
           }
         }
-      }, 15000); // Cada 15 segundos (más frecuente)
+      }, 120000); // Cada 2 minutos (solo para monitoreo, no reinicio proactivo)
       
-      // Iniciar reinicio proactivo cada 45 segundos (45000ms) - MUY FRECUENTE para grabaciones de 30+ minutos
-      // Reducido a 45s para prevenir cualquier timeout del navegador
-      this.restartInterval = setInterval(() => {
-        if (this.isRecording && this.recognition && !this.isRestarting) {
-          this.isRestarting = true; // Prevenir múltiples reinicios simultáneos
-          
-          console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento (cada 45s - prevención activa para grabaciones de 30+ min)`);
-          try {
-            if (this.recognition && typeof this.recognition.stop === 'function') {
-              this.recognition.stop();
-              setTimeout(() => {
-                if (!this.isRecording) {
-                  this.isRestarting = false;
-                  return;
-                }
-                
-                try {
-                  if (this.recognition && typeof this.recognition.start === 'function') {
-                    this.recognition.start();
-                    console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reconocimiento reiniciado exitosamente`);
-                    this.isRestarting = false;
-                  } else {
-                    console.warn('Recognition instance invalid, reinitializing...');
-                    this.initializeRecognition();
-                    if (this.isRecording && this.recognition) {
-                      setTimeout(() => {
-                        try {
-                          if (this.recognition && typeof this.recognition.start === 'function' && this.isRecording) {
-                            this.recognition.start();
-                            console.log('Reinitialized and restarted after invalid instance');
-                            this.isRestarting = false;
-                          }
-                        } catch (finalError: any) {
-                          if (finalError.name === 'InvalidStateError' && finalError.message.includes('already started')) {
-                            console.log('Recognition already started after reinitialization');
-                            this.isRestarting = false;
-                          } else {
-                            console.error('Failed to restart after reinitialization:', finalError);
-                            this.isRestarting = false;
-                          }
-                        }
-                      }, 200);
-                    } else {
-                      this.isRestarting = false;
-                    }
-                  }
-                } catch (restartError: any) {
-                  // Verificar si el error es "already started" - esto NO es un error, es normal
-                  const isAlreadyStarted = restartError?.name === 'InvalidStateError' || 
-                                          restartError?.message?.includes('already started') ||
-                                          restartError?.toString()?.includes('already started');
-                  
-                  if (isAlreadyStarted) {
-                    // Ya está iniciado, eso está bien - no es un error, no hacer nada
-                    console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Recognition ya estaba iniciado en reinicio proactivo (normal)`);
-                    this.isRestarting = false;
-                    return; // Salir temprano, no intentar reinicializar
-                  } else {
-                    // Solo reinicializar si es un error REAL (no "already started")
-                    console.error('Error en reinicio proactivo:', restartError);
-                    // Si falla con un error real, intentar reinicializar completamente
-                    this.initializeRecognition();
-                    if (this.isRecording && this.recognition) {
-                      setTimeout(() => {
-                        try {
-                          if (this.recognition && typeof this.recognition.start === 'function' && this.isRecording) {
-                            this.recognition.start();
-                            console.log('Reinitialized and restarted after proactive restart failure');
-                            this.isRestarting = false;
-                          }
-                        } catch (finalError: any) {
-                          const isFinalAlreadyStarted = finalError?.name === 'InvalidStateError' || 
-                                                       finalError?.message?.includes('already started') ||
-                                                       finalError?.toString()?.includes('already started');
-                          
-                          if (isFinalAlreadyStarted) {
-                            console.log('Recognition already started after reinitialization (normal)');
-                            this.isRestarting = false;
-                          } else {
-                            console.error('Failed to restart after reinitialization:', finalError);
-                            this.isRestarting = false;
-                          }
-                        }
-                      }, 200);
-                    } else {
-                      this.isRestarting = false;
-                    }
-                  }
-                }
-              }, 200); // Delay de 200ms para asegurar que se detuvo
-            } else {
-              this.isRestarting = false;
-            }
-          } catch (error) {
-            console.error('Error en reinicio proactivo:', error);
-            this.isRestarting = false;
-            // Si hay un error, intentar reinicializar
-            try {
-              this.initializeRecognition();
-              if (this.isRecording && this.recognition) {
-                setTimeout(() => {
-                  try {
-                    if (this.recognition && typeof this.recognition.start === 'function' && this.isRecording) {
-                      this.recognition.start();
-                      console.log('Reinitialized after error in proactive restart');
-                      this.isRestarting = false;
-                    }
-                  } catch (finalError: any) {
-                    if (finalError.name === 'InvalidStateError' && finalError.message.includes('already started')) {
-                      console.log('Recognition already started after reinitialization');
-                      this.isRestarting = false;
-                    } else {
-                      console.error('Failed to restart after error:', finalError);
-                      this.isRestarting = false;
-                    }
-                  }
-                }, 200);
-              } else {
-                this.isRestarting = false;
-              }
-            } catch (reinitError) {
-              console.error('Failed to reinitialize after error:', reinitError);
-              this.isRestarting = false;
-            }
-          }
-        } else {
-          // Si ya no está grabando, limpiar el intervalo
-          if (this.restartInterval) {
-            clearInterval(this.restartInterval);
-            this.restartInterval = null;
-          }
-        }
-      }, 45000); // 45 segundos = 45000ms (MUY frecuente para grabaciones de 30+ minutos)
+      // NO reiniciar proactivamente - dejar que el reconocimiento continúe naturalmente
+      // Solo reiniciar cuando onend se dispare o cuando el health check detecte un problema real
+      console.log(`[${new Date().toLocaleTimeString()}] ✅ Grabación iniciada - Sin reinicios proactivos para máxima estabilidad`);
     } catch (error) {
       console.error('Error starting speech recognition:', error);
       throw error;
@@ -556,12 +424,6 @@ export class LiveTranscriptionService {
   }
 
   stopRecording(): void {
-    // Limpiar el intervalo de reinicio proactivo
-    if (this.restartInterval) {
-      clearInterval(this.restartInterval);
-      this.restartInterval = null;
-    }
-    
     // Limpiar el health check interval
     if (this.healthCheckInterval) {
       clearInterval(this.healthCheckInterval);
