@@ -200,54 +200,84 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
     recognition.onend = () => {
       const participant = participants.find(p => p.id === participantId);
       if (participant?.isRecording) {
-        console.log(`[${new Date().toLocaleTimeString()}] ⚠️ Recognition ended for ${primaryLanguage} - REINICIANDO INMEDIATAMENTE para mantener conexión continua`);
+        console.log(`[${new Date().toLocaleTimeString()}] ⚠️ Recognition ended for ${primaryLanguage} - REINICIANDO para mantener conexión continua`);
         
-        // REINICIAR INMEDIATAMENTE - sin ningún delay
-        // Esto es crítico para mantener la conexión continua
-        const restartImmediately = () => {
+        // Función para reiniciar de forma segura
+        const restartSafely = () => {
           try {
-            if (recognition && typeof recognition.start === 'function') {
-              recognition.start();
-              console.log(`[${new Date().toLocaleTimeString()}] ✅ Recognition reiniciado exitosamente después de onend`);
-              return true;
+            if (!recognition || typeof recognition.start !== 'function') {
+              return false;
             }
+            
+            // Intentar detener primero (sin error si ya está detenido)
+            try {
+              if (typeof recognition.stop === 'function') {
+                recognition.stop();
+              }
+            } catch (stopError) {
+              // Ignorar errores al detener
+            }
+            
+            // Esperar un momento antes de reiniciar
+            setTimeout(() => {
+              try {
+                if (recognition && typeof recognition.start === 'function') {
+                  recognition.start();
+                  console.log(`[${new Date().toLocaleTimeString()}] ✅ Recognition reiniciado exitosamente después de onend`);
+                  return true;
+                }
+              } catch (startError: any) {
+                if (startError.name === 'InvalidStateError' && startError.message.includes('already started')) {
+                  // Ya está iniciado, eso está bien - no es un error
+                  console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Recognition ya estaba iniciado`);
+                  return true;
+                }
+                console.warn(`Error al reiniciar:`, startError);
+                return false;
+              }
+            }, 100); // Delay de 100ms para asegurar que terminó
+            
+            return true;
           } catch (error) {
             console.warn(`No se pudo reiniciar la instancia actual:`, error);
             return false;
           }
-          return false;
         };
 
-        // Intentar reiniciar inmediatamente
-        if (!restartImmediately()) {
-          // Si falla, crear nueva instancia inmediatamente
-          console.warn(`[${new Date().toLocaleTimeString()}] Creando nueva instancia de reconocimiento...`);
-          try {
-            const newRecognition = initializeRecognition(participantId);
-            if (newRecognition && newRecognition[primaryLanguage]) {
-              setRecognitionInstances(prev => ({
-                ...prev,
-                [participantId]: newRecognition
-              }));
-              newRecognition[primaryLanguage].start();
-              console.log(`[${new Date().toLocaleTimeString()}] ✅ Nueva instancia creada y activada después de onend`);
-            } else {
-              // Si falla crear nueva, intentar una vez más con la actual
-              setTimeout(() => {
-                if (restartImmediately()) {
-                  console.log(`[${new Date().toLocaleTimeString()}] ✅ Reconexión exitosa después de retry`);
-                } else {
-                  console.error(`[${new Date().toLocaleTimeString()}] ❌ No se pudo mantener la conexión`);
-                }
-              }, 50); // Delay mínimo de 50ms
+        // Intentar reiniciar de forma segura
+        if (!restartSafely()) {
+          // Si falla, crear nueva instancia después de un delay
+          setTimeout(() => {
+            const currentParticipant = participants.find(p => p.id === participantId);
+            if (!currentParticipant?.isRecording) {
+              return; // Ya no está grabando, no hacer nada
             }
-          } catch (error) {
-            console.error(`Error crítico creando nueva instancia:`, error);
-            // Último intento: esperar un momento y reiniciar la actual
-            setTimeout(() => {
-              restartImmediately();
-            }, 100);
-          }
+            
+            console.warn(`[${new Date().toLocaleTimeString()}] Creando nueva instancia de reconocimiento...`);
+            try {
+              const newRecognition = initializeRecognition(participantId);
+              if (newRecognition && newRecognition[primaryLanguage]) {
+                setRecognitionInstances(prev => ({
+                  ...prev,
+                  [participantId]: newRecognition
+                }));
+                setTimeout(() => {
+                  try {
+                    newRecognition[primaryLanguage].start();
+                    console.log(`[${new Date().toLocaleTimeString()}] ✅ Nueva instancia creada y activada después de onend`);
+                  } catch (startError: any) {
+                    if (startError.name === 'InvalidStateError' && startError.message.includes('already started')) {
+                      console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Nueva instancia ya estaba iniciada`);
+                    } else {
+                      console.error(`Error iniciando nueva instancia:`, startError);
+                    }
+                  }
+                }, 50);
+              }
+            } catch (error) {
+              console.error(`Error crítico creando nueva instancia:`, error);
+            }
+          }, 150);
         }
       }
     };

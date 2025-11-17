@@ -11,6 +11,7 @@ export class LiveTranscriptionService {
   private onError: ((error: string) => void) | null = null;
   private fullTranscript = '';
   private restartInterval: NodeJS.Timeout | null = null;
+  private isRestarting = false; // Flag para prevenir múltiples reinicios simultáneos
 
   constructor() {
     this.initializeRecognition();
@@ -155,75 +156,112 @@ export class LiveTranscriptionService {
     this.recognition.onend = () => {
       // Si estaba grabando y se detuvo inesperadamente (no por stopRecording), reiniciar INMEDIATAMENTE
       // Esto es CRÍTICO para mantener la conexión continua
-      if (this.isRecording) {
+      if (this.isRecording && !this.isRestarting) {
+        this.isRestarting = true; // Prevenir múltiples reinicios simultáneos
+        
         console.log(`[${new Date().toLocaleTimeString()}] ⚠️ Recognition ended - REINICIANDO INMEDIATAMENTE para mantener conexión continua`);
         
-        // Función para reiniciar inmediatamente
-        const restartImmediately = () => {
+        // Función para verificar si el reconocimiento está iniciado
+        const isRecognitionActive = () => {
           try {
-            if (this.recognition && typeof this.recognition.start === 'function') {
-              this.recognition.start();
-              console.log(`[${new Date().toLocaleTimeString()}] ✅ Recognition reiniciado exitosamente después de onend`);
-              return true;
-            }
-          } catch (error) {
-            console.warn(`No se pudo reiniciar la instancia actual:`, error);
+            // No hay una forma directa de verificar el estado, pero podemos intentar
+            // Si el reconocimiento existe y no está null, asumimos que puede estar activo
+            return this.recognition !== null;
+          } catch {
             return false;
           }
-          return false;
         };
 
-        // Intentar reiniciar inmediatamente (sin delay)
-        if (!restartImmediately()) {
-          // Si falla, reinicializar completamente
-          console.warn(`[${new Date().toLocaleTimeString()}] Reinicializando reconocimiento...`);
+        // Función para reiniciar con verificación de estado
+        const restartSafely = () => {
           try {
-            this.initializeRecognition();
-            if (this.isRecording && this.recognition) {
+            if (!this.recognition || typeof this.recognition.start !== 'function') {
+              this.isRestarting = false;
+              return false;
+            }
+            
+            // Intentar detener primero si está activo (sin lanzar error si ya está detenido)
+            try {
+              if (typeof this.recognition.stop === 'function') {
+                this.recognition.stop();
+              }
+            } catch (stopError) {
+              // Ignorar errores al detener (puede que ya esté detenido)
+            }
+            
+            // Esperar un momento mínimo antes de reiniciar
+            setTimeout(() => {
+              if (!this.isRecording) {
+                this.isRestarting = false;
+                return;
+              }
+              
               try {
-                this.recognition.start();
-                console.log(`[${new Date().toLocaleTimeString()}] ✅ Recognition reinicializado y activado después de onend`);
-              } catch (reinitError) {
-                console.error('Error iniciando reconocimiento reinicializado:', reinitError);
-                // Último intento: esperar un momento mínimo y reintentar
-                setTimeout(() => {
-                  if (restartImmediately()) {
-                    console.log(`[${new Date().toLocaleTimeString()}] ✅ Reconexión exitosa después de retry`);
-                  } else {
-                    // Si todo falla, reinicializar una vez más
-                    try {
-                      this.initializeRecognition();
-                      if (this.recognition) {
-                        this.recognition.start();
-                        console.log(`[${new Date().toLocaleTimeString()}] ✅ Reconexión de emergencia exitosa`);
-                      }
-                    } catch (finalError) {
-                      console.error(`[${new Date().toLocaleTimeString()}] ❌ Error crítico: No se pudo mantener la conexión:`, finalError);
-                      this.isRecording = false;
-                      if (this.onError) {
-                        this.onError('Recording stopped unexpectedly. Please restart manually.');
+                if (this.recognition && typeof this.recognition.start === 'function' && this.isRecording) {
+                  this.recognition.start();
+                  console.log(`[${new Date().toLocaleTimeString()}] ✅ Recognition reiniciado exitosamente después de onend`);
+                  this.isRestarting = false;
+                }
+              } catch (startError: any) {
+                if (startError.name === 'InvalidStateError' && startError.message.includes('already started')) {
+                  // Ya está iniciado, eso está bien - no es un error
+                  console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Recognition ya estaba iniciado`);
+                  this.isRestarting = false;
+                } else {
+                  console.warn(`Error al reiniciar:`, startError);
+                  this.isRestarting = false;
+                  // Si falla, intentar reinicializar
+                  setTimeout(() => {
+                    if (this.isRecording && !this.isRestarting) {
+                      this.isRestarting = true;
+                      try {
+                        this.initializeRecognition();
+                        if (this.recognition && this.isRecording) {
+                          setTimeout(() => {
+                            try {
+                              if (this.recognition && typeof this.recognition.start === 'function' && this.isRecording) {
+                                this.recognition.start();
+                                console.log(`[${new Date().toLocaleTimeString()}] ✅ Recognition reinicializado después de error`);
+                                this.isRestarting = false;
+                              }
+                            } catch (reinitError: any) {
+                              if (reinitError.name === 'InvalidStateError' && reinitError.message.includes('already started')) {
+                                console.log(`[${new Date().toLocaleTimeString()}] ℹ️ Recognition ya estaba iniciado después de reinicializar`);
+                                this.isRestarting = false;
+                              } else {
+                                console.error(`Error crítico: No se pudo mantener la conexión:`, reinitError);
+                                this.isRestarting = false;
+                                this.isRecording = false;
+                                if (this.onError) {
+                                  this.onError('Recording stopped unexpectedly. Please restart manually.');
+                                }
+                              }
+                            }
+                          }, 50);
+                        }
+                      } catch (error) {
+                        console.error('Error reinicializando:', error);
+                        this.isRestarting = false;
                       }
                     }
-                  }
-                }, 50); // Delay mínimo de 50ms
-              }
-            }
-          } catch (error) {
-            console.error('Error reinicializando después de onend:', error);
-            // Último recurso: intentar reiniciar la instancia actual después de un breve delay
-            setTimeout(() => {
-              if (!restartImmediately()) {
-                console.error(`[${new Date().toLocaleTimeString()}] ❌ No se pudo mantener la conexión después de múltiples intentos`);
-                this.isRecording = false;
-                if (this.onError) {
-                  this.onError('Recording stopped unexpectedly. Please restart manually.');
+                  }, 100);
                 }
               }
-            }, 100);
+            }, 100); // Delay de 100ms para asegurar que el reconocimiento terminó
+            
+            return true;
+          } catch (error) {
+            console.warn(`No se pudo reiniciar la instancia actual:`, error);
+            this.isRestarting = false;
+            return false;
           }
-        }
+        };
+
+        // Intentar reiniciar de forma segura (la función ya maneja los delays y errores)
+        restartSafely();
       } else {
         this.isRecording = false;
+        this.isRestarting = false;
       }
     };
   }
