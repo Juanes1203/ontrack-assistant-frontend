@@ -164,6 +164,9 @@ export class LiveTranscriptionService {
       if (this.isRecording && !this.isRestarting) {
         this.isRestarting = true; // Prevenir múltiples reinicios simultáneos
         
+        // Actualizar timestamp para que el health check no detecte esto como un problema
+        this.lastResultTime = Date.now();
+        
         console.log(`[${new Date().toLocaleTimeString()}] ⚠️ Recognition ended - REINICIANDO INMEDIATAMENTE para mantener conexión continua`);
         
         // Función para verificar si el reconocimiento está iniciado
@@ -339,27 +342,31 @@ export class LiveTranscriptionService {
       this.lastResultTime = Date.now(); // Inicializar timestamp
       console.log('Live transcription started successfully');
       
-      // Health check cada 30 segundos para detectar si el reconocimiento se detuvo silenciosamente
+      // Health check cada 15 segundos para detectar si el reconocimiento se detuvo silenciosamente
+      // MÁS AGRESIVO para grabaciones de 30+ minutos
       this.healthCheckInterval = setInterval(() => {
         if (this.isRecording && this.recognition) {
           const timeSinceLastResult = Date.now() - this.lastResultTime;
-          // Si no hay resultados en 2 minutos, algo está mal
-          if (timeSinceLastResult > 120000) {
+          // Si no hay resultados en 45 segundos, algo está mal (reducido de 2 min a 45s)
+          if (timeSinceLastResult > 45000) {
             console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ Health check: No hay resultados desde hace ${Math.round(timeSinceLastResult / 1000)}s - reiniciando reconocimiento`);
             this.forceRestart();
+          } else if (timeSinceLastResult > 30000) {
+            // Advertencia si no hay resultados en 30 segundos
+            console.warn(`[${new Date().toLocaleTimeString()}] ⚠️ Health check: Sin resultados hace ${Math.round(timeSinceLastResult / 1000)}s - monitoreando...`);
           } else {
             console.log(`[${new Date().toLocaleTimeString()}] ✅ Health check: Reconocimiento activo (último resultado hace ${Math.round(timeSinceLastResult / 1000)}s)`);
           }
         }
-      }, 30000); // Cada 30 segundos
+      }, 15000); // Cada 15 segundos (más frecuente)
       
-      // Iniciar reinicio proactivo cada 1 minuto (60000ms) - MÁS FRECUENTE para grabaciones de 30+ minutos
-      // Reducido de 1.5 min a 1 min para mayor seguridad
+      // Iniciar reinicio proactivo cada 45 segundos (45000ms) - MUY FRECUENTE para grabaciones de 30+ minutos
+      // Reducido a 45s para prevenir cualquier timeout del navegador
       this.restartInterval = setInterval(() => {
         if (this.isRecording && this.recognition && !this.isRestarting) {
           this.isRestarting = true; // Prevenir múltiples reinicios simultáneos
           
-          console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento (cada 1 min - prevención activa para grabaciones de 30+ min)`);
+          console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento (cada 45s - prevención activa para grabaciones de 30+ min)`);
           try {
             if (this.recognition && typeof this.recognition.stop === 'function') {
               this.recognition.stop();
@@ -485,7 +492,7 @@ export class LiveTranscriptionService {
             this.restartInterval = null;
           }
         }
-      }, 60000); // 1 minuto = 60000ms (MUY frecuente para grabaciones de 30+ minutos)
+      }, 45000); // 45 segundos = 45000ms (MUY frecuente para grabaciones de 30+ minutos)
     } catch (error) {
       console.error('Error starting speech recognition:', error);
       throw error;
