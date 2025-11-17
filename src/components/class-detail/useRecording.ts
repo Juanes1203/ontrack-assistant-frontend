@@ -136,39 +136,53 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
         return;
       }
       
-      // Manejar error de red con reconexión automática
+      // Manejar error de red con reconexión automática inmediata
       if (event.error === 'network') {
-        console.warn(`Network error detected for ${primaryLanguage}, attempting to reconnect...`);
+        console.warn(`[${new Date().toLocaleTimeString()}] Network error detected for ${primaryLanguage}, attempting immediate reconnect...`);
         const participant = participants.find(p => p.id === participantId);
         
-        // Si el participante sigue grabando, intentar reconectar después de un breve delay
+        // Si el participante sigue grabando, intentar reconectar inmediatamente
         if (participant?.isRecording) {
-          setTimeout(() => {
-            try {
-              // Reiniciar el reconocimiento
+          // No esperar, reconectar inmediatamente
+          try {
+            // Detener el reconocimiento actual
+            if (recognition && typeof recognition.stop === 'function') {
               recognition.stop();
-              setTimeout(() => {
-                try {
-                  recognition.start();
-                  console.log(`Successfully reconnected recognition for ${primaryLanguage} after network error`);
-                } catch (restartError) {
-                  console.error(`Error restarting recognition after network error:`, restartError);
-                  // Si falla el reinicio, intentar crear una nueva instancia
-                  const newRecognition = initializeRecognition(participantId);
-                  if (newRecognition && newRecognition[primaryLanguage]) {
-                    setRecognitionInstances(prev => ({
-                      ...prev,
-                      [participantId]: newRecognition
-                    }));
-                    newRecognition[primaryLanguage].start();
-                    console.log(`Created new recognition instance for ${primaryLanguage} after network error`);
+            }
+            
+            // Crear una nueva instancia inmediatamente (más confiable que reiniciar la misma)
+            setTimeout(() => {
+              try {
+                const newRecognition = initializeRecognition(participantId);
+                if (newRecognition && newRecognition[primaryLanguage]) {
+                  setRecognitionInstances(prev => ({
+                    ...prev,
+                    [participantId]: newRecognition
+                  }));
+                  newRecognition[primaryLanguage].start();
+                  console.log(`[${new Date().toLocaleTimeString()}] Created new recognition instance for ${primaryLanguage} after network error`);
+                } else {
+                  // Si falla crear nueva, intentar reiniciar la actual
+                  if (recognition && typeof recognition.start === 'function') {
+                    recognition.start();
+                    console.log(`[${new Date().toLocaleTimeString()}] Restarted existing recognition after network error`);
                   }
                 }
-              }, 500);
-            } catch (error) {
-              console.error(`Error handling network error for ${primaryLanguage}:`, error);
-            }
-          }, 1000); // Esperar 1 segundo antes de intentar reconectar
+              } catch (error) {
+                console.error(`Error creating new instance after network error:`, error);
+                // Último intento: reiniciar la instancia actual
+                try {
+                  if (recognition && typeof recognition.start === 'function') {
+                    recognition.start();
+                  }
+                } catch (finalError) {
+                  console.error(`Final error restarting after network error:`, finalError);
+                }
+              }
+            }, 100); // Delay muy corto para reconexión rápida
+          } catch (error) {
+            console.error(`Error handling network error for ${primaryLanguage}:`, error);
+          }
         }
         return;
       }
@@ -221,29 +235,72 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
         });
         console.log(`Recognition started successfully for ${participantId}`);
         
-        // Iniciar reinicio proactivo cada 4 minutos (240000ms) para evitar error de red
+        // Iniciar reinicio proactivo cada 2.5 minutos (150000ms) para evitar error de red
+        // Más frecuente para asegurar que nunca llegue al timeout
         const restartInterval = setInterval(() => {
           // Usar el estado actualizado de participants
           setParticipants(currentParticipants => {
             const participant = currentParticipants.find(p => p.id === participantId);
             if (participant?.isRecording && recognitionInstancesForParticipant) {
-              console.log(`Proactive restart: Reiniciando reconocimiento para ${participantId} antes del timeout de 5 minutos`);
+              console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento para ${participantId} (cada 2.5 min)`);
               try {
-                // Detener y reiniciar cada instancia de reconocimiento
-                Object.values(recognitionInstancesForParticipant).forEach((recognition: any) => {
-                  try {
-                    recognition.stop();
-                    setTimeout(() => {
+                // Obtener las instancias actualizadas por si cambiaron
+                setRecognitionInstances(currentInstances => {
+                  const currentInstancesForParticipant = currentInstances[participantId];
+                  if (currentInstancesForParticipant) {
+                    // Detener y reiniciar cada instancia de reconocimiento
+                    Object.values(currentInstancesForParticipant).forEach((recognition: any) => {
                       try {
-                        recognition.start();
-                        console.log(`Proactive restart: Reconocimiento reiniciado exitosamente para ${participantId}`);
-                      } catch (restartError) {
-                        console.error(`Error en reinicio proactivo:`, restartError);
+                        // Verificar que el reconocimiento esté activo antes de detenerlo
+                        if (recognition && typeof recognition.stop === 'function') {
+                          recognition.stop();
+                          // Esperar un poco más para asegurar que se detuvo completamente
+                          setTimeout(() => {
+                            try {
+                              if (recognition && typeof recognition.start === 'function') {
+                                recognition.start();
+                                console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reconocimiento reiniciado exitosamente para ${participantId}`);
+                              } else {
+                                console.warn(`Recognition instance invalid, recreating...`);
+                                // Si la instancia es inválida, crear una nueva
+                                const newRecognition = initializeRecognition(participantId);
+                                if (newRecognition) {
+                                  setRecognitionInstances(prev => ({
+                                    ...prev,
+                                    [participantId]: newRecognition
+                                  }));
+                                  Object.values(newRecognition).forEach((newRec: any) => {
+                                    if (newRec && typeof newRec.start === 'function') {
+                                      newRec.start();
+                                    }
+                                  });
+                                }
+                              }
+                            } catch (restartError) {
+                              console.error(`Error en reinicio proactivo:`, restartError);
+                              // Si falla, intentar crear una nueva instancia
+                              const newRecognition = initializeRecognition(participantId);
+                              if (newRecognition) {
+                                setRecognitionInstances(prev => ({
+                                  ...prev,
+                                  [participantId]: newRecognition
+                                }));
+                                Object.values(newRecognition).forEach((newRec: any) => {
+                                  if (newRec && typeof newRec.start === 'function') {
+                                    newRec.start();
+                                  }
+                                });
+                                console.log(`Nueva instancia creada después de error en reinicio`);
+                              }
+                            }
+                          }, 200); // Aumentar delay a 200ms para asegurar que se detuvo
+                        }
+                      } catch (stopError) {
+                        console.error(`Error deteniendo reconocimiento para reinicio proactivo:`, stopError);
                       }
-                    }, 100);
-                  } catch (stopError) {
-                    console.error(`Error deteniendo reconocimiento para reinicio proactivo:`, stopError);
+                    });
                   }
+                  return currentInstances; // Retornar sin cambios
                 });
               } catch (error) {
                 console.error(`Error en reinicio proactivo para ${participantId}:`, error);
@@ -259,7 +316,7 @@ export const useRecording = (languages: string[] = ['en-US', 'es-ES']): UseRecor
             }
             return currentParticipants; // Retornar sin cambios
           });
-        }, 240000); // 4 minutos = 240000ms (antes del timeout de 5 minutos)
+        }, 150000); // 2.5 minutos = 150000ms (más frecuente para evitar cualquier timeout)
         
         // Guardar el intervalo para poder limpiarlo después
         setRestartIntervals(prev => ({

@@ -197,34 +197,68 @@ export class LiveTranscriptionService {
       this.isRecording = true;
       console.log('Live transcription started successfully');
       
-      // Iniciar reinicio proactivo cada 4 minutos (240000ms) para evitar error de red
+      // Iniciar reinicio proactivo cada 2.5 minutos (150000ms) para evitar error de red
+      // Más frecuente para asegurar que nunca llegue al timeout
       this.restartInterval = setInterval(() => {
         if (this.isRecording && this.recognition) {
-          console.log('Proactive restart: Reiniciando reconocimiento antes del timeout de 5 minutos');
+          console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reiniciando reconocimiento (cada 2.5 min)`);
           try {
-            this.recognition.stop();
-            setTimeout(() => {
-              try {
-                this.recognition.start();
-                console.log('Proactive restart: Reconocimiento reiniciado exitosamente');
-              } catch (restartError) {
-                console.error('Error en reinicio proactivo:', restartError);
-                // Si falla, intentar reinicializar
-                this.initializeRecognition();
-                if (this.isRecording) {
-                  setTimeout(() => {
-                    try {
-                      this.recognition.start();
-                      console.log('Reinitialized and restarted after proactive restart failure');
-                    } catch (finalError) {
-                      console.error('Failed to restart after reinitialization:', finalError);
+            if (this.recognition && typeof this.recognition.stop === 'function') {
+              this.recognition.stop();
+              setTimeout(() => {
+                try {
+                  if (this.recognition && typeof this.recognition.start === 'function') {
+                    this.recognition.start();
+                    console.log(`[${new Date().toLocaleTimeString()}] Proactive restart: Reconocimiento reiniciado exitosamente`);
+                  } else {
+                    console.warn('Recognition instance invalid, reinitializing...');
+                    this.initializeRecognition();
+                    if (this.isRecording && this.recognition) {
+                      setTimeout(() => {
+                        try {
+                          this.recognition.start();
+                          console.log('Reinitialized and restarted after invalid instance');
+                        } catch (finalError) {
+                          console.error('Failed to restart after reinitialization:', finalError);
+                        }
+                      }, 200);
                     }
-                  }, 500);
+                  }
+                } catch (restartError) {
+                  console.error('Error en reinicio proactivo:', restartError);
+                  // Si falla, intentar reinicializar completamente
+                  this.initializeRecognition();
+                  if (this.isRecording && this.recognition) {
+                    setTimeout(() => {
+                      try {
+                        this.recognition.start();
+                        console.log('Reinitialized and restarted after proactive restart failure');
+                      } catch (finalError) {
+                        console.error('Failed to restart after reinitialization:', finalError);
+                      }
+                    }, 200);
+                  }
                 }
-              }
-            }, 100);
+              }, 200); // Aumentar delay a 200ms para asegurar que se detuvo
+            }
           } catch (error) {
             console.error('Error en reinicio proactivo:', error);
+            // Si hay un error, intentar reinicializar
+            try {
+              this.initializeRecognition();
+              if (this.isRecording && this.recognition) {
+                setTimeout(() => {
+                  try {
+                    this.recognition.start();
+                    console.log('Reinitialized after error in proactive restart');
+                  } catch (finalError) {
+                    console.error('Failed to restart after error:', finalError);
+                  }
+                }, 200);
+              }
+            } catch (reinitError) {
+              console.error('Failed to reinitialize after error:', reinitError);
+            }
           }
         } else {
           // Si ya no está grabando, limpiar el intervalo
@@ -233,7 +267,7 @@ export class LiveTranscriptionService {
             this.restartInterval = null;
           }
         }
-      }, 240000); // 4 minutos = 240000ms (antes del timeout de 5 minutos)
+      }, 150000); // 2.5 minutos = 150000ms (más frecuente para evitar cualquier timeout)
     } catch (error) {
       console.error('Error starting speech recognition:', error);
       throw error;
