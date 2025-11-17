@@ -182,10 +182,10 @@ export class WhisperTranscriptionService {
         formData.append('recording', audioBlob, `recording-${Date.now()}.${mimeType.includes('webm') ? 'webm' : 'mp4'}`);
         formData.append('classId', this.classId);
 
-        // Get auth token
-        const token = localStorage.getItem('token');
+        // Get auth token (usar 'auth_token' que es el nombre usado en el resto de la app)
+        const token = localStorage.getItem('auth_token');
         if (!token) {
-          throw new Error('No authentication token found');
+          throw new Error('No authentication token found. Please log in again.');
         }
 
         // Send to backend for transcription
